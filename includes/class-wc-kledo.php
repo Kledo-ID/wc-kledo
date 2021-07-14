@@ -197,21 +197,11 @@ final class WC_Kledo {
 		}
 
 		if ( wc_kledo_is_enhanced_admin_available() ) {
-			$is_marketing_enabled = is_callable( 'Automattic\WooCommerce\Admin\Loader::is_feature_enabled' ) && Automattic\WooCommerce\Admin\Loader::is_feature_enabled( 'marketing' );
-
-			if ( $is_marketing_enabled ) {
-				$message = sprintf(
-					esc_html__( 'Heads up! The Kledo menu is located under the %1$sMarketing%2$s menu.', WC_KLEDO_TEXT_DOMAIN ),
-					'<a href="' . esc_url( $this->get_settings_url() ) . '">',
-					'</a>'
-				);
-			} else {
-				$message = sprintf(
-					__( 'For your convenience, the Kledo for WooCommerce settings are now located under %1$sWooCommerce > Kledo%2$s.', WC_KLEDO_TEXT_DOMAIN ),
-					'<a href="' . esc_url( $this->get_settings_url() ) . '">',
-					'</a>'
-				);
-			}
+			$message = sprintf(
+				__( 'For your convenience, the Kledo for WooCommerce settings are located under %1$sWooCommerce > Kledo%2$s.', WC_KLEDO_TEXT_DOMAIN ),
+				'<a href="' . esc_url( $this->get_settings_url() ) . '">',
+				'</a>'
+			);
 
 			$this->get_admin_notice_handler()->add_admin_notice(
 				$message,

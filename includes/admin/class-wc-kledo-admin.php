@@ -1,6 +1,5 @@
 <?php
 
-use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\Admin\Features\Features as WooAdminFeatures;
 use Automattic\WooCommerce\Admin\Features\Navigation\Menu as WooAdminMenu;
 
@@ -138,18 +137,8 @@ class WC_Kledo_Admin {
 	 * @since 1.0.0
 	 */
 	public function add_menu_item() {
-		$root_menu_item = 'woocommerce';
-
-		if ( wc_kledo_is_enhanced_admin_available() ) {
-			$is_marketing_enabled = is_callable( '\Automattic\WooCommerce\Admin\Loader::is_feature_enabled' ) && Features::is_enabled( 'marketing' );
-
-			if ( $is_marketing_enabled ) {
-				$root_menu_item = 'woocommerce-marketing';
-			}
-		}
-
 		add_submenu_page(
-			$root_menu_item,
+			'woocommerce',
 			__( 'Kledo', WC_KLEDO_TEXT_DOMAIN ),
 			__( 'Kledo', WC_KLEDO_TEXT_DOMAIN ),
 			'manage_woocommerce', self::PAGE_ID,
