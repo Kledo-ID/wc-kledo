@@ -1,0 +1,56 @@
+/**
+ * Copyright (c) Kledo Software. All Rights Reserved
+ *
+ * @package WooCommerce Kledo
+ */
+
+.wc-kledo-settings .button.button-default {
+    color: #ffffff;
+    background-color: rgb(230, 230, 230);
+}
+
+.wc-kledo-settings .button.button-primary {
+    color: #ffffff;
+    background-color: rgb(40, 96, 144);
+}
+
+.wc-kledo-settings .button.button-success {
+    color: #ffffff;
+    background-color: rgb(92, 184, 92);
+}
+
+.wc-kledo-settings .button.button-info {
+    color: #ffffff;
+    background-color: rgb(49, 176, 213);
+}
+
+.wc-kledo-settings .button.button-warning {
+    color: #ffffff;
+    background-color: rgb(240, 173, 78);
+}
+
+.wc-kledo-settings .button.button-danger {
+    color: #ffffff;
+    background-color: rgb(217, 83, 79);
+}
+
+/* Support Page */
+#wc-kledo-admin .wc-kledo-support {
+    overflow: hidden;
+    margin-bottom: 20px;
+    width: 70%;
+}
+
+#wc-kledo-admin .wc-kledo-support p {
+    width: 100%;
+    float: left;
+    clear: both;
+    margin: 0 0 20px 0;
+}
+
+#wc-kledo-admin .wc-kledo-support-title {
+    font-weight: bold;
+    font-size: 16px;
+    display: block;
+    padding-bottom: 5px;
+}
