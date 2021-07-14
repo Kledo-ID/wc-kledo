@@ -21,10 +21,7 @@ class WC_Kledo_Translation {
 	 * @since 1.0.0
 	 */
 	public function load_translations() {
-		// If this plugin passes along its text domain, load its translation files
-		if ( defined( WC_KLEDO_TEXT_DOMAIN ) ) {
-			$this->load_textdomain( WC_KLEDO_TEXT_DOMAIN, dirname( KLEDO_PLUGIN_BASENAME ) );
-		}
+		$this->load_textdomain( 'wc-kledo', dirname( WC_KLEDO_PLUGIN_BASENAME ) );
 	}
 
 	/**
