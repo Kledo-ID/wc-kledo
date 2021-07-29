@@ -36,7 +36,8 @@ class WC_Kledo_Admin {
 	public function __construct() {
 		$this->screens = array(
 			WC_Kledo_Configure_Screen::ID => new WC_Kledo_Configure_Screen(),
-            WC_Kledo_Support_Screen::ID => new WC_Kledo_Support_Screen(),
+			WC_Kledo_Invoice_Screen::ID   => new WC_Kledo_Invoice_Screen(),
+			WC_Kledo_Support_Screen::ID   => new WC_Kledo_Support_Screen(),
 		);
 
         $this->init_hooks();
