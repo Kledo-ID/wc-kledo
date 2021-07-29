@@ -4,5 +4,56 @@
 defined( 'ABSPATH' ) || exit;
 
 class WC_Kledo_Ajax {
-	//
+	/**
+	 * Hook in ajax handlers.
+	 *
+	 * @return void
+	 * @since 2.0.0
+	 */
+	public static function init() {
+		// Get payment account via ajax.
+		add_action( 'wp_ajax_wc_kledo_payment_account', array( __CLASS__, 'get_payment_account' ) );
+	}
+
+	/**
+	 * Get the payment account.
+	 *
+	 * @return void
+	 * @throws \Exception
+	 * @since 2.0.0
+	 */
+	public static function get_payment_account() {
+		$request = new WC_Kledo_Request_Account();
+
+		$keyword = $_POST['keyword'] ?? '';
+		$page    = $_POST['page'];
+
+		$response = $request->get_accounts_suggestion_per_page( $keyword, $page );
+
+		$items = array();
+
+		foreach ( $response['data']['data'] as $item ) {
+			$name = $item['name'];
+			$code = $item['ref_code'];
+
+			$value = $code . ' | ' . $name;
+
+			$items[] = array(
+				'id'   => $value,
+				'text' => $value,
+			);
+		}
+
+		wp_send_json(
+			array(
+				'items'    => $items,
+				'page'     => $response['data']['current_page'],
+				'per_page' => $response['data']['per_page'],
+				'total'    => $response['data']['total'],
+			)
+		);
+	}
 }
+
+// Fire it!
+WC_Kledo_Ajax::init();
