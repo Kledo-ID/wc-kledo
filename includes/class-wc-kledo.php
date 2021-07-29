@@ -113,6 +113,7 @@ final class WC_Kledo {
 
         // Core classes.
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-translation.php' );
+		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-ajax.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-message-handler.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-notice-handler.php' );
         require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-issuing-token.php' );
