@@ -95,4 +95,7 @@ jQuery(document).ready(function ($) {
 
     // Payment Account.
     wp_ajax('#wc_kledo_invoice_payment_account', 'wc_kledo_payment_account');
+
+    // Warehouse.
+    wp_ajax('#wc_kledo_warehouse', 'wc_kledo_warehouse');
 });
