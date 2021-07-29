@@ -24,4 +24,18 @@ jQuery(document).ready(function ($) {
     if ($('form.wc-kledo-settings').hasClass('disconnected')) {
         toggleSettingOptions(false);
     }
+
+    // Toggle availability of payment account.
+    $('select#wc_kledo_invoice_status').on('change', function (e) {
+        const $element = $('.payment-account-field');
+        let status = $(this).val();
+
+        if (status === 'paid') {
+            $element.prop('disabled', false);
+
+            return;
+        }
+
+        $element.prop('disabled', true);
+    }).trigger('change');
 });
