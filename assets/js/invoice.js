@@ -38,4 +38,58 @@ jQuery(document).ready(function ($) {
 
         $element.prop('disabled', true);
     }).trigger('change');
+
+
+    /**
+     * Select2 ajax call.
+     *
+     * @param {string} element The select field.
+     * @param {string} action The ajax action name.
+     */
+    function wp_ajax(element, action) {
+        $(element).selectWoo({
+            placeholder: wc_kledo_invoice.i18n.payment_account_placeholder,
+            ajax: {
+                url: wc_kledo_invoice.ajax_url,
+                delay: 250,
+                type: 'POST',
+                dataType: 'json',
+                data: function (params) {
+                    return {
+                        action: action,
+                        keyword: params.term,
+                        page: params.page || 1,
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+
+                    return {
+                        results: data.items,
+                        pagination: {
+                            more: (params.page * 10) < data.total,
+                        },
+                    };
+                },
+                cache: true,
+            },
+            language: {
+                errorLoading: function () {
+                    return wc_kledo_invoice.i18n.error_loading;
+                },
+                loadingMore: function () {
+                    return wc_kledo_invoice.i18n.loading_more;
+                },
+                noResults: function () {
+                    return wc_kledo_invoice.i18n.no_result;
+                },
+                searching: function () {
+                    return wc_kledo_invoice.i18n.searching;
+                },
+                search: function () {
+                    return wc_kledo_invoice.i18n.search;
+                },
+            },
+        });
+    }
 });
