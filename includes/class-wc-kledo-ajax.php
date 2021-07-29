@@ -13,6 +13,9 @@ class WC_Kledo_Ajax {
 	public static function init() {
 		// Get payment account via ajax.
 		add_action( 'wp_ajax_wc_kledo_payment_account', array( __CLASS__, 'get_payment_account' ) );
+
+		// Get warehouse via ajax.
+		add_action( 'wp_ajax_wc_kledo_warehouse', array( __CLASS__, 'get_warehouse' ) );
 	}
 
 	/**
@@ -50,6 +53,36 @@ class WC_Kledo_Ajax {
 				'page'     => $response['data']['current_page'],
 				'per_page' => $response['data']['per_page'],
 				'total'    => $response['data']['total'],
+			)
+		);
+	}
+
+	/**
+	 * Get the warehouse.
+	 *
+	 * @return void
+	 * @throws \Exception
+	 * @since 2.0.0
+	 */
+	public static function get_warehouse() {
+		$request = new WC_Kledo_Request_Warehouse();
+
+		$response = $request->get_warehouse();
+
+		$items = array();
+
+		foreach ( $response['data']['data'] as $item ) {
+			$name = $item['name'];
+
+			$items[] = array(
+				'id'   => $name,
+				'text' => $name,
+			);
+		}
+
+		wp_send_json(
+			array(
+				'items' => $items,
 			)
 		);
 	}
