@@ -42,8 +42,6 @@ class WC_Kledo_Autoloader {
 
 		if ( 0 === strpos( $class, 'wc_kledo_admin' ) ) {
 			$path = $this->path . 'admin/';
-		} elseif ( 0 === strpos( $class, 'wc_kledo_manage' ) ) {
-			$path = $this->path . 'manager/';
 		} elseif ( 0 === strpos( $class, 'wc_kledo_request' ) ) {
 			$path = $this->path . 'requests/';
 		} elseif ( preg_match( '~wc_kledo_.*_screen~', $class ) ) {

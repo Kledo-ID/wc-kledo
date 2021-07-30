@@ -104,9 +104,6 @@ final class WC_Kledo {
 		// Function helpers.
 		require_once( WC_KLEDO_ABSPATH . 'includes/helpers.php' );
 
-		// Interface classes.
-		require_once( WC_KLEDO_ABSPATH . 'includes/interfaces/class-wc-kledo-request.php' );
-
 		// Abstract classes.
         require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-settings-screen.php' );
         require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-request.php' );
@@ -117,12 +114,6 @@ final class WC_Kledo {
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-message-handler.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-notice-handler.php' );
         require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-issuing-token.php' );
-
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-product-category.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-product.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-contact.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-invoice.php' );
-
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-woocommerce.php' );
 
         // Exception handler.

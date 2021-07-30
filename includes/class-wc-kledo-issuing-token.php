@@ -135,10 +135,6 @@ class WC_Kledo_Issuing_Token {
 				'notice_class' => 'notice-success',
 			)
 		);
-
-		if ( ! wc_kledo_product_category()->get_option() ) {
-			wc_kledo_product_category()->create_default_category();
-		}
 	}
 
 	/**
