@@ -28,7 +28,7 @@ class WC_Kledo_WooCommerce {
 			return;
 		}
 
-		add_action( 'woocommerce_order_status_completed', array( $this, 'send_invoice' ) );
+		add_action( 'woocommerce_order_status_completed', array( $this, 'create_invoice' ) );
 	}
 
 	/**
@@ -38,9 +38,11 @@ class WC_Kledo_WooCommerce {
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	public function send_invoice( $order_id ) {
+	public function create_invoice( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		wc_kledo_invoice()->create_invoice( $order );
+		$request = new WC_Kledo_Request_Invoice();
+
+		$request->create_invoice( $order );
 	}
 }
