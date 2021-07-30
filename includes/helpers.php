@@ -195,3 +195,16 @@ if ( ! function_exists( 'wc_kledo_get_warehouse' ) ) {
 		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME );
 	}
 }
+
+if ( ! function_exists( 'wc_kledo_paid_status' ) ) {
+	/**
+	 * Get the paid status.
+	 *
+	 * @return string
+	 */
+	function wc_kledo_paid_status() {
+		$status = get_option( WC_Kledo_Invoice_Screen::INVOICE_STATUS_OPTION_NAME );
+
+		return 'paid' === strtolower( $status ) ? 'yes' : 'no';
+	}
+}
