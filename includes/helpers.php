@@ -173,3 +173,14 @@ if ( ! function_exists( 'wc_kledo_invoice' ) ) {
 		return $invoice;
 	}
 }
+
+if ( ! function_exists( 'wc_kledo_get_invoice_prefix' ) ) {
+	/**
+	 * Get the invoice prefix.
+	 *
+	 * @return string
+	 */
+	function wc_kledo_get_invoice_prefix() {
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME );
+	}
+}
