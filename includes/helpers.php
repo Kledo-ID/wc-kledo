@@ -184,3 +184,14 @@ if ( ! function_exists( 'wc_kledo_get_invoice_prefix' ) ) {
 		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME );
 	}
 }
+
+if ( ! function_exists( 'wc_kledo_get_warehouse' ) ) {
+	/**
+	 * Get the warehouse.
+	 *
+	 * @return string
+	 */
+	function wc_kledo_get_warehouse() {
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME );
+	}
+}
