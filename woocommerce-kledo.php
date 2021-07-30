@@ -220,6 +220,7 @@ class WC_Kledo_Loader {
 	 * @param  string|bool  $value  Constant value.
 	 *
 	 * @return void
+	 * @since 1.0.0
 	 */
 	private function define( $name, $value ) {
 		if ( ! defined( $name ) ) {
@@ -357,6 +358,7 @@ class WC_Kledo_Loader {
 	 *
 	 * @return void
 	 * @since 1.0.0
+	 *
 	 * @noinspection PhpSameParameterValueInspection
 	 */
 	private function add_admin_notice( $slug, $class, $message ) {

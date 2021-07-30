@@ -107,6 +107,7 @@ if ( ! function_exists( 'wc_kledo_get_invoice_prefix' ) ) {
 	 * Get the invoice prefix.
 	 *
 	 * @return string
+	 * @since 1.0.0
 	 */
 	function wc_kledo_get_invoice_prefix() {
 		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME );
@@ -118,6 +119,7 @@ if ( ! function_exists( 'wc_kledo_get_warehouse' ) ) {
 	 * Get the warehouse.
 	 *
 	 * @return string
+	 * @since 1.0.0
 	 */
 	function wc_kledo_get_warehouse() {
 		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME );
@@ -129,6 +131,7 @@ if ( ! function_exists( 'wc_kledo_paid_status' ) ) {
 	 * Get the paid status.
 	 *
 	 * @return string
+	 * @since 1.0.0
 	 */
 	function wc_kledo_paid_status() {
 		$status = get_option( WC_Kledo_Invoice_Screen::INVOICE_STATUS_OPTION_NAME );
@@ -142,6 +145,7 @@ if ( ! function_exists( 'wc_kledo_get_payment_account' ) ) {
 	 * Get the payment account.
 	 *
 	 * @return string
+	 * @since 1.0.0
 	 */
 	function wc_kledo_get_payment_account() {
 		$account = get_option( WC_Kledo_Invoice_Screen::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME );
@@ -160,6 +164,7 @@ if ( ! function_exists( 'wc_kledo_get_tags' ) ) {
 	 * Get the invoice tags.
 	 *
 	 * @return array
+	 * @since 1.0.0
 	 */
 	function wc_kledo_get_tags() {
 		$tags = get_option( WC_Kledo_Invoice_Screen::INVOICE_TAG_OPTION_NAME );

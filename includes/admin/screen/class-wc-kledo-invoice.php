@@ -8,6 +8,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * The screen id.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const ID = 'invoice';
 
@@ -15,6 +16,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * The invoice prefix option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const INVOICE_PREFIX_OPTION_NAME = 'wc_kledo_invoice_prefix';
 
@@ -22,6 +24,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * The invoice status option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const INVOICE_STATUS_OPTION_NAME = 'wc_kledo_invoice_status';
 
@@ -29,6 +32,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * The invoice payment account code option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const INVOICE_PAYMENT_ACCOUNT_OPTION_NAME = 'wc_kledo_invoice_payment_account';
 
@@ -36,6 +40,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * The invoice payment warehouse option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const INVOICE_WAREHOUSE_OPTION_NAME = 'wc_kledo_warehouse';
 
@@ -43,6 +48,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * The invoice payment tag option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const INVOICE_TAG_OPTION_NAME = 'wc_kledo_tags';
 
@@ -50,7 +56,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * The class constructor.
 	 *
 	 * @return void
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public function __construct() {
 		$this->id    = self::ID;
@@ -69,20 +75,19 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @param  array  $field  field data
 	 *
 	 * @return void
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public function render_payment_account_field( $field ) {
 		$payment_account = get_option( self::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME );
 
 		?>
 
-		<tr valign="top">
+		<tr>
 			<th scope="row" class="titledesc">
 				<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['title'] ); ?></label>
 			</th>
 
-			<td class="forminp forminp-<?php
-			echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
+			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
 				<select name="<?php echo esc_attr( $field['id'] ); ?>" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>">
 					<?php if ( $payment_account ): ?>
 						<option value="<?php echo $payment_account; ?>" selected="selected"><?php echo $payment_account; ?></option>
@@ -100,20 +105,19 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @param  array  $field  field data
 	 *
 	 * @return void
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public function render_warehouse_field( $field ) {
 		$warehouse = get_option( self::INVOICE_WAREHOUSE_OPTION_NAME );
 
 		?>
 
-		<tr valign="top">
+		<tr>
 			<th scope="row" class="titledesc">
 				<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['title'] ); ?></label>
 			</th>
 
-			<td class="forminp forminp-<?php
-			echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
+			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
 				<select name="<?php echo esc_attr( $field['id'] ); ?>" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>">
 					<?php if ( $warehouse ): ?>
 						<option value="<?php echo $warehouse; ?>" selected="selected"><?php echo $warehouse; ?></option>
@@ -129,7 +133,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * Gets the screen settings.
 	 *
 	 * @return array
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public function get_settings() {
 		return array(
@@ -159,17 +163,17 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 			),
 
 			array(
-				'id'      => self::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME,
-				'title'   => __( 'Payment Account', WC_KLEDO_TEXT_DOMAIN ),
-				'type'    => 'payment_account',
-				'class'   => 'invoice-field payment-account-field',
+				'id'    => self::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME,
+				'title' => __( 'Payment Account', WC_KLEDO_TEXT_DOMAIN ),
+				'type'  => 'payment_account',
+				'class' => 'invoice-field payment-account-field',
 			),
 
 			array(
-				'id'      => self::INVOICE_WAREHOUSE_OPTION_NAME,
-				'title'   => __( 'Warehouse', WC_KLEDO_TEXT_DOMAIN ),
-				'type'    => 'warehouse',
-				'class'   => 'invoice-field warehouse-field',
+				'id'    => self::INVOICE_WAREHOUSE_OPTION_NAME,
+				'title' => __( 'Warehouse', WC_KLEDO_TEXT_DOMAIN ),
+				'type'  => 'warehouse',
+				'class' => 'invoice-field warehouse-field',
 			),
 
 			array(
@@ -190,7 +194,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * Enqueues the assets.
 	 *
 	 * @return void
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public function enqueue_assets() {
 		if ( ! $this->is_current_screen_page() ) {
@@ -209,7 +213,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 			'wc_kledo_invoice',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'i18n' => array(
+				'i18n'     => array(
 					'payment_account_placeholder' => esc_html__( 'Select Account', WC_KLEDO_TEXT_DOMAIN ),
 
 					'error_loading' => esc_html__( 'The results could not be loaded.', WC_KLEDO_TEXT_DOMAIN ),

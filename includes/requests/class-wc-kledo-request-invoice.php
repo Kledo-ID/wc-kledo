@@ -29,20 +29,20 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	public function create_invoice( WC_Order $order ) {
 		$this->set_method( 'POST' );
 		$this->set_body( array(
-			'contact_name'               => $this->get_customer_name( $order ),
-			'contact_email'              => $order->get_billing_email(),
-			'contact_address'            => $order->get_billing_address_1(),
-			'contact_phone'              => $order->get_billing_phone(),
-			'ref_number_prefix'          => wc_kledo_get_invoice_prefix(),
-			'ref_number'                 => $order->get_id(),
-			'trans_date'                 => $order->get_date_created()->format('Y-m-d'),
-			'due_date'                   => $order->get_date_completed()->format( 'Y-m-d' ),
-			'memo'                       => $order->get_customer_note(),
-			'items'                      => $this->get_items( $order ),
-			'warehouse'                  => wc_kledo_get_warehouse(),
-			'paid'                       => wc_kledo_paid_status(),
-			'paid_to_account_code'       => wc_kledo_get_payment_account(),
-			'tags'                       => wc_kledo_get_tags(),
+			'contact_name'         => $this->get_customer_name( $order ),
+			'contact_email'        => $order->get_billing_email(),
+			'contact_address'      => $order->get_billing_address_1(),
+			'contact_phone'        => $order->get_billing_phone(),
+			'ref_number_prefix'    => wc_kledo_get_invoice_prefix(),
+			'ref_number'           => $order->get_id(),
+			'trans_date'           => $order->get_date_created()->format( 'Y-m-d' ),
+			'due_date'             => $order->get_date_completed()->format( 'Y-m-d' ),
+			'memo'                 => $order->get_customer_note(),
+			'items'                => $this->get_items( $order ),
+			'warehouse'            => wc_kledo_get_warehouse(),
+			'paid'                 => wc_kledo_paid_status(),
+			'paid_to_account_code' => wc_kledo_get_payment_account(),
+			'tags'                 => wc_kledo_get_tags(),
 		) );
 
 		$this->do_request();
@@ -62,6 +62,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	 * @param  \WC_Order  $order
 	 *
 	 * @return string
+	 * @since 1.0.0
 	 */
 	public function get_customer_name( WC_Order $order ) {
 		return trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );

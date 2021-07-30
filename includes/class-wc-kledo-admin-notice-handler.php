@@ -8,6 +8,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * The plugin instance.
 	 *
 	 * @var \WC_Kledo
+	 * @since 1.0.0
 	 */
 	private $plugin;
 
@@ -15,6 +16,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Associative array of id to notice text.
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
 	private $admin_notices = array();
 
@@ -22,6 +24,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Static member to enforce a single rendering of the admin notice placeholder element.
 	 *
 	 * @var bool
+	 * @since 1.0.0
 	 */
 	static private $admin_notice_placeholder_rendered = false;
 
@@ -29,6 +32,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Static member to enforce a single rendering of the admin notice javascript.
 	 *
 	 * @var bool
+	 * @since 1.0.0
 	 */
 	static private $admin_notice_js_rendered = false;
 
@@ -67,10 +71,10 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @param  array|object  $params  {
 	 *      Optional parameters.
 	 *
-	 * @type bool $dismissible If the notice should be dismissible
-	 * @type bool $always_show_on_settings If the notice should be forced to display on the
+	 *      @type bool $dismissible If the notice should be dismissible
+	 *      @type bool $always_show_on_settings If the notice should be forced to display on the
 	 *                                          plugin settings page, regardless of `$dismissible`.
-	 * @type string $notice_class Additional classes for the notice.
+	 *      @type string $notice_class Additional classes for the notice.
 	 * }
 	 *
 	 * @return void
@@ -100,8 +104,8 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @param  array|object  $params  {
 	 *      Optional parameters.
 	 *
-	 * @type bool $dismissible If the notice should be dismissible
-	 * @type bool $always_show_on_settings If the notice should be forced to display on the
+	 *      @type bool $dismissible If the notice should be dismissible
+	 *      @type bool $always_show_on_settings If the notice should be forced to display on the
 	 *                                          plugin settings page, regardless of `$dismissible`.
 	 * }
 	 *
@@ -180,11 +184,11 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @param  array|object  $params  {
 	 *      Optional parameters.
 	 *
-	 * @type bool $dismissible If the notice should be dismissible
-	 * @type bool $is_visible If the notice should be immediately visible
-	 * @type bool $always_show_on_settings If the notice should be forced to display on the
+	 *      @type bool $dismissible If the notice should be dismissible
+	 *      @type bool $is_visible If the notice should be immediately visible
+	 *      @type bool $always_show_on_settings If the notice should be forced to display on the
 	 *                                          plugin settings page, regardless of `$dismissible`.
-	 * @type string $notice_class Additional classes for the notice.
+	 *      @type string $notice_class Additional classes for the notice.
 	 * }
 	 *
 	 * @return void
@@ -243,42 +247,38 @@ class WC_Kledo_Admin_Notice_Handler {
 		?>
 
 		// Log dismissed notices.
-		$('.js-wc-kledo-admin-notice')
-		.on('click.wp-dismiss-notice', '.notice-dismiss', function(e) {
-		var $notice = $(this).closest('.js-wc-kledo-admin-notice');
+		$('.js-wc-kledo-admin-notice').on('click.wp-dismiss-notice', '.notice-dismiss', function(e) {
+			var $notice = $(this).closest('.js-wc-kledo-admin-notice');
 
-		log_dismissed_notice(
-		$($notice).data('plugin-id'),
-		$($notice).data('message-id')
-		);
-		} );
+			log_dismissed_notice(
+				$($notice).data('plugin-id'),
+				$($notice).data('message-id')
+			);
+		});
 
 		// Log and hide legacy notices.
 		$('a.js-wc-kledo-plugin-framework-notice-dismiss').click(function(e) {
-		e.preventDefault();
+			e.preventDefault();
 
-		var $notice = $(this).closest('.js-wc-kledo-admin-notice');
+			var $notice = $(this).closest('.js-wc-kledo-admin-notice');
 
-		log_dismissed_notice(
-		$($notice).data('plugin-id'),
-		$($notice).data('message-id')
-		);
+			log_dismissed_notice(
+				$($notice).data('plugin-id'),
+				$($notice).data('message-id')
+			);
 
-		$($notice).fadeOut();
+			$($notice).fadeOut();
 		});
 
 		function log_dismissed_notice(pluginID, messageID) {
-		$.get(ajaxurl, {
-		action: pluginID + '_dismiss_notice',
-		messageid: messageID
-		});
+			$.get(ajaxurl, {
+				action: pluginID + '_dismiss_notice',
+				messageid: messageID
+			});
 		}
 
 		// Move any delayed notices up into position .show();
-		$('.js-wc-kledo-admin-notice:hidden')
-		.insertAfter('.js-wc-kledo-<?php
-		echo esc_js( $plugin_slug ); ?>-admin-notice-placeholder')
-		.show();
+		$('.js-wc-kledo-admin-notice:hidden').insertAfter('.js-wc-kledo-<?php echo esc_js( $plugin_slug ); ?>-admin-notice-placeholder').show();
 
 		<?php
 

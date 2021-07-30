@@ -1,5 +1,6 @@
 <?php
 
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 class WC_Kledo_Autoloader {
@@ -7,6 +8,7 @@ class WC_Kledo_Autoloader {
 	 * The plugin includes directory path.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $path;
 
@@ -60,6 +62,7 @@ class WC_Kledo_Autoloader {
 	 * @param  string  $class  Class name.
 	 *
 	 * @return string
+	 * @since 1.0.0
 	 */
 	private function get_file_name_from_class( $class ) {
 		return 'class-' . str_replace( '_', '-', $class ) . '.php';
@@ -71,6 +74,7 @@ class WC_Kledo_Autoloader {
 	 * @param  string  $path  File path.
 	 *
 	 * @return bool Successful or not.
+	 * @since 1.0.0
 	 */
 	private function load_file( $path ) {
 		if ( $path && is_readable( $path ) ) {

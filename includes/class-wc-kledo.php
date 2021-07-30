@@ -24,13 +24,15 @@ final class WC_Kledo {
 	 * The admin notice instance.
 	 *
 	 * @var \WC_Kledo_Admin_Notice_Handler
+	 * @since 1.0.0
 	 */
 	private $admin_notice_handler;
 
 	/**
 	 * The message instance.
 	 *
-	 * @var  \WC_Kledo_Admin_Message_Handler
+	 * @var \WC_Kledo_Admin_Message_Handler
+	 * @since 1.0.0
 	 */
 	private $message_handler;
 
@@ -38,6 +40,7 @@ final class WC_Kledo {
 	 * The API connection instance.
 	 *
 	 * @var \WC_Kledo_Connection
+	 * @since 1.0.0
 	 */
 	private $connection_handler;
 
@@ -45,6 +48,7 @@ final class WC_Kledo {
 	 * The admin settings instance.
 	 *
 	 * @var \WC_Kledo_Admin
+	 * @since 1.0.0
 	 */
 	private $admin_settings;
 
@@ -81,11 +85,11 @@ final class WC_Kledo {
 	 * Setup the autoloader class.
 	 *
 	 * @return void
-	 * @since  1.0.0
+	 * @since 1.0.0
 	 */
 	private function setup_autoloader() {
-	    // Class autoloader.
-        require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-autoloader.php';
+		// Class autoloader.
+		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-autoloader.php';
 
 		// Create autoloader instance.
 		$autoloader = new WC_Kledo_Autoloader( WC_KLEDO_ABSPATH . 'includes/' );
@@ -96,29 +100,29 @@ final class WC_Kledo {
 
 	/**
 	 * Include required core files.
-     *
-     * @return void
-     * @since 1.0.0
+	 *
+	 * @return void
+	 * @since 1.0.0
 	 */
 	private function includes() {
 		// Function helpers.
 		require_once( WC_KLEDO_ABSPATH . 'includes/helpers.php' );
 
 		// Abstract classes.
-        require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-settings-screen.php' );
-        require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-request.php' );
+		require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-settings-screen.php' );
+		require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-request.php' );
 
-        // Core classes.
+		// Core classes.
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-translation.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-ajax.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-message-handler.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-notice-handler.php' );
-        require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-issuing-token.php' );
+		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-issuing-token.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-woocommerce.php' );
 
-        // Exception handler.
+		// Exception handler.
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-exception.php' );
-    }
+	}
 
 	/**
 	 * Initializes the plugin.
@@ -126,25 +130,25 @@ final class WC_Kledo {
 	 * @return void
 	 * @since 1.0.0
 	 */
-    private function init() {
-    	// Build the admin message handler instance.
-	    $this->message_handler = new WC_Kledo_Admin_Message_Handler( $this->get_id() );
+	private function init() {
+		// Build the admin message handler instance.
+		$this->message_handler = new WC_Kledo_Admin_Message_Handler( $this->get_id() );
 
-    	// Build the admin notice handler instance.
+		// Build the admin notice handler instance.
 		$this->admin_notice_handler = new WC_Kledo_Admin_Notice_Handler( $this );
 
 		// Build the connection handler instance.
-	    $this->connection_handler = new WC_Kledo_Connection();
+		$this->connection_handler = new WC_Kledo_Connection();
 
 		if ( is_admin() ) {
 			// Build the admin settings instance.
 			$this->admin_settings = new WC_Kledo_Admin();
 		}
 
-		// Setup WooCommerce
+		// Setup WooCommerce.
 		$wc = new WC_Kledo_WooCommerce();
 		$wc->setup_hooks();
-    }
+	}
 
 	/**
 	 * Adds the action & filter hooks.
@@ -237,7 +241,7 @@ final class WC_Kledo {
 		return $this->connection_handler;
 	}
 
-    /**
+	/**
 	 * Return the plugin id.
 	 *
 	 * @return string
@@ -288,11 +292,11 @@ final class WC_Kledo {
 		return $this->plugin_url() . '/assets';
 	}
 
-    /**
+	/**
 	 * Gets the plugin's URL without a trailing slash.
 	 *
 	 * @return string
-     * @since 1.0.0
+	 * @since 1.0.0
 	 */
 	public function plugin_url() {
 		return untrailingslashit( plugins_url( '/', WC_KLEDO_PLUGIN_FILE ) );

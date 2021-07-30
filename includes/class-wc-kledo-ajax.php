@@ -8,7 +8,7 @@ class WC_Kledo_Ajax {
 	 * Hook in ajax handlers.
 	 *
 	 * @return void
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public static function init() {
 		// Get payment account via ajax.
@@ -23,7 +23,7 @@ class WC_Kledo_Ajax {
 	 *
 	 * @return void
 	 * @throws \Exception
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public static function get_payment_account() {
 		$request = new WC_Kledo_Request_Account();
@@ -62,7 +62,7 @@ class WC_Kledo_Ajax {
 	 *
 	 * @return void
 	 * @throws \Exception
-	 * @since 2.0.0
+	 * @since 1.0.0
 	 */
 	public static function get_warehouse() {
 		$request = new WC_Kledo_Request_Warehouse();

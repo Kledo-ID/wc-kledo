@@ -15,11 +15,12 @@ class WC_Kledo_WooCommerce {
 	}
 
 	/**
-	 * Setup the hooks.
+	 * Set up the hooks.
 	 *
 	 * If API connection disabled return early.
 	 *
 	 * @return void
+	 * @since 1.0.0
 	 */
 	public function setup_hooks() {
 		$is_enable = wc_string_to_bool( get_option( WC_Kledo_Configure_Screen::SETTING_ENABLE_API_CONNECTION ) );

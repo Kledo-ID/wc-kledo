@@ -11,13 +11,15 @@ class WC_Kledo_Admin {
 	 * The base page settings id.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const PAGE_ID = 'wc-kledo';
 
 	/**
-     * The settings screen array.
-     *
+	 * The settings screen array.
+	 *
 	 * @var \WC_Kledo_Settings_Screen[]
+	 * @since 1.0.0
 	 */
 	private $screens;
 
@@ -25,6 +27,7 @@ class WC_Kledo_Admin {
 	 * Whether the new Woo nav should be used.
 	 *
 	 * @var bool
+	 * @since 1.0.0
 	 */
 	public $use_woo_nav;
 
@@ -32,6 +35,7 @@ class WC_Kledo_Admin {
 	 * Settings constructor.
 	 *
 	 * @return void
+	 * @since 1.0.0
 	 */
 	public function __construct() {
 		$this->screens = array(
@@ -40,34 +44,34 @@ class WC_Kledo_Admin {
 			WC_Kledo_Support_Screen::ID   => new WC_Kledo_Support_Screen(),
 		);
 
-        $this->init_hooks();
+		$this->init_hooks();
 
 		$this->use_woo_nav = class_exists( WooAdminFeatures::class ) && class_exists( WooAdminMenu::class ) && WooAdminFeatures::is_enabled( 'navigation' );
 	}
 
 	/**
 	 * Init hooks.
-     *
-     * @return void
-     * @since 1.0.0
+	 *
+	 * @return void
+	 * @since 1.0.0
 	 */
 	private function init_hooks() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 
-        add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
+		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
 
 		add_action( 'wp_loaded', array( $this, 'save' ) );
-    }
+	}
 
 	/**
 	 * Enqueue styles.
 	 *
-     * @return void
+	 * @return void
 	 * @since 1.0.0
 	 */
 	public function enqueue_styles() {
 		if ( wc_kledo()->is_plugin_settings() ) {
-		    $version = WC_KLEDO_VERSION;
+			$version = WC_KLEDO_VERSION;
 
 			wp_enqueue_style(
 				'wc_kledo_admin_style',
@@ -90,8 +94,9 @@ class WC_Kledo_Admin {
 	/**
 	 * Saves the settings page.
 	 *
-     * @return void
+	 * @return void
 	 * @since 1.0.0
+	 *
 	 * @noinspection ForgottenDebugOutputInspection
 	 */
 	public function save() {
@@ -152,7 +157,7 @@ class WC_Kledo_Admin {
 	 * Gets the available screens.
 	 *
 	 * @return \WC_Kledo_Settings_Screen[]
-     * @since 1.0.0
+	 * @since 1.0.0
 	 */
 	public function get_screens() {
 		/**
@@ -176,6 +181,7 @@ class WC_Kledo_Admin {
 	/**
 	 * Renders the settings page.
 	 *
+	 * @return void
 	 * @since 1.0.0
 	 */
 	public function render() {
@@ -190,32 +196,32 @@ class WC_Kledo_Admin {
 
 		?>
 
-        <div class="wrap woocommerce">
+		<div class="wrap woocommerce">
 			<?php if ( ! $this->use_woo_nav ) : ?>
-                <nav class="nav-tab-wrapper woo-nav-tab-wrapper">
-                    <?php foreach ( $tabs as $id => $label ) : ?>
-                        <a href="<?php echo esc_html( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . esc_attr( $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>">
-                            <?php echo esc_html( $label ); ?>
-                        </a>
-                    <?php endforeach; ?>
-                </nav>
+				<nav class="nav-tab-wrapper woo-nav-tab-wrapper">
+					<?php foreach ( $tabs as $id => $label ) : ?>
+						<a href="<?php echo esc_html( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . esc_attr( $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>">
+							<?php echo esc_html( $label ); ?>
+						</a>
+					<?php endforeach; ?>
+				</nav>
 			<?php endif; ?>
 
 			<?php wc_kledo()->get_message_handler()->show_messages(); ?>
 
 			<?php if ( $screen ) : ?>
-                <h1 class="screen-reader-text">
-                    <?php echo esc_html( $screen->get_title() ); ?>
-                </h1>
+				<h1 class="screen-reader-text">
+					<?php echo esc_html( $screen->get_title() ); ?>
+				</h1>
 
-                <p>
-                    <?php echo wp_kses_post( $screen->get_description() ); ?>
-                </p>
+				<p>
+					<?php echo wp_kses_post( $screen->get_description() ); ?>
+				</p>
 
 				<?php $screen->render(); ?>
 
 			<?php endif; ?>
-        </div>
+		</div>
 
 		<?php
 	}
