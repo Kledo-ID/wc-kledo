@@ -226,3 +226,16 @@ if ( ! function_exists( 'wc_kledo_get_payment_account' ) ) {
 		return $account[0];
 	}
 }
+
+if ( ! function_exists( 'wc_kledo_get_tags' ) ) {
+	/**
+	 * Get the invoice tags.
+	 *
+	 * @return array
+	 */
+	function wc_kledo_get_tags() {
+		$tags = get_option( WC_Kledo_Invoice_Screen::INVOICE_TAG_OPTION_NAME );
+
+		return explode( ',', $tags );
+	}
+}
