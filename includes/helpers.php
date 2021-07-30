@@ -208,3 +208,21 @@ if ( ! function_exists( 'wc_kledo_paid_status' ) ) {
 		return 'paid' === strtolower( $status ) ? 'yes' : 'no';
 	}
 }
+
+if ( ! function_exists( 'wc_kledo_get_payment_account' ) ) {
+	/**
+	 * Get the payment account.
+	 *
+	 * @return string
+	 */
+	function wc_kledo_get_payment_account() {
+		$account = get_option( WC_Kledo_Invoice_Screen::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME );
+
+		if ( $account ) {
+			$account = explode( '|', $account );
+			$account = array_map( 'trim', $account );
+		}
+
+		return $account[0];
+	}
+}
