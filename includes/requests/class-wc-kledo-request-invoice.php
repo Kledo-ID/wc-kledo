@@ -92,6 +92,8 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 				'qty'           => $item->get_quantity(),
 				'regular_price' => $product->get_regular_price(),
 				'sale_price'    => $product->get_sale_price(),
+				'photo'         => wp_get_attachment_url( $product->get_image_id() ) ?: null,
+				'category_name' => 'WooCommerce',
 			);
 		}
 
