@@ -40,6 +40,13 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	const INVOICE_WAREHOUSE_OPTION_NAME = 'wc_kledo_warehouse';
 
 	/**
+	 * The invoice payment tag option name.
+	 *
+	 * @var string
+	 */
+	const INVOICE_TAG_OPTION_NAME = 'wc_kledo_tags';
+
+	/**
 	 * The class constructor.
 	 *
 	 * @return void
@@ -163,6 +170,14 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'title'   => __( 'Warehouse', WC_KLEDO_TEXT_DOMAIN ),
 				'type'    => 'warehouse',
 				'class'   => 'invoice-field warehouse-field',
+			),
+
+			array(
+				'id'      => self::INVOICE_TAG_OPTION_NAME,
+				'title'   => __( 'Tags', WC_KLEDO_TEXT_DOMAIN ),
+				'type'    => 'text',
+				'class'   => 'invoice-field',
+				'default' => 'WooCommerce',
 			),
 
 			array(
