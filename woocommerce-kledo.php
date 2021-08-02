@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WooCommerce Kledo
  * Plugin URI: https://kledo.com
- * Description: Grow your business with <a href="https://kledo.com/" target="_blank" >Kledo</a>! Use this official plugin to help sell more of your products using <a href="https://woocommerce.com/" target="_blank" >WooCommerce</a>.
+ * Description: Integrates <a href="https://woocommerce.com/" target="_blank" >WooCommerce</a> with the <a href="https://kledo.com" target="_blank">Kledo</a> accounting software.
  * Author: Kledo
  * Author URI: https://kledo.com
  * Version: 1.0.0
