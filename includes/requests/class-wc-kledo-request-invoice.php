@@ -14,31 +14,35 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 		parent::__construct();
 
 		// Set API endpoint.
-		$this->set_endpoint( 'finance/invoices' );
+		$this->set_endpoint( 'woocommerce/invoice' );
 	}
 
 	/**
 	 * Create new product.
 	 *
 	 * @param  \WC_Order  $order
-	 * @param  array  $items
 	 *
-	 * @return bool|\WC_Kledo_Invoice
+	 * @return bool|array
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	public function create_invoice( WC_Order $order, $items ) {
+	public function create_invoice( WC_Order $order ) {
 		$this->set_method( 'POST' );
 		$this->set_body( array(
-			'trans_date'                 => $order->get_date_created()->format( 'Y-m-d' ),
-			'due_date'                   => $order->get_date_completed()->format( 'Y-m-d' ),
-			'contact_id'                 => wc_kledo_contact()->get_contact_id( $order ),
-			'include_tax'                => 0,
-			'ref_number'                 => 'WC/' . $order->get_id(),
-			'memo'                       => $order->get_customer_note(),
-			'status_id'                  => 3,
-			'additional_discount_amount' => $order->get_discount_total(),
-			'items'                      => $items,
+			'contact_name'         => $this->get_customer_name( $order ),
+			'contact_email'        => $order->get_billing_email(),
+			'contact_address'      => $order->get_billing_address_1(),
+			'contact_phone'        => $order->get_billing_phone(),
+			'ref_number_prefix'    => wc_kledo_get_invoice_prefix(),
+			'ref_number'           => $order->get_id(),
+			'trans_date'           => $order->get_date_created()->format( 'Y-m-d' ),
+			'due_date'             => $order->get_date_completed()->format( 'Y-m-d' ),
+			'memo'                 => $order->get_customer_note(),
+			'items'                => $this->get_items( $order ),
+			'warehouse'            => wc_kledo_get_warehouse(),
+			'paid'                 => wc_kledo_paid_status(),
+			'paid_to_account_code' => wc_kledo_get_payment_account(),
+			'tags'                 => wc_kledo_get_tags(),
 		) );
 
 		$this->do_request();
@@ -49,29 +53,51 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 			return false;
 		}
 
-		return $this->set_object(
-			$response['data']['id'],
-			$response['data']['ref_number'],
-			$response['data']['trans_date']
-		);
+		return $response;
 	}
 
 	/**
-	 * Set the invoice object.
+	 * Get customer name.
 	 *
-	 * @param  int  $id
-	 * @param  string  $number
-	 * @param  string  $transaction_date
+	 * @param  \WC_Order  $order
 	 *
-	 * @return \WC_Kledo_Invoice
+	 * @return string
+	 * @since 1.0.0
 	 */
-	private function set_object( $id, $number, $transaction_date ) {
-		$invoice = new WC_Kledo_Invoice();
+	public function get_customer_name( WC_Order $order ) {
+		return trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+	}
 
-		$invoice->set_id( $id );
-		$invoice->set_number( $number );
-		$invoice->set_transaction_date( $transaction_date );
+	/**
+	 * Get the product items from order.
+	 *
+	 * @param  \WC_Order  $order
+	 *
+	 * @return array
+	 * @throws \Exception
+	 * @since 1.0.0
+	 *
+	 * @noinspection PhpPossiblePolymorphicInvocationInspection
+	 */
+	public function get_items( WC_Order $order ) {
+		$items = array();
 
-		return $invoice;
+		foreach ( $order->get_items() as $item ) {
+			/** @var \WC_Product $product */
+			$product = $item->get_product();
+
+			$items[] = array(
+				'name'          => $product->get_name(),
+				'code'          => $product->get_sku(),
+				'desc'          => $product->get_short_description(),
+				'qty'           => $item->get_quantity(),
+				'regular_price' => $product->get_regular_price(),
+				'sale_price'    => $product->get_sale_price(),
+				'photo'         => wp_get_attachment_url( $product->get_image_id() ) ?: null,
+				'category_name' => 'WooCommerce',
+			);
+		}
+
+		return $items;
 	}
 }

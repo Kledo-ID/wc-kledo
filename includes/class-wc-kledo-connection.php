@@ -8,6 +8,7 @@ class WC_Kledo_Connection {
 	 * The access token option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const OPTION_ACCESS_TOKEN = 'wc_kledo_access_token';
 
@@ -15,6 +16,7 @@ class WC_Kledo_Connection {
 	 * The refresh token option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const OPTION_REFRESH_TOKEN = 'wc_kledo_refresh_token';
 
@@ -22,6 +24,7 @@ class WC_Kledo_Connection {
 	 * The expires token option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const OPTION_EXPIRES_TOKEN = 'wc_kledo_expires_token';
 
@@ -29,6 +32,7 @@ class WC_Kledo_Connection {
 	 * The genrated random state transient option name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const OPTION_TRANSIENT_STATE = 'wc_kledo_random_state';
 
@@ -36,6 +40,7 @@ class WC_Kledo_Connection {
 	 * The kledo OAuth API endpoint.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $oauth_url;
 
@@ -43,6 +48,7 @@ class WC_Kledo_Connection {
 	 * The kledo OAuth Client ID.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $client_id;
 
@@ -50,6 +56,7 @@ class WC_Kledo_Connection {
 	 * The kledo OAuth Client Secret.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $client_secret;
 
@@ -145,7 +152,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function set_access_token($token) {
+	public function set_access_token( $token ) {
 		return update_option( self::OPTION_ACCESS_TOKEN, $token );
 	}
 
@@ -191,7 +198,7 @@ class WC_Kledo_Connection {
 				'client_secret' => $this->get_client_secret(),
 				'scope'         => '',
 			),
-		]);
+		] );
 
 		if ( is_wp_error( $request ) ) {
 			wc_kledo()->get_admin_notice_handler()->add_admin_notice(
@@ -234,7 +241,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function set_refresh_token($token) {
+	public function set_refresh_token( $token ) {
 		return update_option( self::OPTION_REFRESH_TOKEN, $token );
 	}
 
@@ -289,7 +296,7 @@ class WC_Kledo_Connection {
 			return __( 'Expired', WC_KLEDO_TEXT_DOMAIN );
 		}
 
-		$date = date_i18n( get_option('date_format'), $expires_in );
+		$date            = date_i18n( get_option( 'date_format' ), $expires_in );
 		$human_time_diff = human_time_diff( $time_now, $expires_in );
 
 		return $date . ' (' . $human_time_diff . ')';
@@ -328,12 +335,12 @@ class WC_Kledo_Connection {
 	 * @since 1.0.0
 	 */
 	public function get_redirect_uri() {
-		$page_id   = WC_Kledo_Admin::PAGE_ID;
+		$page_id = WC_Kledo_Admin::PAGE_ID;
 
-		$admin_url = add_query_arg([
-			'page' => $page_id,
+		$admin_url = add_query_arg( [
+			'page'   => $page_id,
 			'action' => 'callback',
-		], admin_url( 'admin.php'));
+		], admin_url( 'admin.php' ) );
 
 		// If the admin_url isn't returned correctly then use a fallback.
 		if ( $admin_url === '/wp-admin/admin.php?page=' . $page_id . '&action=callback' ) {
@@ -370,8 +377,8 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function converting_authorization_codes($code) {
-		if ( empty($code) ) {
+	public function converting_authorization_codes( $code ) {
+		if ( empty( $code ) ) {
 			return false;
 		}
 
@@ -421,7 +428,7 @@ class WC_Kledo_Connection {
 		$state = get_transient( self::OPTION_TRANSIENT_STATE );
 
 		if ( empty( $state ) ) {
-			$state = wp_generate_password(40, false);
+			$state = wp_generate_password( 40, false );
 
 			set_transient( self::OPTION_TRANSIENT_STATE, $state, MINUTE_IN_SECONDS * 5 );
 		}
@@ -440,19 +447,21 @@ class WC_Kledo_Connection {
 	 * Delete generated random state transient.
 	 *
 	 * @return bool
+	 * @since 1.0.0
 	 */
 	public function delete_state() {
-		return delete_transient(self::OPTION_TRANSIENT_STATE);
+		return delete_transient( self::OPTION_TRANSIENT_STATE );
 	}
 
 	/**
 	 * Disconnect the connection.
 	 *
 	 * @return bool
+	 * @since 1.0.0
 	 */
 	public function disconnect() {
 		return delete_option( self::OPTION_ACCESS_TOKEN )
-			&& delete_option( self::OPTION_REFRESH_TOKEN )
-			&& delete_option( self::OPTION_EXPIRES_TOKEN );
+		       && delete_option( self::OPTION_REFRESH_TOKEN )
+		       && delete_option( self::OPTION_EXPIRES_TOKEN );
 	}
 }

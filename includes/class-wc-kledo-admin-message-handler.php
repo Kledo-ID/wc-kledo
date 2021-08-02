@@ -8,6 +8,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * Transient message prefix.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const MESSAGE_TRANSIENT_PREFIX = '_wp_admin_message_';
 
@@ -15,6 +16,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * The message id GET name.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	const MESSAGE_ID_GET_NAME = 'wc_kledo';
 
@@ -22,6 +24,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * The unique message identifier.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $message_id;
 
@@ -29,6 +32,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * The array of messages.
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
 	private $messages = array();
 
@@ -36,6 +40,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * The array of error messages.
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
 	private $errors = array();
 
@@ -43,6 +48,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * The array of warning messages.
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
 	private $warnings = array();
 
@@ -50,6 +56,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * The array of info messages.
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
 	private $infos = array();
 

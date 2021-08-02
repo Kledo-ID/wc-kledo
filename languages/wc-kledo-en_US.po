@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Kledo\n"
-"POT-Creation-Date: 2021-07-14 08:45+0700\n"
-"PO-Revision-Date: 2021-07-14 08:45+0700\n"
+"POT-Creation-Date: 2021-08-02 10:45+0700\n"
+"PO-Revision-Date: 2021-08-02 10:45+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_US\n"
@@ -21,130 +21,188 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/abstracts/abstract-wc-kledo-request.php:69
+#: includes/abstracts/abstract-wc-kledo-request.php:75
 msgid "Can't do API request because the connection has not been made."
 msgstr ""
 
-#: includes/abstracts/abstract-wc-kledo-request.php:91
+#: includes/abstracts/abstract-wc-kledo-request.php:97
 msgid "There was a problem when connecting to the API."
 msgstr ""
 
-#: includes/abstracts/abstract-wc-kledo-settings-screen.php:73
+#: includes/abstracts/abstract-wc-kledo-settings-screen.php:78
 msgid "Save changes"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:113
+#: includes/admin/class-wc-kledo-admin.php:118
 msgid "You do not have permission to save these settings."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:122
+#: includes/admin/class-wc-kledo-admin.php:127
 msgid "Your settings have been saved."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:127
+#: includes/admin/class-wc-kledo-admin.php:132
 #, php-format
 msgid "Your settings could not be saved. %s"
 msgstr ""
 
 #. Author of the plugin/theme
-#: includes/admin/class-wc-kledo-admin.php:153
-#: includes/admin/class-wc-kledo-admin.php:154
+#: includes/admin/class-wc-kledo-admin.php:148
+#: includes/admin/class-wc-kledo-admin.php:149
 msgid "Kledo"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:50
-#: includes/admin/screen/class-wc-kledo-configure.php:51
-#: includes/admin/screen/class-wc-kledo-configure.php:216
+#: includes/admin/screen/class-wc-kledo-configure.php:55
+#: includes/admin/screen/class-wc-kledo-configure.php:56
+#: includes/admin/screen/class-wc-kledo-configure.php:218
 msgid "Configure"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:88
-#: includes/admin/screen/class-wc-kledo-configure.php:94
+#: includes/admin/screen/class-wc-kledo-configure.php:93
+#: includes/admin/screen/class-wc-kledo-configure.php:99
 msgid "Token Expires In"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:139
-#: includes/admin/screen/class-wc-kledo-configure.php:145
+#: includes/admin/screen/class-wc-kledo-configure.php:142
+#: includes/admin/screen/class-wc-kledo-configure.php:148
 msgid "Redirect URI"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:151
+#: includes/admin/screen/class-wc-kledo-configure.php:154
 msgid "The redirect URI that should enter when create new OAuth App."
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:175
-#: includes/admin/screen/class-wc-kledo-configure.php:181
+#: includes/admin/screen/class-wc-kledo-configure.php:178
+#: includes/admin/screen/class-wc-kledo-configure.php:184
 msgid "Manage Connection"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:186
+#: includes/admin/screen/class-wc-kledo-configure.php:189
 msgid ""
 "Please fill in the Client ID, Client Secret and API Endpoint fields first "
 "and save before continuing."
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:190
+#: includes/admin/screen/class-wc-kledo-configure.php:193
 msgid "Request Token"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:193
+#: includes/admin/screen/class-wc-kledo-configure.php:196
 msgid "Disconnect"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:195
+#: includes/admin/screen/class-wc-kledo-configure.php:198
 msgid "Refresh Token"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:221
+#: includes/admin/screen/class-wc-kledo-configure.php:223
 msgid "Enable Integration"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:229
+#: includes/admin/screen/class-wc-kledo-configure.php:231
 msgid "Client ID"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:235
+#: includes/admin/screen/class-wc-kledo-configure.php:237
 msgid "Client Secret"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:241
+#: includes/admin/screen/class-wc-kledo-configure.php:243
 msgid "API Endpoint"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-support.php:19
-#: includes/admin/screen/class-wc-kledo-support.php:20
+#: includes/admin/screen/class-wc-kledo-invoice.php:63
+#: includes/admin/screen/class-wc-kledo-invoice.php:64
+#: includes/admin/screen/class-wc-kledo-invoice.php:141
+msgid "Invoice"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:147
+msgid "Invoice Prefix"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:155
+msgid "Invoice Status on Created"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:160
+msgid "Paid"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:161
+msgid "Unpaid"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:167
+msgid "Payment Account"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:174
+msgid "Warehouse"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:181
+msgid "Tags"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:217
+msgid "Select Account"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:219
+msgid "The results could not be loaded."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:220
+msgid "Loading more results..."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:221
+msgid "No results found"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:222
+msgid "Searching..."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:223
+msgid "Search"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-support.php:23
+#: includes/admin/screen/class-wc-kledo-support.php:24
 msgid "Support"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-support.php:34
+#: includes/admin/screen/class-wc-kledo-support.php:39
 msgid "Need help?"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-support.php:40
+#: includes/admin/screen/class-wc-kledo-support.php:44
 msgid "Request Support"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-support.php:44
+#: includes/admin/screen/class-wc-kledo-support.php:47
 msgid ""
 "Still need help? Submit a message and one of our support experts will get "
 "back to you as soon as possible."
 msgstr ""
 
-#: includes/class-wc-kledo-connection.php:198
+#: includes/class-wc-kledo-connection.php:205
 msgid ""
 "There was a problem when refreshing the access token. Please disconnect and "
 "try to request new token."
 msgstr ""
 
-#: includes/class-wc-kledo-connection.php:285
+#: includes/class-wc-kledo-connection.php:292
 msgid "Does not expire"
 msgstr ""
 
-#: includes/class-wc-kledo-connection.php:289
+#: includes/class-wc-kledo-connection.php:296
 msgid "Expired"
 msgstr ""
 
-#: includes/class-wc-kledo-connection.php:392
+#: includes/class-wc-kledo-connection.php:399
 msgid ""
 "There was a problem when converting authorization code from the server. "
 "Please try again later."
@@ -158,34 +216,29 @@ msgstr ""
 msgid "Successfully connected to kledo app. "
 msgstr ""
 
-#: includes/class-wc-kledo-issuing-token.php:155
+#: includes/class-wc-kledo-issuing-token.php:151
 msgid "Successfully disconnect the connection."
 msgstr ""
 
-#: includes/class-wc-kledo-issuing-token.php:186
+#: includes/class-wc-kledo-issuing-token.php:182
 msgid "Successfully refresh the access token."
 msgstr ""
 
-#: includes/class-wc-kledo.php:180
+#: includes/class-wc-kledo.php:176
 #, php-format
 msgid ""
 "%1$sWooCommerce Kledo is almost ready.%2$s To complete your configuration, "
 "%3$scomplete the setup steps%4$s."
 msgstr ""
 
-#: includes/class-wc-kledo.php:204
-#, php-format
-msgid "Heads up! The Kledo menu is located under the %1$sMarketing%2$s menu."
-msgstr ""
-
-#: includes/class-wc-kledo.php:210
+#: includes/class-wc-kledo.php:197
 #, php-format
 msgid ""
-"For your convenience, the Kledo for WooCommerce settings are now located "
-"under %1$sWooCommerce > Kledo%2$s."
+"For your convenience, the Kledo for WooCommerce settings are located under "
+"%1$sWooCommerce > Kledo%2$s."
 msgstr ""
 
-#: woocommerce-kledo.php:295
+#: woocommerce-kledo.php:296
 #, php-format
 msgid "WooCommerce Kledo requires %s to be installed and active."
 msgstr ""
@@ -201,8 +254,7 @@ msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
-"Grow your business with <a href=\"https://kledo.com/\" target=\"_blank\" "
-">Kledo</a>! Use this official plugin to help sell more of your products "
-"using <a href=\"https://woocommerce.com/\" target=\"_blank\" >WooCommerce</"
-"a>."
+"Integrates <a href=\"https://woocommerce.com/\" target=\"_blank\" "
+">WooCommerce</a> with the <a href=\"https://kledo.com\" target=\"_blank"
+"\">Kledo</a> accounting software."
 msgstr ""

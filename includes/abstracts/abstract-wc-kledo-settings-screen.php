@@ -1,5 +1,6 @@
 <?php
 
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 abstract class WC_Kledo_Settings_Screen {
@@ -7,6 +8,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * The settings screen id.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	protected $id;
 
@@ -14,6 +16,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * The settings screen label.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	protected $label;
 
@@ -21,6 +24,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * The settings screen title.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	protected $title;
 
@@ -28,6 +32,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * The settings screen description.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	protected $description;
 
@@ -100,8 +105,8 @@ abstract class WC_Kledo_Settings_Screen {
 			return false;
 		}
 
-		// Assume we are on the configure tab by default
-		// because the link under Marketing doesn't include the tab query arg.
+		// Assume we are on configure tab by default
+		// because the link under menu doesn't include the tab query arg.
 		$tab = wc_kledo_get_requested_value( 'tab', 'configure' );
 
 		return ! empty( $tab ) && $tab === $this->get_id();
@@ -111,6 +116,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * Gets the settings.
 	 *
 	 * @return array
+	 * @since 1.0.0
 	 */
 	abstract public function get_settings();
 

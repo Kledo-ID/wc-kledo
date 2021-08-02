@@ -8,6 +8,7 @@ abstract class WC_Kledo_Request {
 	 * The API host.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $api_host;
 
@@ -15,6 +16,7 @@ abstract class WC_Kledo_Request {
 	 * The API endpoint path.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $endpoint = '';
 
@@ -22,6 +24,7 @@ abstract class WC_Kledo_Request {
 	 * The request method.
 	 *
 	 * @var string
+	 * @since 1.0.0
 	 */
 	private $method;
 
@@ -29,6 +32,7 @@ abstract class WC_Kledo_Request {
 	 * The request body.
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
 	private $body = array();
 
@@ -36,6 +40,7 @@ abstract class WC_Kledo_Request {
 	 * The query string.
 	 *
 	 * @var array
+	 * @since 1.0.0
 	 */
 	private $query = array();
 
@@ -43,6 +48,7 @@ abstract class WC_Kledo_Request {
 	 * The request response.
 	 *
 	 * @var mixed
+	 * @since 1.0.0
 	 */
 	private $response = null;
 

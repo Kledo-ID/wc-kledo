@@ -45,4 +45,5 @@ class WC_Kledo_Translation {
 	}
 }
 
+// Init class.
 new WC_Kledo_Translation();

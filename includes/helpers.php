@@ -102,74 +102,73 @@ if ( ! function_exists( 'wc_kledo_is_enhanced_admin_available' ) ) {
 	}
 }
 
-if ( ! function_exists( 'wc_kledo_product_category' ) ) {
+if ( ! function_exists( 'wc_kledo_get_invoice_prefix' ) ) {
 	/**
-	 * Returns the initialized WC_Kledo_Manage_Product_Category object
+	 * Get the invoice prefix.
 	 *
-	 * @return \WC_Kledo_Manage_Product_Category
+	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_product_category() {
-		static $product_category = null;
-
-		if ( is_null( $product_category ) ) {
-			$product_category = new WC_Kledo_Manage_Product_Category();
-		}
-
-		return $product_category;
+	function wc_kledo_get_invoice_prefix() {
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME );
 	}
 }
 
-if ( ! function_exists( 'wc_kledo_product' ) ) {
+if ( ! function_exists( 'wc_kledo_get_warehouse' ) ) {
 	/**
-	 * Returns the initialized WC_Kledo_Manage_Product object
+	 * Get the warehouse.
 	 *
-	 * @return \WC_Kledo_Manage_Product
+	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_product() {
-		static $product = null;
-
-		if ( is_null( $product ) ) {
-			$product = new WC_Kledo_Manage_Product();
-		}
-
-		return $product;
+	function wc_kledo_get_warehouse() {
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME );
 	}
 }
 
-if ( ! function_exists( 'wc_kledo_contact' ) ) {
+if ( ! function_exists( 'wc_kledo_paid_status' ) ) {
 	/**
-	 * Returns the initialized WC_Kledo_Manage_Contact object
+	 * Get the paid status.
 	 *
-	 * @return \WC_Kledo_Manage_Contact
+	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_contact() {
-		static $contact = null;
+	function wc_kledo_paid_status() {
+		$status = get_option( WC_Kledo_Invoice_Screen::INVOICE_STATUS_OPTION_NAME );
 
-		if ( is_null( $contact ) ) {
-			$contact = new WC_Kledo_Manage_Contact();
-		}
-
-		return $contact;
+		return 'paid' === strtolower( $status ) ? 'yes' : 'no';
 	}
 }
 
-if ( ! function_exists( 'wc_kledo_invoice' ) ) {
+if ( ! function_exists( 'wc_kledo_get_payment_account' ) ) {
 	/**
-	 * Returns the initialized WC_Kledo_Manage_Invoice object
+	 * Get the payment account.
 	 *
-	 * @return \WC_Kledo_Manage_Invoice
+	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_invoice() {
-		static $invoice = null;
+	function wc_kledo_get_payment_account() {
+		$account = get_option( WC_Kledo_Invoice_Screen::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME );
 
-		if ( is_null( $invoice ) ) {
-			$invoice = new WC_Kledo_Manage_Invoice();
+		if ( $account ) {
+			$account = explode( '|', $account );
+			$account = array_map( 'trim', $account );
 		}
 
-		return $invoice;
+		return $account[0];
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_tags' ) ) {
+	/**
+	 * Get the invoice tags.
+	 *
+	 * @return array
+	 * @since 1.0.0
+	 */
+	function wc_kledo_get_tags() {
+		$tags = get_option( WC_Kledo_Invoice_Screen::INVOICE_TAG_OPTION_NAME );
+
+		return explode( ',', $tags );
 	}
 }

@@ -28,7 +28,7 @@ class WC_Kledo_Issuing_Token {
 		}
 
 		// Return if on plugin settings page but not in configure tab.
-		if ( isset( $_GET['tab']) && 'configure' !== wc_kledo_get_requested_value( 'tab' ) ) {
+		if ( isset( $_GET['tab'] ) && 'configure' !== wc_kledo_get_requested_value( 'tab' ) ) {
 			return;
 		}
 
@@ -135,10 +135,6 @@ class WC_Kledo_Issuing_Token {
 				'notice_class' => 'notice-success',
 			)
 		);
-
-		if ( ! wc_kledo_product_category()->get_option() ) {
-			wc_kledo_product_category()->create_default_category();
-		}
 	}
 
 	/**
@@ -204,4 +200,5 @@ class WC_Kledo_Issuing_Token {
 	}
 }
 
+// Init class.
 new WC_Kledo_Issuing_Token();
