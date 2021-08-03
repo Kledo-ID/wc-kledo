@@ -8,11 +8,11 @@ Plugin ini digunakan untuk mengintegrasikan WooCommerce dengan aplikasi akuntasi
 
 - Instal Plugin menggunakan `WordPress Plugin Search`
 
-Di dalam area Admin WordPress, klik menu <kbd>Plugins</kbd> » <kbd>Add New</kbd> » <kbd>Cari plugin "WooCommerce Kledo"</kbd> » <kbd>Install Now</kbd>
+Di dalam area Admin WordPress, klik menu <kbd>Plugins</kbd> » <kbd>Add New</kbd> » <kbd>Cari plugin "Kledo"</kbd> » <kbd>Install Now</kbd>
 
 - Secara Manual
 
-Unduh [rilis terbaru](https://github.com/Kledo-ID/woocommerce-kledo/releases/latest), kemudian pada area Admin WordPress klik menu <kbd>Plugins</kbd> » <kbd>Add New</kbd> » <kbd>Upload Plugin</kbd> » <kbd>Pilih File ZIP Plugin</kbd> » <kbd>Install Now</kbd>
+Unduh [rilis terbaru](https://github.com/Kledo-ID/wc-kledo/releases/latest), kemudian pada area Admin WordPress klik menu <kbd>Plugins</kbd> » <kbd>Add New</kbd> » <kbd>Upload Plugin</kbd> » <kbd>Pilih File ZIP Plugin</kbd> » <kbd>Install Now</kbd>
 
 ## Konfigurasi
 
