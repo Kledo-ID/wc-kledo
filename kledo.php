@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WooCommerce Kledo
+ * Plugin Name: Kledo
  * Plugin URI: https://kledo.com
  * Description: Integrates <a href="https://woocommerce.com/" target="_blank" >WooCommerce</a> with the <a href="https://kledo.com" target="_blank">Kledo</a> accounting software.
  * Author: Kledo
@@ -58,7 +58,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const PLUGIN_NAME = 'WooCommerce Kledo';
+	const PLUGIN_NAME = 'Kledo';
 
 	/**
 	 * The plugin id.
