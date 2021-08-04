@@ -172,3 +172,19 @@ if ( ! function_exists( 'wc_kledo_get_tags' ) ) {
 		return explode( ',', $tags );
 	}
 }
+
+if ( ! function_exists( 'wc_kledo_include_tax_or_not' ) ) {
+	/**
+	 * Check if the order has tax or not.
+	 *
+	 * @param  \WC_Order  $order
+	 *
+	 * @return string
+	 * @since 1.1.0
+	 */
+	function wc_kledo_include_tax_or_not( WC_Order $order ) {
+		$total_tax = $order->get_total_tax();
+
+		return ($total_tax > 0) ? 'yes' : 'no';
+	}
+}
