@@ -77,6 +77,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	 * @return array
 	 * @throws \Exception
 	 * @since 1.0.0
+	 * @since 1.1.0 Added `has_tax` field.
 	 *
 	 * @noinspection PhpPossiblePolymorphicInvocationInspection
 	 */
@@ -94,6 +95,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 				'qty'           => $item->get_quantity(),
 				'regular_price' => $product->get_regular_price(),
 				'sale_price'    => $product->get_sale_price(),
+				'has_tax'       => wc_kledo_product_has_tax( $product ),
 				'photo'         => wp_get_attachment_url( $product->get_image_id() ) ?: null,
 				'category_name' => 'WooCommerce',
 			);
