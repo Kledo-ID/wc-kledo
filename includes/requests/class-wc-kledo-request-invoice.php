@@ -25,6 +25,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	 * @return bool|array
 	 * @throws \Exception
 	 * @since 1.0.0
+	 * @since 1.1.0 Add `include_tax` field.
 	 */
 	public function create_invoice( WC_Order $order ) {
 		$this->set_method( 'POST' );
@@ -38,8 +39,10 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 			'trans_date'           => $order->get_date_created()->format( 'Y-m-d' ),
 			'due_date'             => $order->get_date_completed()->format( 'Y-m-d' ),
 			'memo'                 => $order->get_customer_note(),
+			'include_tax'          => wc_kledo_include_tax_or_not( $order ),
 			'items'                => $this->get_items( $order ),
 			'warehouse'            => wc_kledo_get_warehouse(),
+			'shipping_cost'        => $order->get_shipping_total(),
 			'paid'                 => wc_kledo_paid_status(),
 			'paid_to_account_code' => wc_kledo_get_payment_account(),
 			'tags'                 => wc_kledo_get_tags(),
@@ -76,6 +79,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	 * @return array
 	 * @throws \Exception
 	 * @since 1.0.0
+	 * @since 1.1.0 Added `has_tax` field.
 	 *
 	 * @noinspection PhpPossiblePolymorphicInvocationInspection
 	 */
@@ -93,6 +97,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 				'qty'           => $item->get_quantity(),
 				'regular_price' => $product->get_regular_price(),
 				'sale_price'    => $product->get_sale_price(),
+				'has_tax'       => wc_kledo_product_has_tax( $product ),
 				'photo'         => wp_get_attachment_url( $product->get_image_id() ) ?: null,
 				'category_name' => 'WooCommerce',
 			);
