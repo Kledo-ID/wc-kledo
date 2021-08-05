@@ -188,19 +188,3 @@ if ( ! function_exists( 'wc_kledo_include_tax_or_not' ) ) {
 		return ($total_tax > 0) ? 'yes' : 'no';
 	}
 }
-
-if ( ! function_exists( 'wc_kledo_product_has_tax' ) ) {
-	/**
-	 * Check if the product has tax or not.
-	 *
-	 * @param  \WC_Product  $product
-	 *
-	 * @return string
-	 * @since 1.1.0
-	 */
-	function wc_kledo_product_has_tax( WC_Product $product ) {
-		$tax = $product->get_tax_status();
-
-		return strtolower($tax) === 'none' ? 'no' : 'yes';
-	}
-}
