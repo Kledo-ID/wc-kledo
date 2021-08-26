@@ -19,7 +19,7 @@ if ( ! function_exists( 'wc_kledo_get_requested_value' ) ) {
 		$value = $default;
 
 		if ( isset( $_REQUEST[ $key ] ) ) {
-			$value = is_string( $_REQUEST[ $key ] ) ? trim( $_REQUEST[ $key ] ) : $_REQUEST[ $key ];
+			$value = sanitize_text_field( $_REQUEST[ $key ] );
 		}
 
 		return $value;
@@ -42,7 +42,7 @@ if ( ! function_exists( 'wc_kledo_get_posted_value' ) ) {
 		$value = $default;
 
 		if ( isset( $_POST[ $key ] ) ) {
-			$value = is_string( $_POST[ $key ] ) ? trim( $_POST[ $key ] ) : $_POST[ $key ];
+			$value = sanitize_text_field( $_POST[ $key ] );
 		}
 
 		return $value;

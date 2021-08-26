@@ -120,7 +120,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
 				<select name="<?php echo esc_attr( $field['id'] ); ?>" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>">
 					<?php if ( $warehouse ): ?>
-						<option value="<?php echo $warehouse; ?>" selected="selected"><?php echo $warehouse; ?></option>
+						<option value="<?php echo esc_attr( $warehouse ); ?>" selected="selected"><?php echo esc_attr( $warehouse ); ?></option>
 					<?php endif; ?>
 				</select>
 			</td>

@@ -75,7 +75,7 @@ abstract class WC_Kledo_Settings_Screen {
 			<?php wp_nonce_field( 'wc_kledo_admin_save_' . $this->get_id() . '_settings' ); ?>
 
 			<p class="submit">
-				<input type="submit" name="save_<?php echo $this->get_id(); ?>_settings" id="save_<?php echo $this->get_id(); ?>_settings" class="button button-primary" value="<?php _e( 'Save changes', WC_KLEDO_TEXT_DOMAIN ); ?>"/>
+				<input type="submit" name="save_<?php echo esc_attr( $this->get_id() ); ?>_settings" id="save_<?php echo esc_attr( $this->get_id() ); ?>_settings" class="button button-primary" value="<?php _e( 'Save changes', WC_KLEDO_TEXT_DOMAIN ); ?>"/>
 
 				<?php do_action( 'wc_kledo_submit_button' ); ?>
 			</p>
