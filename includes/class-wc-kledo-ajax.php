@@ -28,8 +28,8 @@ class WC_Kledo_Ajax {
 	public static function get_payment_account() {
 		$request = new WC_Kledo_Request_Account();
 
-		$keyword = $_POST['keyword'] ?? '';
-		$page    = $_POST['page'];
+		$keyword = sanitize_text_field( $_POST['keyword'] ) ?? '';
+		$page    = sanitize_text_field( $_POST['page'] );
 
 		$response = $request->get_accounts_suggestion_per_page( $keyword, $page );
 
