@@ -23,6 +23,11 @@ Integrates WooCommerce with Kledo Accounting Software.
 3. Navigate to the 'Kledo' settings page to setup API credentials and connect your Kledo account.
 4. Configure your invoices in 'Invoice' tab.
 
+== Screenshots ==
+
+1. Connect your WooCommerce with Kledo
+2. The Kledo invoice plugin Settings pages
+
 == Changelog ==
 
 = 1.1.2 =
