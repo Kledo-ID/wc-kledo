@@ -30,6 +30,9 @@ Integrates WooCommerce with Kledo Accounting Software.
 
 == Changelog ==
 
+= 1.1.3 =
+* Tweak: Update the readme documentation
+
 = 1.1.2 =
 * Fix: Fixed a potential security vulnerability
 
