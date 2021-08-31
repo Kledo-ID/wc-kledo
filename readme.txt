@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 4.4
 Tested up to: 5.8
-Stable tag: 1.0.0
+Stable tag: 1.1.2
 Requires PHP: 7.0.0 or greater
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -22,6 +22,11 @@ Integrates WooCommerce with Kledo Accounting Software.
 2. Activate the Kledo plugin through the 'Plugins' menu in WordPress.
 3. Navigate to the 'Kledo' settings page to setup API credentials and connect your Kledo account.
 4. Configure your invoices in 'Invoice' tab.
+
+== Changelog ==
+
+= 1.1.2 =
+* Fix: Fixed a potential security vulnerability
 
 = 1.0.0 =
 * Launched the Kledo plugin!
