@@ -5,7 +5,7 @@
  * Description: Integrates <a href="https://woocommerce.com/" target="_blank" >WooCommerce</a> with the <a href="https://kledo.com" target="_blank">Kledo</a> accounting software.
  * Author: Kledo
  * Author URI: https://kledo.com
- * Version: 1.0.0
+ * Version: 1.1.4
  * Text Domain: wc-kledo
  * WC requires at least: 3.5.0
  * WC tested up to: 5.3.0
@@ -26,7 +26,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const VERSION = '1.1.3';
+	const VERSION = '1.1.4';
 
 	/**
 	 * Minimum PHP version.

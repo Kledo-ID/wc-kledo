@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 4.4
 Tested up to: 5.8
-Stable tag: 1.1.2
+Stable tag: 1.1.4
 Requires PHP: 7.0.0 or greater
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -29,6 +29,9 @@ Integrates WooCommerce with Kledo Accounting Software.
 2. The Kledo invoice plugin Settings pages
 
 == Changelog ==
+
+= 1.1.4 =
+* Fix: select2 not displayed
 
 = 1.1.3 =
 * Tweak: Update the readme documentation
