@@ -30,6 +30,9 @@ Integrates WooCommerce with Kledo Accounting Software.
 
 == Changelog ==
 
+= 1.1.4 =
+* Fix: select2 not displayed
+
 = 1.1.3 =
 * Tweak: Update the readme documentation
 
