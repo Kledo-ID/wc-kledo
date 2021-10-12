@@ -204,7 +204,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 		wp_enqueue_script(
 			'wc-kledo-invoice',
 			wc_kledo()->asset_dir_url() . '/js/invoice.js',
-			array( 'jquery', 'select2' ),
+			array( 'jquery', 'selectWoo' ),
 			WC_KLEDO_VERSION
 		);
 
