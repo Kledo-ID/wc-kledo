@@ -384,7 +384,7 @@ class WC_Kledo_Connection {
 
 		$authorization_code_url = $this->get_oauth_url() . '/oauth/token';
 
-		$request = wp_remote_post( $authorization_code_url, [
+		$request = wp_remote_post( $authorization_code_url, array(
 			'body' => array(
 				'grant_type'    => 'authorization_code',
 				'client_id'     => $this->get_client_id(),
@@ -392,7 +392,7 @@ class WC_Kledo_Connection {
 				'redirect_uri'  => $this->get_redirect_uri(),
 				'code'          => $code,
 			),
-		] );
+		) );
 
 		if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) !== 200 ) {
 			wc_kledo()->get_admin_notice_handler()->add_admin_notice(
