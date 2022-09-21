@@ -43,6 +43,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 			'items'                => $this->get_items( $order ),
 			'warehouse'            => wc_kledo_get_warehouse(),
 			'shipping_cost'        => $order->get_shipping_total(),
+			'additional_discount_amount' => $order->get_total_discount(),
 			'paid'                 => wc_kledo_paid_status(),
 			'paid_to_account_code' => wc_kledo_get_payment_account(),
 			'tags'                 => wc_kledo_get_tags(),
