@@ -394,7 +394,7 @@ class WC_Kledo_Connection {
 			),
 		] );
 
-		if ( is_wp_error( $request ) ) {
+		if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) !== 200 ) {
 			wc_kledo()->get_admin_notice_handler()->add_admin_notice(
 				__( 'There was a problem when converting authorization code from the server. Please try again later.', WC_KLEDO_TEXT_DOMAIN ),
 				'connection_error_authorization_code',
