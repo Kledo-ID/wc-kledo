@@ -35,7 +35,7 @@ Integrates WooCommerce with Kledo Accounting Software.
 
 == Changelog ==
 
-= 1.1.5 -
+= 1.1.5 =
 * Added: Additional discount amount
 * Tweak: Only process request token when http code 200
 
