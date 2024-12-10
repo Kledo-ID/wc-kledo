@@ -215,6 +215,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'i18n'     => array(
 					'payment_account_placeholder' => esc_html__( 'Select Account', WC_KLEDO_TEXT_DOMAIN ),
+                    'warehouse_placeholder' => esc_html__('Select Warehouse', WC_KLEDO_TEXT_DOMAIN),
 
 					'error_loading' => esc_html__( 'The results could not be loaded.', WC_KLEDO_TEXT_DOMAIN ),
 					'loading_more'  => esc_html__( 'Loading more results...', WC_KLEDO_TEXT_DOMAIN ),

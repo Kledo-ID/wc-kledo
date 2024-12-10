@@ -45,10 +45,11 @@ jQuery(document).ready(function ($) {
      *
      * @param {string} element The select field.
      * @param {string} action The ajax action name.
+     * @param {string} placeholder The select2 placeholder.
      */
-    function wp_ajax(element, action) {
+    function wp_ajax(element, action, placeholder) {
         $(element).selectWoo({
-            placeholder: wc_kledo_invoice.i18n.payment_account_placeholder,
+            placeholder: wc_kledo_invoice.i18n[placeholder],
             ajax: {
                 url: wc_kledo_invoice.ajax_url,
                 delay: 250,
@@ -94,8 +95,8 @@ jQuery(document).ready(function ($) {
     }
 
     // Payment Account.
-    wp_ajax('#wc_kledo_invoice_payment_account', 'wc_kledo_payment_account');
+    wp_ajax('#wc_kledo_invoice_payment_account', 'wc_kledo_payment_account', 'payment_account_placeholder');
 
     // Warehouse.
-    wp_ajax('#wc_kledo_warehouse', 'wc_kledo_warehouse');
+    wp_ajax('#wc_kledo_warehouse', 'wc_kledo_warehouse', 'warehouse_placeholder');
 });

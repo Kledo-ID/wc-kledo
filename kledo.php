@@ -8,7 +8,7 @@
  * Version: 1.1.5
  * Text Domain: wc-kledo
  * WC requires at least: 3.5.0
- * WC tested up to: 5.3.0
+ * WC tested up to: 9.4.3
  */
 
 // Exit if accessed directly.

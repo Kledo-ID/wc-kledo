@@ -370,7 +370,7 @@ class WC_Kledo_Connection {
 	}
 
 	/**
-	 * Convertion authorization codes to access token.
+	 * Conversion authorization codes to access token.
 	 *
 	 * @param  $code  string The authorization code.
 	 *
