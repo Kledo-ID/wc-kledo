@@ -1,6 +1,8 @@
 <?php
 
 // Exit if accessed directly.
+use Automattic\WooCommerce\Utilities\FeaturesUtil as WC_FeatureUtil;
+
 defined( 'ABSPATH' ) || exit;
 
 final class WC_Kledo {
@@ -162,6 +164,9 @@ final class WC_Kledo {
 
 		// Disable ssl verify.
 		add_filter( 'https_ssl_verify', '__return_false' );
+
+		// Declare the compatibility with WooCommerce plugin HPOS.
+		add_action( 'before_woocommerce_init', array( $this, 'add_woocommerce_hpos_compatibility' ) );
 	}
 
 	/**
@@ -211,6 +216,18 @@ final class WC_Kledo {
 					'notice_class'            => 'notice-info',
 				)
 			);
+		}
+	}
+
+	/**
+	 * Add WooCommerce HPOS Compatibility.
+	 *
+	 * @return void
+	 * @since 1.2.0
+	 */
+	public function add_woocommerce_hpos_compatibility() {
+		if ( class_exists( WC_FeatureUtil::class ) ) {
+			WC_FeatureUtil::declare_compatibility( 'custom_order_tables', WC_KLEDO_PLUGIN_FILE, true );
 		}
 	}
 
