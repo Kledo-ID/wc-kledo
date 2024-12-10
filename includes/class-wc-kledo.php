@@ -159,6 +159,9 @@ final class WC_Kledo {
 	private function add_hooks() {
 		// Add the admin notices.
 		add_action( 'admin_notices', array( $this, 'add_admin_notices' ) );
+
+		// Disable ssl verify.
+		add_filter( 'https_ssl_verify', '__return_false' );
 	}
 
 	/**
