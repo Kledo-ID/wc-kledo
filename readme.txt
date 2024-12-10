@@ -35,6 +35,9 @@ Integrates WooCommerce with Kledo Accounting Software.
 
 == Changelog ==
 
+= 1.2.1 =
+* update: plugin translation files
+
 = 1.2.0 =
 * added: compatibility with WooCommerce plugin HPOS
 * fix: disable ssl verify
