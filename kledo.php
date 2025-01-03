@@ -26,7 +26,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const VERSION = '1.1.4';
+	const VERSION = '1.2.1';
 
 	/**
 	 * Minimum PHP version.
