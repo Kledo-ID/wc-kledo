@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: Kledo
+ * Requires Plugins: woocommerce
  * Plugin URI: https://github.com/Kledo-ID/wc-kledo
  * Description: Integrates <a href="https://woocommerce.com/" target="_blank" >WooCommerce</a> with the <a href="https://kledo.com" target="_blank">Kledo</a> accounting software.
  * Author: Kledo
