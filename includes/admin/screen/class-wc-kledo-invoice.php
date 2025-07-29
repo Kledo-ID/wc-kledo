@@ -59,9 +59,11 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		$this->id    = self::ID;
-		$this->label = __( 'Invoice', WC_KLEDO_TEXT_DOMAIN );
-		$this->title = __( 'Invoice', WC_KLEDO_TEXT_DOMAIN );
+		add_action( 'init', function () {
+			$this->id    = self::ID;
+			$this->label = __( 'Invoice', WC_KLEDO_TEXT_DOMAIN );
+			$this->title = __( 'Invoice', WC_KLEDO_TEXT_DOMAIN );
+		});
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 
