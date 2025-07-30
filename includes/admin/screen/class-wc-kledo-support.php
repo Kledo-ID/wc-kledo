@@ -19,8 +19,9 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
+		$this->id = self::ID;
+
 		add_action( 'load-woocommerce_page_wc-kledo', function () {
-			$this->id    = self::ID;
 			$this->label = __( 'Support', WC_KLEDO_TEXT_DOMAIN );
 			$this->title = __( 'Support', WC_KLEDO_TEXT_DOMAIN );
 		});
