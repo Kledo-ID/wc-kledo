@@ -149,7 +149,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'title'   => __( 'Invoice Prefix', WC_KLEDO_TEXT_DOMAIN ),
 				'type'    => 'text',
 				'class'   => 'invoice-field',
-				'default' => 'WC/',
+				'default' => 'WC/INV/',
 			),
 
 			array(
