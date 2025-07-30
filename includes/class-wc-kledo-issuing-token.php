@@ -11,7 +11,7 @@ class WC_Kledo_Issuing_Token {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		add_action( 'wp_loaded', array( $this, 'issue_token' ) );
+		add_action( 'wp_loaded', array( $this, 'issue_token' ), 9999 );
 	}
 
 	/**

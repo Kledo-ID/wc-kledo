@@ -67,7 +67,7 @@ class WC_Kledo_Connection {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		add_action( 'load-woocommerce_page_wc-kledo', array( $this, 'setup_oauth_credentials' ) );
+		add_action( 'wp_loaded', array( $this, 'setup_oauth_credentials' ), 9998 );
 	}
 
 	/**
