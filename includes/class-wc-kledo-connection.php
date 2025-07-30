@@ -10,7 +10,7 @@ class WC_Kledo_Connection {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const OPTION_ACCESS_TOKEN = 'wc_kledo_access_token';
+	public const OPTION_ACCESS_TOKEN = 'wc_kledo_access_token';
 
 	/**
 	 * The refresh token option name.
@@ -18,7 +18,7 @@ class WC_Kledo_Connection {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const OPTION_REFRESH_TOKEN = 'wc_kledo_refresh_token';
+	public const OPTION_REFRESH_TOKEN = 'wc_kledo_refresh_token';
 
 	/**
 	 * The expires token option name.
@@ -26,7 +26,7 @@ class WC_Kledo_Connection {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const OPTION_EXPIRES_TOKEN = 'wc_kledo_expires_token';
+	public const OPTION_EXPIRES_TOKEN = 'wc_kledo_expires_token';
 
 	/**
 	 * The genrated random state transient option name.
@@ -34,7 +34,7 @@ class WC_Kledo_Connection {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const OPTION_TRANSIENT_STATE = 'wc_kledo_random_state';
+	public const OPTION_TRANSIENT_STATE = 'wc_kledo_random_state';
 
 	/**
 	 * The kledo OAuth API endpoint.
@@ -42,7 +42,7 @@ class WC_Kledo_Connection {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	private $oauth_url;
+	private string $oauth_url;
 
 	/**
 	 * The kledo OAuth Client ID.
@@ -50,7 +50,7 @@ class WC_Kledo_Connection {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	private $client_id;
+	private string $client_id;
 
 	/**
 	 * The kledo OAuth Client Secret.
@@ -58,7 +58,7 @@ class WC_Kledo_Connection {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	private $client_secret;
+	private string $client_secret;
 
 	/**
 	 * The class constructor.
@@ -71,12 +71,12 @@ class WC_Kledo_Connection {
 	}
 
 	/**
-	 * Setup the OAuth credentials.
+	 * Set up the OAuth credentials.
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function setup_oauth_credentials() {
+	private function setup_oauth_credentials(): void {
 		/**
 		 * Filters the client id.
 		 *
@@ -120,7 +120,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_oauth_url() {
+	public function get_oauth_url(): string {
 		return untrailingslashit( esc_url_raw( $this->oauth_url ) );
 	}
 
@@ -130,7 +130,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_client_id() {
+	public function get_client_id(): string {
 		return $this->client_id;
 	}
 
@@ -140,7 +140,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_client_secret() {
+	public function get_client_secret(): string {
 		return $this->client_secret;
 	}
 
@@ -152,7 +152,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function set_access_token( $token ) {
+	public function set_access_token( string $token ): bool {
 		return update_option( self::OPTION_ACCESS_TOKEN, $token );
 	}
 
@@ -162,7 +162,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_access_token() {
+	public function get_access_token(): string {
 		$access_token = get_option( self::OPTION_ACCESS_TOKEN, '' );
 
 		/**
@@ -181,7 +181,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function refresh_access_token() {
+	public function refresh_access_token(): bool {
 		$refresh_token = $this->get_refresh_token();
 
 		if ( empty( $refresh_token ) ) {
@@ -220,13 +220,16 @@ class WC_Kledo_Connection {
 	}
 
 	/**
-	 * Store the successfull request result to storage.
+	 * Store the successfully request result to storage.
+	 *
+	 * @param  array  $request
 	 *
 	 * @return void
+	 * @throws \JsonException
 	 * @since 1.0.0
 	 */
-	private function store_response_request( $request ) {
-		$response = json_decode( wp_remote_retrieve_body( $request ), true );
+	private function store_response_request( array $request ): void {
+		$response = json_decode( wp_remote_retrieve_body( $request ), true, 512, JSON_THROW_ON_ERROR );
 
 		$this->set_expires_token( $response['expires_in'] );
 		$this->set_access_token( $response['access_token'] );
@@ -241,7 +244,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function set_refresh_token( $token ) {
+	public function set_refresh_token( $token ): bool {
 		return update_option( self::OPTION_REFRESH_TOKEN, $token );
 	}
 
@@ -251,7 +254,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_refresh_token() {
+	public function get_refresh_token(): string {
 		$refresh_token = get_option( self::OPTION_REFRESH_TOKEN, '' );
 
 		/**
@@ -272,7 +275,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function set_expires_token( $time ) {
+	public function set_expires_token( $time ): bool {
 		$time = time() + $time;
 
 		return update_option( self::OPTION_EXPIRES_TOKEN, $time );
@@ -284,7 +287,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_expires_token() {
+	public function get_expires_token(): string {
 		$time_now   = time();
 		$expires_in = get_option( self::OPTION_EXPIRES_TOKEN );
 
@@ -310,7 +313,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function is_connected() {
+	public function is_connected(): bool {
 		return (bool) $this->get_access_token();
 	}
 
@@ -322,7 +325,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function is_configured() {
+	public function is_configured(): bool {
 		return $this->get_client_id()
 		       && $this->get_client_secret()
 		       && $this->get_oauth_url();
@@ -334,7 +337,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_redirect_uri() {
+	public function get_redirect_uri(): string {
 		$page_id = WC_Kledo_Admin::PAGE_ID;
 
 		$admin_url = add_query_arg( [
@@ -357,7 +360,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_redirect_authorization() {
+	public function get_redirect_authorization(): string {
 		$query = http_build_query( [
 			'client_id'     => $this->get_client_id(),
 			'redirect_uri'  => $this->get_redirect_uri(),
@@ -375,9 +378,10 @@ class WC_Kledo_Connection {
 	 * @param  $code  string The authorization code.
 	 *
 	 * @return bool
+	 * @throws \JsonException
 	 * @since 1.0.0
 	 */
-	public function converting_authorization_codes( $code ) {
+	public function converting_authorization_codes( $code ): bool {
 		if ( empty( $code ) ) {
 			return false;
 		}
@@ -424,7 +428,7 @@ class WC_Kledo_Connection {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_state() {
+	public function get_state(): string {
 		$state = get_transient( self::OPTION_TRANSIENT_STATE );
 
 		if ( empty( $state ) ) {
@@ -449,7 +453,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function delete_state() {
+	public function delete_state(): bool {
 		return delete_transient( self::OPTION_TRANSIENT_STATE );
 	}
 
@@ -459,7 +463,7 @@ class WC_Kledo_Connection {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function disconnect() {
+	public function disconnect(): bool {
 		return delete_option( self::OPTION_ACCESS_TOKEN )
 		       && delete_option( self::OPTION_REFRESH_TOKEN )
 		       && delete_option( self::OPTION_EXPIRES_TOKEN );

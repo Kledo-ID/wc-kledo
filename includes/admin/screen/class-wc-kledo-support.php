@@ -32,7 +32,7 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render() {
+	public function render(): void {
 		?>
 
 		<div id="wc-kledo-admin">
@@ -60,7 +60,7 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function get_settings() {
+	public function get_settings(): array {
 		// TODO: Implement get_settings() method.
 	}
 }

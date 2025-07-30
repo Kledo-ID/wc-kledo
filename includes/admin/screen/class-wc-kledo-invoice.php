@@ -10,7 +10,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const ID = 'invoice';
+	public const ID = 'invoice';
 
 	/**
 	 * The invoice prefix option name.
@@ -18,7 +18,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const INVOICE_PREFIX_OPTION_NAME = 'wc_kledo_invoice_prefix';
+	public const INVOICE_PREFIX_OPTION_NAME = 'wc_kledo_invoice_prefix';
 
 	/**
 	 * The invoice status option name.
@@ -26,7 +26,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const INVOICE_STATUS_OPTION_NAME = 'wc_kledo_invoice_status';
+	public const INVOICE_STATUS_OPTION_NAME = 'wc_kledo_invoice_status';
 
 	/**
 	 * The invoice payment account code option name.
@@ -34,7 +34,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const INVOICE_PAYMENT_ACCOUNT_OPTION_NAME = 'wc_kledo_invoice_payment_account';
+	public const INVOICE_PAYMENT_ACCOUNT_OPTION_NAME = 'wc_kledo_invoice_payment_account';
 
 	/**
 	 * The invoice payment warehouse option name.
@@ -42,7 +42,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const INVOICE_WAREHOUSE_OPTION_NAME = 'wc_kledo_warehouse';
+	public const INVOICE_WAREHOUSE_OPTION_NAME = 'wc_kledo_warehouse';
 
 	/**
 	 * The invoice payment tag option name.
@@ -50,7 +50,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const INVOICE_TAG_OPTION_NAME = 'wc_kledo_tags';
+	public const INVOICE_TAG_OPTION_NAME = 'wc_kledo_tags';
 
 	/**
 	 * The class constructor.
@@ -79,7 +79,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_payment_account_field( $field ) {
+	public function render_payment_account_field( array $field ): void {
 		$payment_account = get_option( self::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME );
 
 		?>
@@ -109,7 +109,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_warehouse_field( $field ) {
+	public function render_warehouse_field( array $field ): void {
 		$warehouse = get_option( self::INVOICE_WAREHOUSE_OPTION_NAME );
 
 		?>
@@ -137,7 +137,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @return array
 	 * @since 1.0.0
 	 */
-	public function get_settings() {
+	public function get_settings(): array {
 		return array(
 			array(
 				'title' => __( 'Invoice', WC_KLEDO_TEXT_DOMAIN ),
@@ -198,7 +198,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function enqueue_assets() {
+	public function enqueue_assets(): void {
 		if ( ! $this->is_current_screen_page() ) {
 			return;
 		}

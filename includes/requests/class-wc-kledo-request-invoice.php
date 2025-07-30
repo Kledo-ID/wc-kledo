@@ -68,7 +68,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_customer_name( WC_Order $order ) {
+	public function get_customer_name( WC_Order $order ): string {
 		return trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
 	}
 
@@ -83,7 +83,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	 *
 	 * @noinspection PhpPossiblePolymorphicInvocationInspection
 	 */
-	public function get_items( WC_Order $order ) {
+	public function get_items( WC_Order $order ): array {
 		$items = array();
 
 		foreach ( $order->get_items() as $item ) {

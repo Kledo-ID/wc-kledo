@@ -10,7 +10,7 @@ class WC_Kledo_Ajax {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public static function init() {
+	public static function init(): void {
 		// Get payment account via ajax.
 		add_action( 'wp_ajax_wc_kledo_payment_account', array( __CLASS__, 'get_payment_account' ) );
 
@@ -25,7 +25,7 @@ class WC_Kledo_Ajax {
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	public static function get_payment_account() {
+	public static function get_payment_account(): void {
 		$request = new WC_Kledo_Request_Account();
 
 		$keyword = sanitize_text_field( $_POST['keyword'] ) ?? '';
@@ -64,7 +64,7 @@ class WC_Kledo_Ajax {
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	public static function get_warehouse() {
+	public static function get_warehouse(): void {
 		$request = new WC_Kledo_Request_Warehouse();
 
 		$response = $request->get_warehouse();

@@ -13,7 +13,7 @@ class WC_Kledo_Admin {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const PAGE_ID = 'wc-kledo';
+	public const PAGE_ID = 'wc-kledo';
 
 	/**
 	 * The settings screen array.
@@ -21,7 +21,7 @@ class WC_Kledo_Admin {
 	 * @var \WC_Kledo_Settings_Screen[]
 	 * @since 1.0.0
 	 */
-	private $screens;
+	private array $screens;
 
 	/**
 	 * Whether the new Woo nav should be used.
@@ -29,7 +29,7 @@ class WC_Kledo_Admin {
 	 * @var bool
 	 * @since 1.0.0
 	 */
-	public $use_woo_nav;
+	public bool $use_woo_nav;
 
 	/**
 	 * Settings constructor.
@@ -55,7 +55,7 @@ class WC_Kledo_Admin {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function init_hooks() {
+	private function init_hooks(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 
 		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
@@ -69,7 +69,7 @@ class WC_Kledo_Admin {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles(): void {
 		if ( wc_kledo()->is_plugin_settings() ) {
 			$version = WC_KLEDO_VERSION;
 
@@ -99,7 +99,7 @@ class WC_Kledo_Admin {
 	 *
 	 * @noinspection ForgottenDebugOutputInspection
 	 */
-	public function save() {
+	public function save(): void {
 		if ( ! is_admin() || wc_kledo_get_requested_value( 'page' ) !== self::PAGE_ID ) {
 			return;
 		}
@@ -142,7 +142,7 @@ class WC_Kledo_Admin {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function add_menu_item() {
+	public function add_menu_item(): void {
 		add_submenu_page(
 			'woocommerce',
 			__( 'Kledo', WC_KLEDO_TEXT_DOMAIN ),
@@ -159,7 +159,7 @@ class WC_Kledo_Admin {
 	 * @return \WC_Kledo_Settings_Screen[]
 	 * @since 1.0.0
 	 */
-	public function get_screens() {
+	public function get_screens(): array {
 		/**
 		 * Filters the admin settings screens.
 		 *
@@ -184,7 +184,7 @@ class WC_Kledo_Admin {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render() {
+	public function render(): void {
 		$tabs        = $this->get_tabs();
 		$current_tab = wc_kledo_get_requested_value( 'tab' );
 
@@ -232,12 +232,10 @@ class WC_Kledo_Admin {
 	 * @return array
 	 * @since 1.0.0
 	 */
-	public function get_tabs() {
-		$tabs = array();
-
-		foreach ( $this->get_screens() as $screen_id => $screen ) {
-			$tabs[ $screen_id ] = $screen->get_label();
-		}
+	public function get_tabs(): array {
+		$tabs = array_map( static function ( $screen ) {
+			return $screen->get_label();
+		}, $this->get_screens() );
 
 		/**
 		 * Filters the admin settings tabs.
@@ -257,7 +255,7 @@ class WC_Kledo_Admin {
 	 * @return \WC_Kledo_Settings_Screen|null
 	 * @since 1.0.0
 	 */
-	public function get_screen( $screen_id ) {
+	public function get_screen( string $screen_id ): ?WC_Kledo_Settings_Screen {
 		$screens = $this->get_screens();
 
 		return ! empty( $screens[ $screen_id ] ) && $screens[ $screen_id ] instanceof WC_Kledo_Settings_Screen ? $screens[ $screen_id ] : null;

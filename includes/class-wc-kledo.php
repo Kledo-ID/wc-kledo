@@ -12,7 +12,7 @@ final class WC_Kledo {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const PLUGIN_ID = WC_Kledo_Loader::PLUGIN_ID;
+	public const PLUGIN_ID = WC_Kledo_Loader::PLUGIN_ID;
 
 	/**
 	 * The single instance of this class.
@@ -20,7 +20,7 @@ final class WC_Kledo {
 	 * @var null|self
 	 * @since 1.0.0
 	 */
-	protected static $instance;
+	protected static ?WC_Kledo $instance = null;
 
 	/**
 	 * The admin notice instance.
@@ -28,7 +28,7 @@ final class WC_Kledo {
 	 * @var \WC_Kledo_Admin_Notice_Handler
 	 * @since 1.0.0
 	 */
-	private $admin_notice_handler;
+	private WC_Kledo_Admin_Notice_Handler $admin_notice_handler;
 
 	/**
 	 * The message instance.
@@ -36,7 +36,7 @@ final class WC_Kledo {
 	 * @var \WC_Kledo_Admin_Message_Handler
 	 * @since 1.0.0
 	 */
-	private $message_handler;
+	private WC_Kledo_Admin_Message_Handler $message_handler;
 
 	/**
 	 * The API connection instance.
@@ -44,15 +44,15 @@ final class WC_Kledo {
 	 * @var \WC_Kledo_Connection
 	 * @since 1.0.0
 	 */
-	private $connection_handler;
+	private WC_Kledo_Connection $connection_handler;
 
 	/**
 	 * The admin settings instance.
 	 *
-	 * @var \WC_Kledo_Admin
+	 * @var \WC_Kledo_Admin|null
 	 * @since 1.0.0
 	 */
-	private $admin_settings;
+	private ?WC_Kledo_Admin $admin_settings = null;
 
 	/**
 	 * Gets the main class instance.
@@ -62,7 +62,7 @@ final class WC_Kledo {
 	 * @return self
 	 * @since 1.0.0
 	 */
-	public static function instance() {
+	public static function instance(): WC_Kledo {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
@@ -84,12 +84,12 @@ final class WC_Kledo {
 	}
 
 	/**
-	 * Setup the autoloader class.
+	 * Set up the autoloader class.
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function setup_autoloader() {
+	private function setup_autoloader(): void {
 		// Class autoloader.
 		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-autoloader.php';
 
@@ -106,7 +106,7 @@ final class WC_Kledo {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function includes() {
+	private function includes(): void {
 		// Function helpers.
 		require_once( WC_KLEDO_ABSPATH . 'includes/helpers.php' );
 
@@ -132,7 +132,7 @@ final class WC_Kledo {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function init() {
+	private function init(): void {
 		// Build the admin message handler instance.
 		$this->message_handler = new WC_Kledo_Admin_Message_Handler( $this->get_id() );
 
@@ -158,7 +158,7 @@ final class WC_Kledo {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function add_hooks() {
+	private function add_hooks(): void {
 		// Add the admin notices.
 		add_action( 'admin_notices', array( $this, 'add_admin_notices' ) );
 
@@ -175,7 +175,7 @@ final class WC_Kledo {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function add_admin_notices() {
+	public function add_admin_notices(): void {
 		// Inform users who are not connected to Kledo
 		if ( ! $this->is_plugin_settings() && ! $this->get_connection_handler()->is_connected() ) {
 			// Direct these users to the new plugin settings page.
@@ -225,9 +225,9 @@ final class WC_Kledo {
 	 * @return void
 	 * @since 1.2.0
 	 */
-	public function add_woocommerce_hpos_compatibility() {
+	public function add_woocommerce_hpos_compatibility(): void {
 		if ( class_exists( WC_FeatureUtil::class ) ) {
-			WC_FeatureUtil::declare_compatibility( 'custom_order_tables', WC_KLEDO_PLUGIN_FILE, true );
+			WC_FeatureUtil::declare_compatibility( 'custom_order_tables', WC_KLEDO_PLUGIN_FILE );
 		}
 	}
 
@@ -237,7 +237,7 @@ final class WC_Kledo {
 	 * @return \WC_Kledo_Admin_Message_Handler
 	 * @since 1.0.0
 	 */
-	public function get_message_handler() {
+	public function get_message_handler(): WC_Kledo_Admin_Message_Handler {
 		return $this->message_handler;
 	}
 
@@ -247,7 +247,7 @@ final class WC_Kledo {
 	 * @return \WC_Kledo_Admin_Notice_Handler
 	 * @since 1.0.0
 	 */
-	public function get_admin_notice_handler() {
+	public function get_admin_notice_handler(): WC_Kledo_Admin_Notice_Handler {
 		return $this->admin_notice_handler;
 	}
 
@@ -257,7 +257,7 @@ final class WC_Kledo {
 	 * @return \WC_Kledo_Connection
 	 * @since 1.0.0
 	 */
-	public function get_connection_handler() {
+	public function get_connection_handler(): WC_Kledo_Connection {
 		return $this->connection_handler;
 	}
 
@@ -267,7 +267,7 @@ final class WC_Kledo {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_id() {
+	public function get_id(): string {
 		return self::PLUGIN_ID;
 	}
 
@@ -277,7 +277,7 @@ final class WC_Kledo {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function is_plugin_settings() {
+	public function is_plugin_settings(): bool {
 		return is_admin() && WC_Kledo_Admin::PAGE_ID === wc_kledo_get_requested_value( 'page' );
 	}
 
@@ -288,7 +288,7 @@ final class WC_Kledo {
 	 * @return string plugin id with dashes in place of underscores
 	 * @since 1.0.0
 	 */
-	public function get_id_dasherized() {
+	public function get_id_dasherized(): string {
 		return str_replace( '_', '-', $this->get_id() );
 	}
 
@@ -298,7 +298,7 @@ final class WC_Kledo {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_settings_url() {
+	public function get_settings_url(): string {
 		return admin_url( 'admin.php?page=' . WC_Kledo_Admin::PAGE_ID );
 	}
 
@@ -308,7 +308,7 @@ final class WC_Kledo {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function asset_dir_url() {
+	public function asset_dir_url(): string {
 		return $this->plugin_url() . '/assets';
 	}
 
@@ -318,7 +318,7 @@ final class WC_Kledo {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function plugin_url() {
+	public function plugin_url(): string {
 		return untrailingslashit( plugins_url( '/', WC_KLEDO_PLUGIN_FILE ) );
 	}
 }
@@ -329,6 +329,6 @@ final class WC_Kledo {
  * @return \WC_Kledo|null
  * @since  1.0.0
  */
-function wc_kledo() {
+function wc_kledo(): ?WC_Kledo {
 	return WC_Kledo::instance();
 }

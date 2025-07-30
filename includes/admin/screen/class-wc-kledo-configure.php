@@ -10,7 +10,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const ID = 'configure';
+	public const ID = 'configure';
 
 	/**
 	 * The API connection setting ID.
@@ -18,7 +18,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const SETTING_ENABLE_API_CONNECTION = 'wc_kledo_enable_api_connection';
+	public const SETTING_ENABLE_API_CONNECTION = 'wc_kledo_enable_api_connection';
 
 	/**
 	 * The client id setting ID.
@@ -26,7 +26,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const SETTING_CLIENT_ID = 'wc_kledo_client_id';
+	public const SETTING_CLIENT_ID = 'wc_kledo_client_id';
 
 	/**
 	 * The client secret setting ID.
@@ -34,7 +34,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const SETTING_CLIENT_SECRET = 'wc_kledo_client_secret';
+	public const SETTING_CLIENT_SECRET = 'wc_kledo_client_secret';
 
 	/**
 	 * The API endpoint setting ID.
@@ -42,7 +42,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const SETTING_API_ENDPOINT = 'wc_kledo_api_endpoint';
+	public const SETTING_API_ENDPOINT = 'wc_kledo_api_endpoint';
 
 	/**
 	 * The class constructor.
@@ -66,7 +66,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function init_hooks() {
+	private function init_hooks(): void {
 		add_action( 'woocommerce_admin_field_wc_kledo_configure_title', array( $this, 'render_title' ) );
 		add_action( 'woocommerce_admin_field_wc_kledo_redirect_uri', array( $this, 'redirect_uri' ) );
 		add_action( 'woocommerce_admin_field_wc_kledo_manage_connection', array( $this, 'manage_connection' ) );
@@ -81,7 +81,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function token_expires_in( $field ) {
+	public function token_expires_in( array $field ): void {
 		$is_connected = wc_kledo()->get_connection_handler()->is_connected();
 
 		if ( ! $is_connected ) {
@@ -118,7 +118,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_title( $field ) {
+	public function render_title( array $field ): void {
 		?>
 
 		<h2><?php echo $field['title']; ?></h2>
@@ -136,7 +136,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function redirect_uri( $field ) {
+	public function redirect_uri( array $field ): void {
 		?>
 
 		<tr>
@@ -170,7 +170,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function manage_connection( array $field ) {
+	public function manage_connection( array $field ): void {
 		$is_connected = wc_kledo()->get_connection_handler()->is_connected();
 
 		?>
@@ -213,7 +213,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @return array
      * @since 1.0.0
 	 */
-	public function get_settings() {
+	public function get_settings(): array {
 		return array(
 			array(
 				'type'  => 'wc_kledo_configure_title',

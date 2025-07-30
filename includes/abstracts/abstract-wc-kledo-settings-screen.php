@@ -10,7 +10,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	protected $id;
+	protected string $id;
 
 	/**
 	 * The settings screen label.
@@ -18,7 +18,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	protected $label;
+	protected string $label;
 
 	/**
 	 * The settings screen title.
@@ -26,15 +26,15 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	protected $title;
+	protected string $title;
 
 	/**
 	 * The settings screen description.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected $description;
+	protected ?string $description = null;
 
 	/**
 	 * Render the settings screen.
@@ -42,7 +42,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render() {
+	public function render(): void {
 		/**
 		 * Filters the screen settings.
 		 *
@@ -90,7 +90,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function save() {
+	public function save(): void {
 		woocommerce_update_options( $this->get_settings() );
 	}
 
@@ -100,7 +100,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	protected function is_current_screen_page() {
+	protected function is_current_screen_page(): bool {
 		if ( WC_Kledo_Admin::PAGE_ID !== wc_kledo_get_requested_value( 'page' ) ) {
 			return false;
 		}
@@ -118,7 +118,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return array
 	 * @since 1.0.0
 	 */
-	abstract public function get_settings();
+	abstract public function get_settings(): array;
 
 	/**
 	 * Get the message to display when the plugin is disconnected.
@@ -126,7 +126,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_disconnected_message() {
+	public function get_disconnected_message(): string {
 		return '';
 	}
 
@@ -136,7 +136,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_id() {
+	public function get_id(): string {
 		return $this->id;
 	}
 
@@ -146,7 +146,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_label() {
+	public function get_label(): string {
 		/**
 		 * Filters the screen label.
 		 *
@@ -163,7 +163,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_title() {
+	public function get_title(): string {
 		/**
 		 * Filters the screen title.
 		 *
@@ -177,10 +177,10 @@ abstract class WC_Kledo_Settings_Screen {
 	/**
 	 * Gets the screen description.
 	 *
-	 * @return string
+	 * @return string|null
 	 * @since 1.0.0
 	 */
-	public function get_description() {
+	public function get_description(): ?string {
 		/**
 		 * Filters the screen description.
 		 *

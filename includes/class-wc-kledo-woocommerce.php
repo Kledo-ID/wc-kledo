@@ -22,7 +22,7 @@ class WC_Kledo_WooCommerce {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function setup_hooks() {
+	public function setup_hooks(): void {
 		$is_enable = wc_string_to_bool( get_option( WC_Kledo_Configure_Screen::SETTING_ENABLE_API_CONNECTION ) );
 
 		if ( ! $is_enable ) {
@@ -39,7 +39,7 @@ class WC_Kledo_WooCommerce {
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	public function create_invoice( $order_id ) {
+	public function create_invoice( $order_id ): void {
 		$order = wc_get_order( $order_id );
 
 		$request = new WC_Kledo_Request_Invoice();

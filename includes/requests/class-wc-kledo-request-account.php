@@ -15,7 +15,7 @@ class WC_Kledo_Request_Account extends WC_Kledo_Request {
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	public function get_accounts_suggestion_per_page( $search, $page = 1, $per_page = 10 ) {
+	public function get_accounts_suggestion_per_page( string $search, int $page = 1, int $per_page = 10 ) {
 		$this->set_endpoint( 'finance/accounts/suggestionPerPage' );
 		$this->set_method( 'GET' );
 
