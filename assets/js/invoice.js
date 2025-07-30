@@ -18,6 +18,14 @@ jQuery(document).ready(function ($) {
                 $element.css('pointer-events', 'none').css('opacity', '0.4');
             }
         });
+
+        const $warehouseField = $('.warehouse-field');
+
+        if (enable) {
+            $warehouseField.prop('disabled', false);
+        } else {
+            $warehouseField.prop('disabled', true);
+        }
     }
 
     // Disable field if connection status disconnected.
