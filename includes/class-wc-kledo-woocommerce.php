@@ -35,6 +35,8 @@ class WC_Kledo_WooCommerce {
 	/**
 	 * Send invoice to kledo.
 	 *
+	 * @param  mixed  $order_id
+	 *
 	 * @return void
 	 * @throws \Exception
 	 * @since 1.0.0
