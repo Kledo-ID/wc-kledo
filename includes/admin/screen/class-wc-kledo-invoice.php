@@ -59,7 +59,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		add_action( 'init', function () {
+		add_action( 'load-woocommerce_page_wc-kledo', function () {
 			$this->id    = self::ID;
 			$this->label = __( 'Invoice', WC_KLEDO_TEXT_DOMAIN );
 			$this->title = __( 'Invoice', WC_KLEDO_TEXT_DOMAIN );
