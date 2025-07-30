@@ -181,7 +181,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 
 			array(
 				'id'      => self::INVOICE_TAG_OPTION_NAME,
-				'title'   => __( 'Tags', WC_KLEDO_TEXT_DOMAIN ),
+				'title'   => __( 'Tags (Multiple tag separated by comma)', WC_KLEDO_TEXT_DOMAIN ),
 				'type'    => 'text',
 				'class'   => 'invoice-field',
 				'default' => 'WooCommerce',
