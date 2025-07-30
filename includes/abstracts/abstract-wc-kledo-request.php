@@ -72,7 +72,7 @@ abstract class WC_Kledo_Request {
 	public function do_request(): bool {
 		// Check if connected.
 		if ( ! wc_kledo()->get_connection_handler()->is_connected() ) {
-			throw new Exception( __( "Can't do API request because the connection has not been made.", WC_KLEDO_TEXT_DOMAIN ) );
+			throw new \RuntimeException( __( "Can't do API request because the connection has not been made.", WC_KLEDO_TEXT_DOMAIN ) );
 		}
 
 		// Do the request.
