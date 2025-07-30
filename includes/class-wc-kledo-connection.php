@@ -67,7 +67,7 @@ class WC_Kledo_Connection {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		$this->setup_oauth_credentials();
+		add_action( 'load-woocommerce_page_wc-kledo', array( $this, 'setup_oauth_credentials' ) );
 	}
 
 	/**
@@ -76,7 +76,7 @@ class WC_Kledo_Connection {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function setup_oauth_credentials(): void {
+	public function setup_oauth_credentials(): void {
 		/**
 		 * Filters the client id.
 		 *
