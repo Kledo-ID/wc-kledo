@@ -179,6 +179,7 @@ class WC_Kledo_Connection {
 	 * Refresh the access token.
 	 *
 	 * @return bool
+	 * @throws \JsonException
 	 * @since 1.0.0
 	 */
 	public function refresh_access_token(): bool {
