@@ -7,26 +7,26 @@ abstract class WC_Kledo_Settings_Screen {
 	/**
 	 * The settings screen id.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected string $id;
+	protected ?string $id = null;
 
 	/**
 	 * The settings screen label.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected string $label;
+	protected ?string $label = null;
 
 	/**
 	 * The settings screen title.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected string $title;
+	protected ?string $title = null;
 
 	/**
 	 * The settings screen description.
@@ -133,10 +133,10 @@ abstract class WC_Kledo_Settings_Screen {
 	/**
 	 * Gets the screen ID.
 	 *
-	 * @return string
+	 * @return string|null
 	 * @since 1.0.0
 	 */
-	public function get_id(): string {
+	public function get_id(): ?string {
 		return $this->id;
 	}
 
