@@ -43,6 +43,12 @@ class WC_Kledo_WooCommerce {
 	 * @since 1.0.0
 	 */
 	public function create_invoice( int $order_id, WC_Order $order): void {
+		$is_enable = wc_string_to_bool( get_option( WC_Kledo_Invoice_Screen::ENABLE_INVOICE_OPTION_NAME ) );
+
+		if ( ! $is_enable ) {
+			return;
+		}
+
 		do_action( 'wc_kledo_create_invoice', $order_id, $order );
 
 		$request = new WC_Kledo_Request_Invoice();

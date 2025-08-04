@@ -13,6 +13,14 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	public const ID = 'invoice';
 
 	/**
+	 * The enable invoice option name.
+     *
+     * @var string
+     * @since 1.3.0
+	 */
+    public const ENABLE_INVOICE_OPTION_NAME = 'wc_kledo_enable_invoice';
+
+	/**
 	 * The invoice prefix option name.
 	 *
 	 * @var string
@@ -143,6 +151,15 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 			array(
 				'title' => __( 'Invoice', WC_KLEDO_TEXT_DOMAIN ),
 				'type'  => 'title',
+			),
+
+			array(
+				'id'       => self::ENABLE_INVOICE_OPTION_NAME,
+				'title'    => __( 'Enable Create Invoice', WC_KLEDO_TEXT_DOMAIN ),
+				'type'     => 'checkbox',
+				'class'    => 'invoice-field',
+				'default'  => 'yes',
+				'desc'     => __( 'Create new invoice on Kledo when order status is <strong>Completed</strong>.', WC_KLEDO_TEXT_DOMAIN ),
 			),
 
 			array(
