@@ -216,12 +216,12 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	public function get_settings(): array {
 		return array(
-			array(
+			'title' => array(
 				'type'  => 'wc_kledo_configure_title',
 				'title' => __( 'Configure', WC_KLEDO_TEXT_DOMAIN ),
 			),
 
-			array(
+			'enable_integration' => array(
 				'id'      => self::SETTING_ENABLE_API_CONNECTION,
 				'title'   => __( 'Enable Integration', WC_KLEDO_TEXT_DOMAIN ),
 				'type'    => 'checkbox',
@@ -229,37 +229,37 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 				'default' => 'yes',
 			),
 
-			array(
+			'client_id' => array(
 				'id'       => self::SETTING_CLIENT_ID,
 				'title'    => __( 'Client ID', WC_KLEDO_TEXT_DOMAIN ),
 				'type'     => 'text',
 			),
 
-			array(
+			'client_secret' => array(
 				'id'       => self::SETTING_CLIENT_SECRET,
 				'title'    => __( 'Client Secret', WC_KLEDO_TEXT_DOMAIN ),
 				'type'     => 'text',
 			),
 
-			array(
+			'api_endpoint' => array(
 				'id'       => self::SETTING_API_ENDPOINT,
 				'title'    => __( 'API Endpoint', WC_KLEDO_TEXT_DOMAIN ),
 				'type'     => 'text',
 			),
 
-			array(
+			'redirect_uri' => array(
 				'type' => 'wc_kledo_redirect_uri',
 			),
 
-			array(
+			'manage_connection' => array(
 				'type' => 'wc_kledo_manage_connection',
 			),
 
-			array(
+			'token_expires_in' => array(
 				'type' => 'wc_kledo_token_expires_in',
 			),
 
-			array(
+			'section_end' => array(
 				'type' => 'sectionend',
 			),
 		);

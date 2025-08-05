@@ -148,12 +148,12 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	public function get_settings(): array {
 		return array(
-			array(
+			'title' => array(
 				'title' => __( 'Invoice', WC_KLEDO_TEXT_DOMAIN ),
 				'type'  => 'title',
 			),
 
-			array(
+			'enable_create_invoice' => array(
 				'id'       => self::ENABLE_INVOICE_OPTION_NAME,
 				'title'    => __( 'Enable Create Invoice', WC_KLEDO_TEXT_DOMAIN ),
 				'type'     => 'checkbox',
@@ -162,7 +162,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'desc'     => __( 'Create new invoice on Kledo when order status is <strong>Completed</strong>.', WC_KLEDO_TEXT_DOMAIN ),
 			),
 
-			array(
+			'invoice_prefix' => array(
 				'id'      => self::INVOICE_PREFIX_OPTION_NAME,
 				'title'   => __( 'Invoice Prefix', WC_KLEDO_TEXT_DOMAIN ),
 				'type'    => 'text',
@@ -170,7 +170,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'default' => 'WC/INV/',
 			),
 
-			array(
+			'invoice_status' => array(
 				'id'      => self::INVOICE_STATUS_OPTION_NAME,
 				'title'   => __( 'Invoice Status on Created', WC_KLEDO_TEXT_DOMAIN ),
 				'type'    => 'select',
@@ -182,21 +182,21 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				),
 			),
 
-			array(
+			'payment_account' => array(
 				'id'    => self::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME,
 				'title' => __( 'Payment Account', WC_KLEDO_TEXT_DOMAIN ),
 				'type'  => 'payment_account',
 				'class' => 'invoice-field payment-account-field',
 			),
 
-			array(
+			'warehouse' => array(
 				'id'    => self::INVOICE_WAREHOUSE_OPTION_NAME,
 				'title' => __( 'Warehouse', WC_KLEDO_TEXT_DOMAIN ),
 				'type'  => 'warehouse',
 				'class' => 'invoice-field warehouse-field',
 			),
 
-			array(
+			'tags' => array(
 				'id'      => self::INVOICE_TAG_OPTION_NAME,
 				'title'   => __( 'Tags (Multiple tag separated by comma)', WC_KLEDO_TEXT_DOMAIN ),
 				'type'    => 'text',
@@ -204,7 +204,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'default' => 'WooCommerce',
 			),
 
-			array(
+			'section_end' => array(
 				'type' => 'sectionend',
 			),
 		);
