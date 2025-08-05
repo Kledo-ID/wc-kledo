@@ -45,7 +45,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	public const INVOICE_PAYMENT_ACCOUNT_OPTION_NAME = 'wc_kledo_invoice_payment_account';
 
 	/**
-	 * The invoice payment warehouse option name.
+	 * The invoice warehouse option name.
 	 *
 	 * @var string
 	 * @since 1.0.0
@@ -53,7 +53,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	public const INVOICE_WAREHOUSE_OPTION_NAME = 'wc_kledo_warehouse';
 
 	/**
-	 * The invoice payment tag option name.
+	 * The invoice tag option name.
 	 *
 	 * @var string
 	 * @since 1.0.0
