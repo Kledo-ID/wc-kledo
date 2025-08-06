@@ -59,6 +59,12 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 		} );
 
 		add_action( 'woocommerce_admin_field_order_warehouse', array( $this, 'render_order_warehouse_field' ) );
+		add_action( 'woocommerce_admin_field_order_tags', array( $this, 'render_order_tags_field' ) );
+
+		add_filter( 'woocommerce_admin_settings_sanitize_option_' . self::ORDER_TAG_OPTION_NAME, array(
+			$this,
+			'sanitize_tags'
+		), 10, 3 );
 	}
 
 	public function get_settings(): array {
@@ -93,11 +99,10 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 			),
 
 			'tags' => array(
-				'id'      => self::ORDER_TAG_OPTION_NAME,
-				'title'   => __( 'Tags (Multiple tag separated by comma)', WC_KLEDO_TEXT_DOMAIN ),
-				'type'    => 'text',
-				'class'   => 'wc-kledo-field',
-				'default' => 'WooCommerce',
+				'id'                => self::ORDER_TAG_OPTION_NAME,
+				'title'             => __( 'Tags', WC_KLEDO_TEXT_DOMAIN ),
+				'type'              => 'order_tags',
+				'class'             => 'wc-kledo-field wc-kledo-tags-field',
 			),
 
 			'section_end' => array(
@@ -107,7 +112,7 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Renders the warehouse field.
+	 * Render the warehouse field.
 	 *
 	 * @param  array  $field  field data
 	 *
@@ -118,5 +123,19 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 		$value = get_option( self::ORDER_WAREHOUSE_OPTION_NAME );
 
 		$this->render_warehouse_field( $field, $value );
+	}
+
+	/**
+	 * Render the tags field.
+	 *
+	 * @param  array  $field
+	 *
+	 * @return void
+	 * @since 1.3.0
+	 */
+	public function render_order_tags_field( array $field ): void {
+		$tags = wc_kledo_get_tags( self::ORDER_TAG_OPTION_NAME );
+
+		$this->render_tags_field( $field, $tags );
 	}
 }

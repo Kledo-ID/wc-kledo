@@ -28,7 +28,7 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Renders the screen.
+	 * Render the screen.
 	 *
 	 * @return void
 	 * @since 1.0.0

@@ -118,6 +118,16 @@ jQuery(document).ready(function ($) {
     // Warehouse.
     wp_ajax('.wc-kledo-warehouse-field', 'wc_kledo_warehouse', 'warehouse_placeholder', -1);
 
+    // Tags.
+    let $wc_kledo_tags = $('.wc-kledo-tags-field');
+
+    if ($wc_kledo_tags.length) {
+        $wc_kledo_tags.selectWoo({
+            tags: true,
+            tokenSeparators: [',']
+        });
+    }
+
     // Disable field if connection status disconnected.
     if ($('form.wc-kledo-settings').hasClass('disconnected')) {
         toggleSettingOptions(false);

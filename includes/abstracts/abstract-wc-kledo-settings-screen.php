@@ -192,7 +192,7 @@ abstract class WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Renders the warehouse field.
+	 * Render the warehouse field.
 	 *
 	 * @param  array  $field  field data
 	 * @param  mixed  $value
@@ -218,5 +218,52 @@ abstract class WC_Kledo_Settings_Screen {
 		</tr>
 
 		<?php
+	}
+
+	/**
+	 * Render the tags field.
+	 *
+	 * @param  array  $field  field  data
+	 * @param  mixed  $tags
+	 *
+	 * @return void
+	 * @since 1.3.0
+	 */
+	protected function render_tags_field( array $field, array $tags ): void {
+		?>
+
+		<tr>
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['title'] ); ?></label>
+			</th>
+
+			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
+				<select name="<?php echo esc_attr( $field['id'] ); ?>[]" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>" multiple="multiple">
+					<?php if ( $tags ): ?>
+                        <?php foreach ($tags as $tag): ?>
+						    <option value="<?php echo $tag; ?>" selected="selected"><?php echo $tag; ?></option>
+                        <?php endforeach; ?>
+					<?php endif; ?>
+				</select>
+			</td>
+		</tr>
+
+		<?php
+	}
+
+	/**
+	 * Sanitize the tags value.
+	 *
+	 * @param  mixed  $value
+	 * @param  mixed  $option
+	 * @param  mixed  $raw_value
+	 *
+	 * @return string
+	 * @since 1.3.0
+	 */
+	public function sanitize_tags( $value, $option, $raw_value ): string {
+		$tags = array_filter( array_map( 'wc_clean', (array) $raw_value ) );
+
+		return implode( ',', $tags );
 	}
 }

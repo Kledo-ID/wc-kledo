@@ -179,7 +179,7 @@ class WC_Kledo_Admin {
 	}
 
 	/**
-	 * Renders the settings page.
+	 * Render the settings page.
 	 *
 	 * @return void
 	 * @since 1.0.0
