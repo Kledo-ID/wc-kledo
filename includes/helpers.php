@@ -110,7 +110,7 @@ if ( ! function_exists( 'wc_kledo_get_invoice_prefix' ) ) {
 	 * @since 1.0.0
 	 */
 	function wc_kledo_get_invoice_prefix(): string {
-		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME );
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME, 'WC/INV/' );
 	}
 }
 
@@ -133,8 +133,8 @@ if ( ! function_exists( 'wc_kledo_get_invoice_warehouse' ) ) {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_invoice_warehouse(): ?string {
-		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME );
+	function wc_kledo_get_invoice_warehouse(): string {
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME, '' );
 	}
 }
 
@@ -142,11 +142,11 @@ if ( ! function_exists( 'wc_kledo_get_order_warehouse' ) ) {
 	/**
 	 * Get the warehouse.
 	 *
-	 * @return string|null
+	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_order_warehouse(): ?string {
-		return get_option( WC_Kledo_Order_Screen::ORDER_WAREHOUSE_OPTION_NAME, null );
+	function wc_kledo_get_order_warehouse(): string {
+		return get_option( WC_Kledo_Order_Screen::ORDER_WAREHOUSE_OPTION_NAME, '' );
 	}
 }
 
@@ -158,7 +158,7 @@ if ( ! function_exists( 'wc_kledo_paid_status' ) ) {
 	 * @since 1.0.0
 	 */
 	function wc_kledo_paid_status(): string {
-		$status = get_option( WC_Kledo_Invoice_Screen::INVOICE_STATUS_OPTION_NAME );
+		$status = get_option( WC_Kledo_Invoice_Screen::INVOICE_STATUS_OPTION_NAME, 'no' );
 
 		return 'paid' === strtolower( $status ) ? 'yes' : 'no';
 	}
@@ -177,9 +177,11 @@ if ( ! function_exists( 'wc_kledo_get_payment_account' ) ) {
 		if ( $account ) {
 			$account = explode( '|', $account );
 			$account = array_map( 'trim', $account );
+
+			return $account[0];
 		}
 
-		return $account[0];
+		return '';
 	}
 }
 

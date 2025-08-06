@@ -44,7 +44,9 @@ class WC_Kledo_WooCommerce {
 	 * @since 1.0.0
 	 */
 	public function create_invoice( int $order_id, WC_Order $order): void {
-		$is_enable = wc_string_to_bool( get_option( WC_Kledo_Invoice_Screen::ENABLE_INVOICE_OPTION_NAME ) );
+		$is_enable = wc_string_to_bool(
+			get_option( WC_Kledo_Invoice_Screen::ENABLE_INVOICE_OPTION_NAME, 'yes' )
+		);
 
 		if ( ! $is_enable ) {
 			return;
@@ -67,7 +69,9 @@ class WC_Kledo_WooCommerce {
 	 * @since 1.3.0
 	 */
 	public function create_order( int $order_id, WC_Order $order ): void {
-		$is_enable = wc_string_to_bool( get_option( WC_Kledo_Order_Screen::ENABLE_ORDER_OPTION_NAME , 'yes') );
+		$is_enable = wc_string_to_bool(
+			get_option( WC_Kledo_Order_Screen::ENABLE_ORDER_OPTION_NAME , 'yes')
+		);
 
 		if ( ! $is_enable ) {
 			return;
