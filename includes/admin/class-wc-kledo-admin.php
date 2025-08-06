@@ -39,9 +39,10 @@ class WC_Kledo_Admin {
 	 */
 	public function __construct() {
 		$this->screens = array(
-			WC_Kledo_Configure_Screen::ID => new WC_Kledo_Configure_Screen(),
-			WC_Kledo_Invoice_Screen::ID   => new WC_Kledo_Invoice_Screen(),
-			WC_Kledo_Support_Screen::ID   => new WC_Kledo_Support_Screen(),
+			WC_Kledo_Configure_Screen::ID => new WC_Kledo_Configure_Screen,
+			WC_Kledo_Invoice_Screen::ID   => new WC_Kledo_Invoice_Screen,
+			WC_Kledo_Order_Screen::ID     => new WC_Kledo_Order_Screen,
+			WC_Kledo_Support_Screen::ID   => new WC_Kledo_Support_Screen,
 		);
 
 		$this->init_hooks();
@@ -57,9 +58,8 @@ class WC_Kledo_Admin {
 	 */
 	private function init_hooks(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
-
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_js' ) );
 		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
-
 		add_action( 'wp_loaded', array( $this, 'save' ) );
 	}
 
@@ -259,5 +259,62 @@ class WC_Kledo_Admin {
 		$screens = $this->get_screens();
 
 		return ! empty( $screens[ $screen_id ] ) && $screens[ $screen_id ] instanceof WC_Kledo_Settings_Screen ? $screens[ $screen_id ] : null;
+	}
+
+	/**
+	 * Enqueues the javascript.
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	public function enqueue_js(): void {
+		if ( ! $this->is_current_page_on( 'invoice', 'order' ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'wc-kledo',
+			wc_kledo()->asset_dir_url() . '/js/kledo.js',
+			array( 'jquery', 'selectWoo' ),
+			WC_KLEDO_VERSION
+		);
+
+		wp_localize_script(
+			'wc-kledo',
+			'wc_kledo',
+			array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'i18n'     => array(
+					'payment_account_placeholder' => esc_html__( 'Select Account', WC_KLEDO_TEXT_DOMAIN ),
+					'warehouse_placeholder'       => esc_html__( 'Select Warehouse', WC_KLEDO_TEXT_DOMAIN ),
+
+					'error_loading' => esc_html__( 'The results could not be loaded.', WC_KLEDO_TEXT_DOMAIN ),
+					'loading_more'  => esc_html__( 'Loading more results...', WC_KLEDO_TEXT_DOMAIN ),
+					'no_result'     => esc_html__( 'No results found', WC_KLEDO_TEXT_DOMAIN ),
+					'searching'     => esc_html__( 'Loading...', WC_KLEDO_TEXT_DOMAIN ),
+					'search'        => esc_html__( 'Search', WC_KLEDO_TEXT_DOMAIN ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Determines whether the current screen is the same as identified by the tab.
+	 *
+	 * @param  string  ...$tabs
+	 *
+	 * @return bool
+	 * @since 1.3.0
+	 */
+	protected function is_current_page_on(string ...$tabs): bool {
+		if ( self::PAGE_ID !== wc_kledo_get_requested_value( 'page' ) ) {
+			return false;
+		}
+
+		// Assume we are on configure tab by default
+		// because the link under menu doesn't include the tab query arg.
+		$currentTab = wc_kledo_get_requested_value( 'tab', 'configure' );
+
+		return ! empty( $currentTab ) && in_array( $currentTab, $tabs, true );
 	}
 }

@@ -114,15 +114,39 @@ if ( ! function_exists( 'wc_kledo_get_invoice_prefix' ) ) {
 	}
 }
 
-if ( ! function_exists( 'wc_kledo_get_warehouse' ) ) {
+if ( ! function_exists( 'wc_kledo_get_order_prefix' ) ) {
+	/**
+	 * Get the order prefix.
+	 *
+	 * @return string
+	 * @since 1.3.0
+	 */
+	function wc_kledo_get_order_prefix(): string {
+		return get_option( WC_Kledo_Order_Screen::ORDER_PREFIX_OPTION_NAME, 'WC/SO/' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_invoice_warehouse' ) ) {
 	/**
 	 * Get the warehouse.
 	 *
 	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_warehouse(): string {
+	function wc_kledo_get_invoice_warehouse(): ?string {
 		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_order_warehouse' ) ) {
+	/**
+	 * Get the warehouse.
+	 *
+	 * @return string|null
+	 * @since 1.0.0
+	 */
+	function wc_kledo_get_order_warehouse(): ?string {
+		return get_option( WC_Kledo_Order_Screen::ORDER_WAREHOUSE_OPTION_NAME, null );
 	}
 }
 
@@ -163,11 +187,13 @@ if ( ! function_exists( 'wc_kledo_get_tags' ) ) {
 	/**
 	 * Get the invoice tags.
 	 *
+	 * @param  string  $option_name
+	 *
 	 * @return array
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_tags(): array {
-		$tags = get_option( WC_Kledo_Invoice_Screen::INVOICE_TAG_OPTION_NAME );
+	function wc_kledo_get_tags(string $option_name): array {
+		$tags = get_option( $option_name, 'WooCommerce' );
 
 		return explode( ',', $tags );
 	}

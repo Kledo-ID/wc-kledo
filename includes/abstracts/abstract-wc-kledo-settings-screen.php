@@ -190,4 +190,33 @@ abstract class WC_Kledo_Settings_Screen {
 		 */
 		return (string) apply_filters( 'wc_kledo_admin_settings_' . $this->get_id() . '_screen_description', $this->description, $this );
 	}
+
+	/**
+	 * Renders the warehouse field.
+	 *
+	 * @param  array  $field  field data
+	 * @param  mixed  $value
+	 *
+	 * @return void
+	 * @since 1.3.0
+	 */
+	protected function render_warehouse_field( array $field, $value): void {
+		?>
+
+		<tr>
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['title'] ); ?></label>
+			</th>
+
+			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
+				<select name="<?php echo esc_attr( $field['id'] ); ?>" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>">
+					<?php if ( $value ): ?>
+						<option value="<?php echo esc_attr( $value ); ?>" selected="selected"><?php echo esc_attr( $value ); ?></option>
+					<?php endif; ?>
+				</select>
+			</td>
+		</tr>
+
+		<?php
+	}
 }
