@@ -9,7 +9,7 @@
  * Version: 1.3.0
  * Text Domain: wc-kledo
  * WC requires at least: 3.5.0
- * WC tested up to: 9.4.3
+ * WC tested up to: 10.0.4
  */
 
 // Exit if accessed directly.
