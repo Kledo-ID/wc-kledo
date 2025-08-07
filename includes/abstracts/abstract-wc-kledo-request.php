@@ -80,7 +80,8 @@ abstract class WC_Kledo_Request {
 	 */
 	protected function create_transaction( WC_Order $order, string $ref_number_prefix, ?string $warehouse, array $tags) {
 		$this->set_method( 'POST' );
-		$this->set_body( array(
+
+		$body = array(
 			'contact_name'               => $this->get_customer_name( $order ),
 			'contact_email'              => $order->get_billing_email(),
 			'contact_address'            => $order->get_billing_address_1(),
@@ -98,7 +99,14 @@ abstract class WC_Kledo_Request {
 			'paid'                       => wc_kledo_paid_status(),
 			'paid_to_account_code'       => wc_kledo_get_payment_account(),
 			'tags'                       => $tags,
-		) );
+		);
+
+		// Get shipping tracking data if exists.
+		if ($shipping_data = $this->get_shipping_tracking( $order ) ) {
+			$body['shipping_tracking'] = $shipping_data;
+		}
+
+		$this->set_body( $body );
 
 		$this->do_request();
 
@@ -121,6 +129,23 @@ abstract class WC_Kledo_Request {
 	 */
 	public function get_customer_name( WC_Order $order ): string {
 		return trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+	}
+
+	/**
+	 * Get shipping tracking data.
+	 *
+	 * @param  \WC_Order  $order
+	 *
+	 * @return array
+	 * @since 1.3.0
+	 */
+	protected function get_shipping_tracking( WC_Order $order ): array
+	{
+		if ( ! class_exists( 'WC_Shipment_Tracking' ) ) {
+			return [];
+		}
+
+		return $order->get_meta( '_wc_shipment_tracking_items' );
 	}
 
 	/**
