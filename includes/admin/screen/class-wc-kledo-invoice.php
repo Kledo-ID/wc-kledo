@@ -134,7 +134,10 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'type'     => 'checkbox',
 				'class'    => 'wc-kledo-field',
 				'default'  => 'yes',
-				'desc'     => __( 'Create new invoice on Kledo when order status is <strong>Completed</strong>.', WC_KLEDO_TEXT_DOMAIN ),
+				'desc'     => sprintf(
+					__( 'Create new invoice on Kledo when order status is %s.', WC_KLEDO_TEXT_DOMAIN ),
+                    '<strong>Completed</strong>'
+                ),
 			),
 
 			'invoice_prefix' => array(

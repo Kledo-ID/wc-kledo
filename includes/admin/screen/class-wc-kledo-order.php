@@ -80,7 +80,10 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 				'type'    => 'checkbox',
 				'class'   => 'wc-kledo-field',
 				'default' => 'yes',
-				'desc'    => __( 'Create new order on Kledo when order status is <strong>Processing</strong>.', WC_KLEDO_TEXT_DOMAIN ),
+				'desc'    => sprintf(
+					__( 'Create new order on Kledo when order status is %s.', WC_KLEDO_TEXT_DOMAIN ),
+					'<strong>Processing</strong>'
+				),
 			),
 
 			'order_prefix' => array(

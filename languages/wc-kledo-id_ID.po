@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kledo\n"
-"POT-Creation-Date: 2024-12-10 16:25+0700\n"
-"PO-Revision-Date: 2024-12-10 16:25+0700\n"
+"POT-Creation-Date: 2025-08-07 13:02+0700\n"
+"PO-Revision-Date: 2025-08-07 13:02+0700\n"
 "Last-Translator: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language-Team: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language: id_ID\n"
@@ -21,11 +21,11 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/abstracts/abstract-wc-kledo-request.php:75
+#: includes/abstracts/abstract-wc-kledo-request.php:194
 msgid "Can't do API request because the connection has not been made."
 msgstr "Tidak dapat melakukan permintaan API karena koneksi belum dibuat."
 
-#: includes/abstracts/abstract-wc-kledo-request.php:97
+#: includes/abstracts/abstract-wc-kledo-request.php:216
 msgid "There was a problem when connecting to the API."
 msgstr "Terjadi masalah pada saat menghubungkan ke API."
 
@@ -53,32 +53,60 @@ msgstr "Pengaturan tidak dapat disimpan. %s"
 msgid "Kledo"
 msgstr "Kledo"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:55
-#: includes/admin/screen/class-wc-kledo-configure.php:56
-#: includes/admin/screen/class-wc-kledo-configure.php:218
+#: includes/admin/class-wc-kledo-admin.php:288
+msgid "Select Account"
+msgstr "Pilih Akun"
+
+#: includes/admin/class-wc-kledo-admin.php:289
+msgid "Select Warehouse"
+msgstr "Pilih Gudang"
+
+#: includes/admin/class-wc-kledo-admin.php:291
+msgid "The results could not be loaded."
+msgstr "Hasil tidak dapat dimuat."
+
+#: includes/admin/class-wc-kledo-admin.php:292
+msgid "Loading more results..."
+msgstr "Memuat hasil lainnya..."
+
+#: includes/admin/class-wc-kledo-admin.php:293
+msgid "No results found"
+msgstr "Tidak ada hasil yang ditemukan"
+
+#: includes/admin/class-wc-kledo-admin.php:294
+msgid "Loading..."
+msgstr "Memuat..."
+
+#: includes/admin/class-wc-kledo-admin.php:295
+msgid "Search"
+msgstr "Cari"
+
+#: includes/admin/screen/class-wc-kledo-configure.php:57
+#: includes/admin/screen/class-wc-kledo-configure.php:58
+#: includes/admin/screen/class-wc-kledo-configure.php:221
 msgid "Configure"
 msgstr "Konfigurasi"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:93
-#: includes/admin/screen/class-wc-kledo-configure.php:99
+#: includes/admin/screen/class-wc-kledo-configure.php:96
+#: includes/admin/screen/class-wc-kledo-configure.php:102
 msgid "Token Expires In"
 msgstr "Token Kadaluarsa Pada"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:142
-#: includes/admin/screen/class-wc-kledo-configure.php:148
+#: includes/admin/screen/class-wc-kledo-configure.php:145
+#: includes/admin/screen/class-wc-kledo-configure.php:151
 msgid "Redirect URI"
 msgstr "Pengalihan URI"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:154
+#: includes/admin/screen/class-wc-kledo-configure.php:157
 msgid "The redirect URI that should enter when create new OAuth App."
 msgstr "Pengalihan URL yang harus dimasukkan saat membuat baru aplikasi OAuth."
 
-#: includes/admin/screen/class-wc-kledo-configure.php:178
-#: includes/admin/screen/class-wc-kledo-configure.php:184
+#: includes/admin/screen/class-wc-kledo-configure.php:181
+#: includes/admin/screen/class-wc-kledo-configure.php:187
 msgid "Manage Connection"
 msgstr "Kelola Koneksi"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:189
+#: includes/admin/screen/class-wc-kledo-configure.php:192
 msgid ""
 "Please fill in the Client ID, Client Secret and API Endpoint fields first "
 "and save before continuing."
@@ -86,110 +114,112 @@ msgstr ""
 "Silahkan isi kolom Client ID, Client Secret dan API Endpoint terlebih dahulu "
 "dan simpan sebelum melanjutkan."
 
-#: includes/admin/screen/class-wc-kledo-configure.php:193
+#: includes/admin/screen/class-wc-kledo-configure.php:196
 msgid "Request Token"
 msgstr "Permintaan Token"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:196
+#: includes/admin/screen/class-wc-kledo-configure.php:199
 msgid "Disconnect"
 msgstr "Memutuskan"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:198
+#: includes/admin/screen/class-wc-kledo-configure.php:201
 msgid "Refresh Token"
 msgstr "Segarkan Token"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:223
+#: includes/admin/screen/class-wc-kledo-configure.php:226
 msgid "Enable Integration"
 msgstr "Aktifkan Integrasi"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:231
+#: includes/admin/screen/class-wc-kledo-configure.php:234
 msgid "Client ID"
 msgstr "Client ID"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:237
+#: includes/admin/screen/class-wc-kledo-configure.php:240
 msgid "Client Secret"
 msgstr "Client Secret"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:243
+#: includes/admin/screen/class-wc-kledo-configure.php:246
 msgid "API Endpoint"
 msgstr "API Endpoint"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:63
-#: includes/admin/screen/class-wc-kledo-invoice.php:64
-#: includes/admin/screen/class-wc-kledo-invoice.php:141
+#: includes/admin/screen/class-wc-kledo-invoice.php:74
+#: includes/admin/screen/class-wc-kledo-invoice.php:75
+#: includes/admin/screen/class-wc-kledo-invoice.php:127
 msgid "Invoice"
 msgstr "Tagihan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:147
-msgid "Invoice Prefix"
-msgstr "Awalan Tagihan"
+#: includes/admin/screen/class-wc-kledo-invoice.php:133
+msgid "Enable Create Invoice"
+msgstr "Aktifkan Pembuatan Tagihan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:155
+#: includes/admin/screen/class-wc-kledo-invoice.php:138
+#, php-format
+msgid "Create new invoice on Kledo when order status is %s."
+msgstr "Buat tagihan baru di Kledo ketika status pesanan %s."
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:145
+msgid "Invoice Prefix"
+msgstr "Awalan Nomor Tagihan"
+
+#: includes/admin/screen/class-wc-kledo-invoice.php:153
 msgid "Invoice Status on Created"
 msgstr "Status Tagihan Saat Dibuat"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:160
+#: includes/admin/screen/class-wc-kledo-invoice.php:158
 msgid "Paid"
 msgstr "Lunas"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:161
+#: includes/admin/screen/class-wc-kledo-invoice.php:159
 msgid "Unpaid"
 msgstr "Belum Dibayar"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:167
+#: includes/admin/screen/class-wc-kledo-invoice.php:165
 msgid "Payment Account"
 msgstr "Akun Pembayaran"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:174
+#: includes/admin/screen/class-wc-kledo-invoice.php:172
+#: includes/admin/screen/class-wc-kledo-order.php:99
 msgid "Warehouse"
 msgstr "Gudang"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:181
+#: includes/admin/screen/class-wc-kledo-invoice.php:179
+#: includes/admin/screen/class-wc-kledo-order.php:106
 msgid "Tags"
 msgstr "Tag"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:217
-msgid "Select Account"
-msgstr "Pilih Akun"
+#: includes/admin/screen/class-wc-kledo-order.php:57
+#: includes/admin/screen/class-wc-kledo-order.php:58
+#: includes/admin/screen/class-wc-kledo-order.php:73
+msgid "Order"
+msgstr "Pesanan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:218
-msgid "Select Warehouse"
-msgstr "Pilih Gudang"
+#: includes/admin/screen/class-wc-kledo-order.php:79
+msgid "Enable Create Order"
+msgstr "Aktifkan Pembuatan Pesanan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:220
-msgid "The results could not be loaded."
-msgstr "Hasil tidak dapat dimuat."
+#: includes/admin/screen/class-wc-kledo-order.php:84
+#, php-format
+msgid "Create new order on Kledo when order status is %s."
+msgstr "Buat pesanan baru di Kledo ketika status pesanan %s."
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:221
-msgid "Loading more results..."
-msgstr "Memuat hasil lainnya..."
+#: includes/admin/screen/class-wc-kledo-order.php:91
+msgid "Order Prefix"
+msgstr "Awalan Nomor Pesanan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:222
-msgid "No results found"
-msgstr "Tidak ada hasil yang ditemukan"
-
-#: includes/admin/screen/class-wc-kledo-invoice.php:223
-msgid "Searching..."
-msgstr "Mencari..."
-
-#: includes/admin/screen/class-wc-kledo-invoice.php:224
-msgid "Search"
-msgstr "Cari"
-
-#: includes/admin/screen/class-wc-kledo-support.php:23
-#: includes/admin/screen/class-wc-kledo-support.php:24
+#: includes/admin/screen/class-wc-kledo-support.php:25
+#: includes/admin/screen/class-wc-kledo-support.php:26
 msgid "Support"
 msgstr "Bantuan"
 
-#: includes/admin/screen/class-wc-kledo-support.php:39
+#: includes/admin/screen/class-wc-kledo-support.php:42
 msgid "Need help?"
 msgstr "Butuh bantuan?"
 
-#: includes/admin/screen/class-wc-kledo-support.php:44
+#: includes/admin/screen/class-wc-kledo-support.php:47
 msgid "Request Support"
 msgstr "Minta Bantuan"
 
-#: includes/admin/screen/class-wc-kledo-support.php:47
+#: includes/admin/screen/class-wc-kledo-support.php:50
 msgid ""
 "Still need help? Submit a message and one of our support experts will get "
 "back to you as soon as possible."
@@ -197,7 +227,7 @@ msgstr ""
 "Masih perlu bantuan? Kirim pesan dan salah satu pakar dukungan kami akan "
 "menghubungi anda sesegera mungkin."
 
-#: includes/class-wc-kledo-connection.php:205
+#: includes/class-wc-kledo-connection.php:206
 msgid ""
 "There was a problem when refreshing the access token. Please disconnect and "
 "try to request new token."
@@ -205,15 +235,15 @@ msgstr ""
 "Terjadi masalah saat menyegarkan akses token. Harap putuskan sambungan dan "
 "coba minta token baru."
 
-#: includes/class-wc-kledo-connection.php:292
+#: includes/class-wc-kledo-connection.php:296
 msgid "Does not expire"
 msgstr "Tidak kadaluwarsa"
 
-#: includes/class-wc-kledo-connection.php:296
+#: includes/class-wc-kledo-connection.php:300
 msgid "Expired"
 msgstr "Kadaluwarsa"
 
-#: includes/class-wc-kledo-connection.php:399
+#: includes/class-wc-kledo-connection.php:404
 msgid ""
 "There was a problem when converting authorization code from the server. "
 "Please try again later."
@@ -221,19 +251,19 @@ msgstr ""
 "Terjadi masalah saat mengonversi kode otorisasi dari server. Silakan coba "
 "lagi nanti."
 
-#: includes/class-wc-kledo-issuing-token.php:112
+#: includes/class-wc-kledo-issuing-token.php:113
 msgid "State parameter not valid. Please request a new token again."
 msgstr "State parameter tidak valid. Silakan minta token baru lagi."
 
-#: includes/class-wc-kledo-issuing-token.php:131
+#: includes/class-wc-kledo-issuing-token.php:132
 msgid "Successfully connected to kledo app. "
 msgstr "Berhasil menghubungkan aplikasi kledo "
 
-#: includes/class-wc-kledo-issuing-token.php:151
+#: includes/class-wc-kledo-issuing-token.php:152
 msgid "Successfully disconnect the connection."
 msgstr "Berhasil memutuskan koneksi."
 
-#: includes/class-wc-kledo-issuing-token.php:182
+#: includes/class-wc-kledo-issuing-token.php:183
 msgid "Successfully refresh the access token."
 msgstr "Berhasil menyegarkan akses token."
 
@@ -255,7 +285,7 @@ msgstr ""
 "Pengaturan WooCommerce Kledo terletak di dalam menu %1$sWooCommerce > Kledo"
 "%2$s."
 
-#: kledo.php:296
+#: kledo.php:297
 #, php-format
 msgid "WooCommerce Kledo requires %s to be installed and active."
 msgstr "Diperlukan %s untuk menggunakan WooCommerce Kledo."
