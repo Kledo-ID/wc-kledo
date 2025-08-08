@@ -10,7 +10,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const MESSAGE_TRANSIENT_PREFIX = '_wp_admin_message_';
+	public const MESSAGE_TRANSIENT_PREFIX = '_wp_admin_message_';
 
 	/**
 	 * The message id GET name.
@@ -18,15 +18,15 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const MESSAGE_ID_GET_NAME = 'wc_kledo';
+	public const MESSAGE_ID_GET_NAME = 'wc_kledo';
 
 	/**
 	 * The unique message identifier.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	private $message_id;
+	private ?string $message_id;
 
 	/**
 	 * The array of messages.
@@ -34,7 +34,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @var array
 	 * @since 1.0.0
 	 */
-	private $messages = array();
+	private array $messages = array();
 
 	/**
 	 * The array of error messages.
@@ -42,7 +42,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @var array
 	 * @since 1.0.0
 	 */
-	private $errors = array();
+	private array $errors = array();
 
 	/**
 	 * The array of warning messages.
@@ -50,7 +50,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @var array
 	 * @since 1.0.0
 	 */
-	private $warnings = array();
+	private array $warnings = array();
 
 	/**
 	 * The array of info messages.
@@ -58,19 +58,19 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @var array
 	 * @since 1.0.0
 	 */
-	private $infos = array();
+	private array $infos = array();
 
 	/**
 	 * Construct and initialize the admin message handler class.
 	 *
-	 * @param  string  $message_id  optional message id.  Best practice is to set
+	 * @param  string|null  $message_id  optional message id.  Best practice is to set
 	 *                              this to a unique identifier based on the client plugin,
 	 *                              such as __FILE__
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function __construct( $message_id = null ) {
+	public function __construct( ?string $message_id = null ) {
 		$this->message_id = $message_id;
 
 		// Load any available messages.
@@ -85,7 +85,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return bool true if any messages were set, false otherwise
 	 * @since 1.0.0
 	 */
-	public function set_messages() {
+	public function set_messages(): bool {
 		// Any messages to persist?
 		if ( $this->message_count() > 0 || $this->info_count() > 0 || $this->warning_count() > 0 || $this->error_count() > 0 ) {
 			set_transient(
@@ -111,7 +111,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function load_messages() {
+	public function load_messages(): void {
 		if ( isset( $_GET[ self::MESSAGE_ID_GET_NAME ] ) && $this->get_message_id() === $_GET[ self::MESSAGE_ID_GET_NAME ] ) {
 			$memo = get_transient( self::MESSAGE_TRANSIENT_PREFIX . $_GET[ self::MESSAGE_ID_GET_NAME ] );
 
@@ -143,7 +143,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function clear_messages( $id ) {
+	public function clear_messages( $id ): void {
 		delete_transient( self::MESSAGE_TRANSIENT_PREFIX . $id );
 	}
 
@@ -155,7 +155,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function add_error( $error ) {
+	public function add_error( string $error ): void {
 		$this->errors[] = $error;
 	}
 
@@ -167,7 +167,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function add_warning( $message ) {
+	public function add_warning( string $message ): void {
 		$this->warnings[] = $message;
 	}
 
@@ -179,7 +179,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function add_info( $message ) {
+	public function add_info( string $message ): void {
 		$this->infos[] = $message;
 	}
 
@@ -191,7 +191,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function add_message( $message ) {
+	public function add_message( string $message ): void {
 		$this->messages[] = $message;
 	}
 
@@ -201,7 +201,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return int error message count
 	 * @since 1.0.0
 	 */
-	public function error_count() {
+	public function error_count(): int {
 		return count( $this->errors );
 	}
 
@@ -211,7 +211,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return int warning message count
 	 * @since 1.0.0
 	 */
-	public function warning_count() {
+	public function warning_count(): int {
 		return count( $this->warnings );
 	}
 
@@ -221,7 +221,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return int info message count
 	 * @since 1.0.0
 	 */
-	public function info_count() {
+	public function info_count(): int {
 		return count( $this->infos );
 	}
 
@@ -231,7 +231,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return int message count
 	 * @since 1.0.0
 	 */
-	public function message_count() {
+	public function message_count(): int {
 		return count( $this->messages );
 	}
 
@@ -241,7 +241,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return array of error message strings
 	 * @since 1.0.0
 	 */
-	public function get_errors() {
+	public function get_errors(): array {
 		return $this->errors;
 	}
 
@@ -253,7 +253,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return string the error message
 	 * @since 1.0.0
 	 */
-	public function get_error( $index ) {
+	public function get_error( int $index ): string {
 		return $this->errors[ $index ] ?? '';
 	}
 
@@ -263,7 +263,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return array
 	 * @since 1.0.0
 	 */
-	public function get_warnings() {
+	public function get_warnings(): array {
 		return $this->warnings;
 	}
 
@@ -275,7 +275,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_warning( $index ) {
+	public function get_warning( int $index ): string {
 		return $this->warnings[ $index ] ?? '';
 	}
 
@@ -285,7 +285,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return array
 	 * @since 1.0.0
 	 */
-	public function get_infos() {
+	public function get_infos(): array {
 		return $this->infos;
 	}
 
@@ -297,7 +297,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_info( $index ) {
+	public function get_info( int $index ): string {
 		return $this->infos[ $index ] ?? '';
 	}
 
@@ -307,7 +307,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return array of message strings
 	 * @since 1.0.0
 	 */
-	public function get_messages() {
+	public function get_messages(): array {
 		return $this->messages;
 	}
 
@@ -319,7 +319,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return string the message
 	 * @since 1.0.0
 	 */
-	public function get_message( $index ) {
+	public function get_message( int $index ): string {
 		return $this->messages[ $index ] ?? '';
 	}
 
@@ -337,7 +337,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function show_messages( $params = array() ) {
+	public function show_messages( $params = array() ): void {
 		$params = wp_parse_args( $params, array(
 			'capabilities' => array(
 				'manage_woocommerce',
@@ -386,7 +386,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return string the URL to redirect to
 	 * @since 1.0.0
 	 */
-	public function redirect( $location, $status ) {
+	public function redirect( string $location, int $status ): string {
 		// Add the admin message id param.
 		if ( $this->set_messages() ) {
 			$location = add_query_arg( self::MESSAGE_ID_GET_NAME, $this->get_message_id(), $location );
@@ -401,7 +401,7 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @return string unique identifier
 	 * @since 1.0.0
 	 */
-	protected function get_message_id() {
+	protected function get_message_id(): string {
 		if ( ! isset( $this->message_id ) ) {
 			$this->message_id = __FILE__;
 		}

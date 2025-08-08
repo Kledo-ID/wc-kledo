@@ -1,14 +1,15 @@
 <?php
 /**
  * Plugin Name: Kledo
+ * Requires Plugins: woocommerce
  * Plugin URI: https://github.com/Kledo-ID/wc-kledo
  * Description: Integrates <a href="https://woocommerce.com/" target="_blank" >WooCommerce</a> with the <a href="https://kledo.com" target="_blank">Kledo</a> accounting software.
  * Author: Kledo
  * Author URI: https://kledo.com
- * Version: 1.2.1
+ * Version: 1.3.0
  * Text Domain: wc-kledo
  * WC requires at least: 3.5.0
- * WC tested up to: 9.4.3
+ * WC tested up to: 10.0.4
  */
 
 // Exit if accessed directly.
@@ -26,7 +27,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const VERSION = '1.1.4';
+	public const VERSION = '1.3.0';
 
 	/**
 	 * Minimum PHP version.
@@ -34,7 +35,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const PHP_VERSION = '7.0.0';
+	public const PHP_VERSION = '7.0.0';
 
 	/**
 	 * Minimum WordPress version.
@@ -42,7 +43,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const WP_VERSION = '4.4';
+	public const WP_VERSION = '4.4';
 
 	/**
 	 * Minimum WooCommerce version.
@@ -50,7 +51,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const WC_VERSION = '3.5.0';
+	public const WC_VERSION = '3.5.0';
 
 	/**
 	 * The plugin name.
@@ -58,7 +59,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const PLUGIN_NAME = 'Kledo';
+	public const PLUGIN_NAME = 'Kledo';
 
 	/**
 	 * The plugin id.
@@ -66,7 +67,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const PLUGIN_ID = 'wc_kledo';
+	public const PLUGIN_ID = 'wc_kledo';
 
 	/**
 	 * The plugin text domain.
@@ -74,7 +75,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	const TEXT_DOMAIN = 'wc-kledo';
+	public const TEXT_DOMAIN = 'wc-kledo';
 
 	/**
 	 * The admin notices to add.
@@ -82,7 +83,7 @@ class WC_Kledo_Loader {
 	 * @var array
 	 * @since 1.0.0
 	 */
-	private $notices = array();
+	private array $notices = array();
 
 	/**
 	 * The single instance of this class.
@@ -90,7 +91,7 @@ class WC_Kledo_Loader {
 	 * @var null|self
 	 * @since 1.0.0
 	 */
-	private static $instance;
+	private static ?WC_Kledo_Loader $instance = null;
 
 	/**
 	 * Gets the main class instance.
@@ -100,7 +101,7 @@ class WC_Kledo_Loader {
 	 * @return self
 	 * @since 1.0.0
 	 */
-	public static function instance() {
+	public static function instance(): ?WC_Kledo_Loader {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
@@ -132,7 +133,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function admin_notices() {
+	public function admin_notices(): void {
 		foreach ( $this->notices as $notice ) {
 			?>
 			<div class="<?php
@@ -150,7 +151,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function setup() {
+	private function setup(): void {
 		register_activation_hook( WC_KLEDO_PLUGIN_FILE, array( $this, 'activation_check' ) );
 
 		add_action( 'admin_init', array( $this, 'check_environment' ) );
@@ -168,7 +169,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function activation_check() {
+	public function activation_check(): void {
 		if ( ! $this->is_environment_compatible() ) {
 			$this->deactivate_plugin();
 
@@ -182,7 +183,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function init_plugin() {
+	public function init_plugin(): void {
 		if ( ! $this->plugins_compatible() ) {
 			return;
 		}
@@ -201,7 +202,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function define_constant() {
+	private function define_constant(): void {
 		$this->define( 'WC_KLEDO_ABSPATH', plugin_dir_path( WC_KLEDO_PLUGIN_FILE ) );
 		$this->define( 'WC_KLEDO_PLUGIN_BASENAME', plugin_basename( WC_KLEDO_PLUGIN_FILE ) );
 		$this->define( 'WC_KLEDO_PLUGIN_NAME', self::PLUGIN_NAME );
@@ -222,7 +223,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function define( $name, $value ) {
+	private function define( $name, $value ): void {
 		if ( ! defined( $name ) ) {
 			define( $name, $value );
 		}
@@ -244,7 +245,7 @@ class WC_Kledo_Loader {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	private function is_environment_compatible() {
+	private function is_environment_compatible(): bool {
 		return version_compare( PHP_VERSION, WC_KLEDO_MIN_PHP_VERSION, '>=' );
 	}
 
@@ -254,7 +255,7 @@ class WC_Kledo_Loader {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	private function is_wp_compatible() {
+	private function is_wp_compatible(): bool {
 		if ( ! WC_KLEDO_MIN_WP_VERSION ) {
 			return true;
 		}
@@ -268,7 +269,7 @@ class WC_Kledo_Loader {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	private function is_wc_compatible() {
+	private function is_wc_compatible(): bool {
 		if ( ! WC_KLEDO_MIN_WC_VERSION ) {
 			return true;
 		}
@@ -282,7 +283,7 @@ class WC_Kledo_Loader {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	private function get_environment_message() {
+	private function get_environment_message(): string {
 		return sprintf( 'The minimum PHP version required for this plugin is %1$s. You are running %2$s.', WC_KLEDO_MIN_PHP_VERSION, PHP_VERSION );
 	}
 
@@ -292,7 +293,7 @@ class WC_Kledo_Loader {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	private function get_wc_required_message() {
+	private function get_wc_required_message(): string {
 		return sprintf( esc_html__( 'WooCommerce Kledo requires %s to be installed and active.', WC_KLEDO_TEXT_DOMAIN ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' );
 	}
 
@@ -302,7 +303,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function check_environment() {
+	public function check_environment(): void {
 		if ( ! $this->is_environment_compatible()
 		     && is_plugin_active( plugin_basename( WC_KLEDO_PLUGIN_FILE ) )
 		) {
@@ -318,7 +319,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function plugin_notices() {
+	public function plugin_notices(): void {
 		if ( ! $this->is_wp_compatible() ) {
 			$this->add_admin_notice( 'update_wordpress', 'error', sprintf(
 				'%s requires WordPress version %s or higher. Please %supdate WordPress &raquo;%s',
@@ -345,7 +346,7 @@ class WC_Kledo_Loader {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	private function plugins_compatible() {
+	private function plugins_compatible(): bool {
 		return $this->is_wp_compatible() && $this->is_wc_compatible();
 	}
 
@@ -361,7 +362,7 @@ class WC_Kledo_Loader {
 	 *
 	 * @noinspection PhpSameParameterValueInspection
 	 */
-	private function add_admin_notice( $slug, $class, $message ) {
+	private function add_admin_notice( $slug, $class, $message ): void {
 		$this->notices[ $slug ] = [
 			'class'   => $class,
 			'message' => $message,
@@ -374,7 +375,7 @@ class WC_Kledo_Loader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	protected function deactivate_plugin() {
+	protected function deactivate_plugin(): void {
 		deactivate_plugins( plugin_basename( WC_KLEDO_PLUGIN_FILE ) );
 
 		if ( isset( $_GET['activate'] ) ) {

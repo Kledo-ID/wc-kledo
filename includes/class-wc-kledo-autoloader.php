@@ -10,7 +10,7 @@ class WC_Kledo_Autoloader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	private $path;
+	private string $path;
 
 	/**
 	 * The class constructor.
@@ -20,7 +20,7 @@ class WC_Kledo_Autoloader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function __construct( $path ) {
+	public function __construct( string $path ) {
 		$this->path = $path;
 	}
 
@@ -32,7 +32,7 @@ class WC_Kledo_Autoloader {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function load( $class ) {
+	public function load( string $class ): void {
 		$class = strtolower( $class );
 
 		if ( 0 !== strpos( $class, 'wc_kledo_' ) ) {
@@ -64,7 +64,7 @@ class WC_Kledo_Autoloader {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	private function get_file_name_from_class( $class ) {
+	private function get_file_name_from_class( string $class ): string {
 		return 'class-' . str_replace( '_', '-', $class ) . '.php';
 	}
 
@@ -76,7 +76,7 @@ class WC_Kledo_Autoloader {
 	 * @return bool Successful or not.
 	 * @since 1.0.0
 	 */
-	private function load_file( $path ) {
+	private function load_file( string $path ): bool {
 		if ( $path && is_readable( $path ) ) {
 			require_once( $path );
 

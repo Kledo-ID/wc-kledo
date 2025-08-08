@@ -11,7 +11,7 @@ class WC_Kledo_Issuing_Token {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		add_action( 'wp_loaded', array( $this, 'issue_token' ) );
+		add_action( 'wp_loaded', array( $this, 'issue_token' ), 9999 );
 	}
 
 	/**
@@ -21,7 +21,7 @@ class WC_Kledo_Issuing_Token {
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	public function issue_token() {
+	public function issue_token(): void {
 		// Return if not on plugin settings page.
 		if ( ! wc_kledo()->is_plugin_settings() ) {
 			return;
@@ -67,7 +67,7 @@ class WC_Kledo_Issuing_Token {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function authorization() {
+	private function authorization(): void {
 		$request_url = wc_kledo()->get_connection_handler()->get_redirect_authorization();
 
 		wp_redirect( $request_url );
@@ -78,9 +78,10 @@ class WC_Kledo_Issuing_Token {
 	 * Converting authorization codes to access tokens.
 	 *
 	 * @return void
+	 * @throws \JsonException
 	 * @since 1.0.0
 	 */
-	private function convert_authorization_codes() {
+	private function convert_authorization_codes(): void {
 		$state = wc_kledo()->get_connection_handler()->get_state();
 
 		if ( ! empty( $state ) && $state !== wc_kledo_get_requested_value( 'state' ) ) {
@@ -107,7 +108,7 @@ class WC_Kledo_Issuing_Token {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function invalid_state() {
+	private function invalid_state(): void {
 		wc_kledo()->get_admin_notice_handler()->add_admin_notice(
 			__( 'State parameter not valid. Please request a new token again.', WC_KLEDO_TEXT_DOMAIN ),
 			'invalid_state_parameter',
@@ -126,7 +127,7 @@ class WC_Kledo_Issuing_Token {
 	 * @throws \Exception
 	 * @since 1.0.0
 	 */
-	private function connected() {
+	private function connected(): void {
 		wc_kledo()->get_admin_notice_handler()->add_admin_notice(
 			__( 'Successfully connected to kledo app. ', WC_KLEDO_TEXT_DOMAIN ),
 			'connected',
@@ -140,12 +141,12 @@ class WC_Kledo_Issuing_Token {
 	/**
 	 * Disconnect app connection.
 	 *
-	 * @param  false  $message
+	 * @param  bool  $message
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function disconnect( $message = false ) {
+	private function disconnect( bool $message = false ): void {
 		if ( $message ) {
 			wc_kledo()->get_admin_notice_handler()->add_admin_notice(
 				__( 'Successfully disconnect the connection.', WC_KLEDO_TEXT_DOMAIN ),
@@ -176,7 +177,7 @@ class WC_Kledo_Issuing_Token {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	private function refresh_token( $message = false ) {
+	private function refresh_token( bool $message = false ): void {
 		if ( $message ) {
 			wc_kledo()->get_admin_notice_handler()->add_admin_notice(
 				__( 'Successfully refresh the access token.', WC_KLEDO_TEXT_DOMAIN ),

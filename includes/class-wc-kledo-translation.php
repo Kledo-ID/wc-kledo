@@ -20,7 +20,7 @@ class WC_Kledo_Translation {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function load_translations() {
+	public function load_translations(): void {
 		$this->load_textdomain( 'wc-kledo', dirname( WC_KLEDO_PLUGIN_BASENAME ) );
 	}
 
@@ -33,7 +33,7 @@ class WC_Kledo_Translation {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	protected function load_textdomain( $text_domain, $path ) {
+	protected function load_textdomain( $text_domain, $path ): void {
 		// User's locale if in the admin for WP 4.7+, or the site locale otherwise
 		$locale = is_admin() && is_callable( 'get_user_locale' ) ? get_user_locale() : get_locale();
 

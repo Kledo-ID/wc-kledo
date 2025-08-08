@@ -2,7 +2,7 @@
 Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 4.4
-Tested up to: 6.7
+Tested up to: 6.8
 Stable tag: 1.2.1
 Requires PHP: 7.0.0 or greater
 Text Domain: wc-kledo
@@ -34,6 +34,14 @@ Integrates WooCommerce with Kledo Accounting Software.
 2. The Kledo invoice plugin Settings pages
 
 == Changelog ==
+
+= 1.3.0
+* added: create new order on Kledo when order status is processing
+* added: allowed to add multiple tags when creating transaction (invoice & order)
+* added: support [WooCommerce Shipment Tracking](https://woocommerce.com/products/shipment-tracking/)
+* fix: internationalization improvements
+* tweak: display button when all credentials filled on save
+* tweak: add default value on first plugin install
 
 = 1.2.1 =
 * update: plugin translation files

@@ -7,34 +7,34 @@ abstract class WC_Kledo_Settings_Screen {
 	/**
 	 * The settings screen id.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected $id;
+	protected ?string $id = null;
 
 	/**
 	 * The settings screen label.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected $label;
+	protected ?string $label = null;
 
 	/**
 	 * The settings screen title.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected $title;
+	protected ?string $title = null;
 
 	/**
 	 * The settings screen description.
 	 *
-	 * @var string
+	 * @var string|null
 	 * @since 1.0.0
 	 */
-	protected $description;
+	protected ?string $description = null;
 
 	/**
 	 * Render the settings screen.
@@ -42,7 +42,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render() {
+	public function render(): void {
 		/**
 		 * Filters the screen settings.
 		 *
@@ -90,7 +90,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function save() {
+	public function save(): void {
 		woocommerce_update_options( $this->get_settings() );
 	}
 
@@ -100,7 +100,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	protected function is_current_screen_page() {
+	protected function is_current_screen_page(): bool {
 		if ( WC_Kledo_Admin::PAGE_ID !== wc_kledo_get_requested_value( 'page' ) ) {
 			return false;
 		}
@@ -118,7 +118,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return array
 	 * @since 1.0.0
 	 */
-	abstract public function get_settings();
+	abstract public function get_settings(): array;
 
 	/**
 	 * Get the message to display when the plugin is disconnected.
@@ -126,17 +126,17 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_disconnected_message() {
+	public function get_disconnected_message(): string {
 		return '';
 	}
 
 	/**
 	 * Gets the screen ID.
 	 *
-	 * @return string
+	 * @return string|null
 	 * @since 1.0.0
 	 */
-	public function get_id() {
+	public function get_id(): ?string {
 		return $this->id;
 	}
 
@@ -146,7 +146,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_label() {
+	public function get_label(): string {
 		/**
 		 * Filters the screen label.
 		 *
@@ -163,7 +163,7 @@ abstract class WC_Kledo_Settings_Screen {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function get_title() {
+	public function get_title(): string {
 		/**
 		 * Filters the screen title.
 		 *
@@ -177,10 +177,10 @@ abstract class WC_Kledo_Settings_Screen {
 	/**
 	 * Gets the screen description.
 	 *
-	 * @return string
+	 * @return string|null
 	 * @since 1.0.0
 	 */
-	public function get_description() {
+	public function get_description(): ?string {
 		/**
 		 * Filters the screen description.
 		 *
@@ -189,5 +189,81 @@ abstract class WC_Kledo_Settings_Screen {
 		 * @since 1.0.0
 		 */
 		return (string) apply_filters( 'wc_kledo_admin_settings_' . $this->get_id() . '_screen_description', $this->description, $this );
+	}
+
+	/**
+	 * Render the warehouse field.
+	 *
+	 * @param  array  $field  field data
+	 * @param  mixed  $value
+	 *
+	 * @return void
+	 * @since 1.3.0
+	 */
+	protected function render_warehouse_field( array $field, $value): void {
+		?>
+
+		<tr>
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['title'] ); ?></label>
+			</th>
+
+			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
+				<select name="<?php echo esc_attr( $field['id'] ); ?>" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>">
+					<?php if ( $value ): ?>
+						<option value="<?php echo esc_attr( $value ); ?>" selected="selected"><?php echo esc_attr( $value ); ?></option>
+					<?php endif; ?>
+				</select>
+			</td>
+		</tr>
+
+		<?php
+	}
+
+	/**
+	 * Render the tags field.
+	 *
+	 * @param  array  $field  field  data
+	 * @param  mixed  $tags
+	 *
+	 * @return void
+	 * @since 1.3.0
+	 */
+	protected function render_tags_field( array $field, array $tags ): void {
+		?>
+
+		<tr>
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['title'] ); ?></label>
+			</th>
+
+			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
+				<select name="<?php echo esc_attr( $field['id'] ); ?>[]" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>" multiple="multiple">
+					<?php if ( $tags ): ?>
+                        <?php foreach ($tags as $tag): ?>
+						    <option value="<?php echo $tag; ?>" selected="selected"><?php echo $tag; ?></option>
+                        <?php endforeach; ?>
+					<?php endif; ?>
+				</select>
+			</td>
+		</tr>
+
+		<?php
+	}
+
+	/**
+	 * Sanitize the tags value.
+	 *
+	 * @param  mixed  $value
+	 * @param  mixed  $option
+	 * @param  mixed  $raw_value
+	 *
+	 * @return string
+	 * @since 1.3.0
+	 */
+	public function sanitize_tags( $value, $option, $raw_value ): string {
+		$tags = array_filter( array_map( 'wc_clean', (array) $raw_value ) );
+
+		return implode( ',', $tags );
 	}
 }

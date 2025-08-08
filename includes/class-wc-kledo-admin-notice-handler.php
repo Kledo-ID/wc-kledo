@@ -10,7 +10,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @var \WC_Kledo
 	 * @since 1.0.0
 	 */
-	private $plugin;
+	private WC_Kledo $plugin;
 
 	/**
 	 * Associative array of id to notice text.
@@ -18,7 +18,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @var array
 	 * @since 1.0.0
 	 */
-	private $admin_notices = array();
+	private array $admin_notices = array();
 
 	/**
 	 * Static member to enforce a single rendering of the admin notice placeholder element.
@@ -26,7 +26,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @var bool
 	 * @since 1.0.0
 	 */
-	static private $admin_notice_placeholder_rendered = false;
+	static private bool $admin_notice_placeholder_rendered = false;
 
 	/**
 	 * Static member to enforce a single rendering of the admin notice javascript.
@@ -34,7 +34,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @var bool
 	 * @since 1.0.0
 	 */
-	static private $admin_notice_js_rendered = false;
+	static private bool $admin_notice_js_rendered = false;
 
 	/**
 	 * The class constructor.
@@ -44,7 +44,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function __construct( $plugin ) {
+	public function __construct( WC_Kledo $plugin ) {
 		$this->plugin = $plugin;
 
 		// Render any admin notices.
@@ -80,7 +80,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function add_admin_notice( $message, $message_id, $params = array() ) {
+	public function add_admin_notice( string $message, string $message_id, $params = array() ): void {
 		$params = wp_parse_args( $params, array(
 			'dismissible'             => true,
 			'always_show_on_settings' => true,
@@ -112,7 +112,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public function should_display_notice( $message_id, $params = array() ) {
+	public function should_display_notice( string $message_id, $params = array() ): bool {
 		// Bail out if user is not a shop manager.
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
@@ -145,7 +145,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_admin_notices( $is_visible = true ) {
+	public function render_admin_notices( bool $is_visible = true ): void {
 		// Default for actions.
 		if ( ! is_bool( $is_visible ) ) {
 			$is_visible = true;
@@ -172,7 +172,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_delayed_admin_notices() {
+	public function render_delayed_admin_notices(): void {
 		$this->render_admin_notices( false );
 	}
 
@@ -194,7 +194,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_admin_notice( $message, $message_id, $params = array() ) {
+	public function render_admin_notice( string $message, string $message_id, $params = array() ): void {
 		$params = wp_parse_args( $params, array(
 			'dismissible'             => true,
 			'is_visible'              => true,
@@ -232,7 +232,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_admin_notice_js() {
+	public function render_admin_notice_js(): void {
 		// If there were no notices, or we've already rendered the js, there's nothing to do.
 		if ( empty( $this->admin_notices ) || self::$admin_notice_js_rendered ) {
 			return;
@@ -291,12 +291,12 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Marks the identified admin notice as dismissed for the given user.
 	 *
 	 * @param  string  $message_id  the message identifier
-	 * @param  int  $user_id  optional user identifier, defaults to current user
+	 * @param  int|null  $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function dismiss_notice( $message_id, $user_id = null ) {
+	public function dismiss_notice( string $message_id, int $user_id = null ): void {
 		if ( is_null( $user_id ) ) {
 			$user_id = get_current_user_id();
 		}
@@ -324,12 +324,12 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Marks the identified admin notice as not dismissed for the identified user.
 	 *
 	 * @param  string  $message_id  the message identifier
-	 * @param  int  $user_id  optional user identifier, defaults to current user
+	 * @param  int|null  $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function undismiss_notice( $message_id, $user_id = null ) {
+	public function undismiss_notice( string $message_id, int $user_id = null ): void {
 		if ( is_null( $user_id ) ) {
 			$user_id = get_current_user_id();
 		}
@@ -346,12 +346,12 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * given user.
 	 *
 	 * @param  string  $message_id  the message identifier
-	 * @param  int  $user_id  optional user identifier, defaults to current user
+	 * @param  int|null  $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return boolean true if the message has been dismissed by the admin user
 	 * @since 1.0.0
 	 */
-	public function is_notice_dismissed( $message_id, $user_id = null ) {
+	public function is_notice_dismissed( string $message_id, int $user_id = null ): bool {
 		$dismissed_notices = $this->get_dismissed_notices( $user_id );
 
 		return isset( $dismissed_notices[ $message_id ] ) && $dismissed_notices[ $message_id ];
@@ -361,12 +361,12 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Returns the full set of dismissed notices for the user identified by
 	 * $user_id, for this plugin.
 	 *
-	 * @param  int  $user_id  optional user identifier, defaults to current user
+	 * @param  int|null  $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return array of message id to dismissed status (true or false)
 	 * @since 1.0.0
 	 */
-	public function get_dismissed_notices( $user_id = null ) {
+	public function get_dismissed_notices( int $user_id = null ): array {
 		if ( is_null( $user_id ) ) {
 			$user_id = get_current_user_id();
 		}
@@ -386,7 +386,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function handle_dismiss_notice() {
+	public function handle_dismiss_notice(): void {
 		$this->dismiss_notice( $_REQUEST['messageid'] );
 	}
 
@@ -396,7 +396,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return \WC_Kledo
 	 * @since 1.0.0
 	 */
-	protected function get_plugin() {
+	protected function get_plugin(): WC_Kledo {
 		return $this->plugin;
 	}
 }

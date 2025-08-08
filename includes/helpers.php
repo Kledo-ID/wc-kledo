@@ -38,7 +38,7 @@ if ( ! function_exists( 'wc_kledo_get_posted_value' ) ) {
 	 * @return int|float|array|bool|null|string posted data value if key found, or default
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_posted_value( $key, $default = '' ) {
+	function wc_kledo_get_posted_value( string $key, $default = '' ) {
 		$value = $default;
 
 		if ( isset( $_POST[ $key ] ) ) {
@@ -56,7 +56,7 @@ if ( ! function_exists( 'wc_kledo_is_ssl' ) ) {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	function wc_kledo_is_ssl() {
+	function wc_kledo_is_ssl(): bool {
 		return is_ssl() || ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ) || ( stripos( get_option( 'siteurl' ), 'https://' ) === 0 );
 	}
 }
@@ -68,7 +68,7 @@ if ( ! function_exists( 'wc_kledo_get_wc_version' ) ) {
 	 * @return string|null Woocommerce version number or null if undetermined
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_wc_version() {
+	function wc_kledo_get_wc_version(): ?string {
 		return defined( 'WC_VERSION' ) && WC_VERSION ? WC_VERSION : null;
 	}
 }
@@ -82,7 +82,7 @@ if ( ! function_exists( 'wc_kledo_is_wc_version_gte' ) ) {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	function wc_kledo_is_wc_version_gte( $version ) {
+	function wc_kledo_is_wc_version_gte( $version ): bool {
 		$wc_version = wc_kledo_get_wc_version();
 
 		return $wc_version && version_compare( $wc_version, $version, '>=' );
@@ -97,7 +97,7 @@ if ( ! function_exists( 'wc_kledo_is_enhanced_admin_available' ) ) {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	function wc_kledo_is_enhanced_admin_available() {
+	function wc_kledo_is_enhanced_admin_available(): bool {
 		return wc_kledo_is_wc_version_gte( '4.0' ) && function_exists( 'wc_admin_url' );
 	}
 }
@@ -109,20 +109,44 @@ if ( ! function_exists( 'wc_kledo_get_invoice_prefix' ) ) {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_invoice_prefix() {
-		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME );
+	function wc_kledo_get_invoice_prefix(): string {
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_PREFIX_OPTION_NAME, 'WC/INV/' );
 	}
 }
 
-if ( ! function_exists( 'wc_kledo_get_warehouse' ) ) {
+if ( ! function_exists( 'wc_kledo_get_order_prefix' ) ) {
+	/**
+	 * Get the order prefix.
+	 *
+	 * @return string
+	 * @since 1.3.0
+	 */
+	function wc_kledo_get_order_prefix(): string {
+		return get_option( WC_Kledo_Order_Screen::ORDER_PREFIX_OPTION_NAME, 'WC/SO/' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_invoice_warehouse' ) ) {
 	/**
 	 * Get the warehouse.
 	 *
 	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_warehouse() {
-		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME );
+	function wc_kledo_get_invoice_warehouse(): string {
+		return get_option( WC_Kledo_Invoice_Screen::INVOICE_WAREHOUSE_OPTION_NAME, '' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_order_warehouse' ) ) {
+	/**
+	 * Get the warehouse.
+	 *
+	 * @return string
+	 * @since 1.0.0
+	 */
+	function wc_kledo_get_order_warehouse(): string {
+		return get_option( WC_Kledo_Order_Screen::ORDER_WAREHOUSE_OPTION_NAME, '' );
 	}
 }
 
@@ -133,8 +157,8 @@ if ( ! function_exists( 'wc_kledo_paid_status' ) ) {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_paid_status() {
-		$status = get_option( WC_Kledo_Invoice_Screen::INVOICE_STATUS_OPTION_NAME );
+	function wc_kledo_paid_status(): string {
+		$status = get_option( WC_Kledo_Invoice_Screen::INVOICE_STATUS_OPTION_NAME, 'no' );
 
 		return 'paid' === strtolower( $status ) ? 'yes' : 'no';
 	}
@@ -147,15 +171,17 @@ if ( ! function_exists( 'wc_kledo_get_payment_account' ) ) {
 	 * @return string
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_payment_account() {
+	function wc_kledo_get_payment_account(): string {
 		$account = get_option( WC_Kledo_Invoice_Screen::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME );
 
 		if ( $account ) {
 			$account = explode( '|', $account );
 			$account = array_map( 'trim', $account );
+
+			return $account[0];
 		}
 
-		return $account[0];
+		return '';
 	}
 }
 
@@ -163,11 +189,13 @@ if ( ! function_exists( 'wc_kledo_get_tags' ) ) {
 	/**
 	 * Get the invoice tags.
 	 *
+	 * @param  string  $option_name
+	 *
 	 * @return array
 	 * @since 1.0.0
 	 */
-	function wc_kledo_get_tags() {
-		$tags = get_option( WC_Kledo_Invoice_Screen::INVOICE_TAG_OPTION_NAME );
+	function wc_kledo_get_tags(string $option_name): array {
+		$tags = get_option( $option_name, 'WooCommerce' );
 
 		return explode( ',', $tags );
 	}
@@ -182,7 +210,7 @@ if ( ! function_exists( 'wc_kledo_include_tax_or_not' ) ) {
 	 * @return string
 	 * @since 1.1.0
 	 */
-	function wc_kledo_include_tax_or_not( WC_Order $order ) {
+	function wc_kledo_include_tax_or_not( WC_Order $order ): string {
 		$total_tax = $order->get_total_tax();
 
 		return ($total_tax > 0) ? 'yes' : 'no';
