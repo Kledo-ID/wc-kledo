@@ -35,7 +35,7 @@ Integrates WooCommerce with Kledo Accounting Software.
 
 == Changelog ==
 
-= 1.3.0
+= 1.3.0 =
 * added: create new order on Kledo when order status is processing
 * added: allowed to add multiple tags when creating transaction (invoice & order)
 * added: support [WooCommerce Shipment Tracking](https://woocommerce.com/products/shipment-tracking/)
