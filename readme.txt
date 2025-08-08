@@ -15,6 +15,7 @@ Integrates WooCommerce with Kledo Accounting Software.
 
 = Features =
 * Create invoice on completed order.
+* Create order on processing order.
 
 = Tutorial =
 [youtube https://www.youtube.com/watch?v=0AmD4Aja88c]
