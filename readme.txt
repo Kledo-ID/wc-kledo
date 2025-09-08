@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 4.4
 Tested up to: 6.8
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 Requires PHP: 7.0.0 or greater
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -35,6 +35,10 @@ Integrates WooCommerce with Kledo Accounting Software.
 2. The Kledo invoice plugin Settings pages
 
 == Changelog ==
+
+= 1.3.1 =
+* fix: cannot create new order when status changed to processing
+* fix: some deprecation notice
 
 = 1.3.0 =
 * added: create new order on Kledo when order status is processing
