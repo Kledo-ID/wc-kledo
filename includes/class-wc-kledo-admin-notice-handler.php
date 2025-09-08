@@ -296,7 +296,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function dismiss_notice( string $message_id, int $user_id = null ): void {
+	public function dismiss_notice( string $message_id, ?int $user_id = null ): void {
 		if ( is_null( $user_id ) ) {
 			$user_id = get_current_user_id();
 		}
@@ -329,7 +329,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function undismiss_notice( string $message_id, int $user_id = null ): void {
+	public function undismiss_notice( string $message_id, ?int $user_id = null ): void {
 		if ( is_null( $user_id ) ) {
 			$user_id = get_current_user_id();
 		}
@@ -351,7 +351,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return boolean true if the message has been dismissed by the admin user
 	 * @since 1.0.0
 	 */
-	public function is_notice_dismissed( string $message_id, int $user_id = null ): bool {
+	public function is_notice_dismissed( string $message_id, ?int $user_id = null ): bool {
 		$dismissed_notices = $this->get_dismissed_notices( $user_id );
 
 		return isset( $dismissed_notices[ $message_id ] ) && $dismissed_notices[ $message_id ];
@@ -366,7 +366,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @return array of message id to dismissed status (true or false)
 	 * @since 1.0.0
 	 */
-	public function get_dismissed_notices( int $user_id = null ): array {
+	public function get_dismissed_notices( ?int $user_id = null ): array {
 		if ( is_null( $user_id ) ) {
 			$user_id = get_current_user_id();
 		}

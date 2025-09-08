@@ -89,7 +89,7 @@ abstract class WC_Kledo_Request {
 			'ref_number_prefix'          => $ref_number_prefix,
 			'ref_number'                 => $order->get_id(),
 			'trans_date'                 => $order->get_date_created()->format( 'Y-m-d' ),
-			'due_date'                   => $order->get_date_completed()->format( 'Y-m-d' ),
+			'due_date'                   => $this->get_due_date( $order ),
 			'memo'                       => $order->get_customer_note(),
 			'has_tax'                    => wc_kledo_include_tax_or_not( $order ),
 			'items'                      => $this->get_items( $order ),
@@ -129,6 +129,27 @@ abstract class WC_Kledo_Request {
 	 */
 	public function get_customer_name( WC_Order $order ): string {
 		return trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+	}
+
+	/**
+	 * Get transaction due date.
+	 *
+	 * @param  \WC_Order  $order
+	 *
+	 * @return string
+	 * @since 1.3.1
+	 */
+	protected function get_due_date( WC_Order $order ): string
+	{
+		$date_completed = $order->get_date_completed();
+
+		if ( $date_completed ) {
+			return $date_completed->format( 'Y-m-d' );
+		}
+
+		return $order->get_date_created()
+		             ->modify('+1 month')
+		             ->format( 'Y-m-d' );
 	}
 
 	/**
