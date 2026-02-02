@@ -57,17 +57,17 @@ abstract class WC_Kledo_Settings_Screen {
 		}
 
 		$connection   = wc_kledo()->get_connection_handler();
-		$is_connected = $connection->is_connected();
+		$is_configured = $connection->is_configured();
 
 		?>
 
-		<?php if ( ! $is_connected && $this->get_disconnected_message() ) : ?>
+		<?php if ( ! $is_configured && $this->get_disconnected_message() ) : ?>
 			<div class="notice notice-info">
 				<p><?php echo wp_kses_post( $this->get_disconnected_message() ); ?></p>
 			</div>
 		<?php endif; ?>
 
-		<form class="wc-kledo-settings <?php echo $is_connected ? 'connected' : 'disconnected'; ?>" method="post" id="wc-kledo mainform" action="" enctype="multipart/form-data">
+		<form class="wc-kledo-settings <?php echo $is_configured ? 'connected' : 'disconnected'; ?>" method="post" id="wc-kledo mainform" action="" enctype="multipart/form-data">
 			<?php woocommerce_admin_fields( $settings ); ?>
 
 			<input type="hidden" name="screen_id" value="<?php echo esc_attr( $this->get_id() ); ?>">

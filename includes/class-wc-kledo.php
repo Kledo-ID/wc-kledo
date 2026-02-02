@@ -119,7 +119,6 @@ final class WC_Kledo {
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-ajax.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-message-handler.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-notice-handler.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-issuing-token.php' );
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-woocommerce.php' );
 
 		// Exception handler.
@@ -177,7 +176,7 @@ final class WC_Kledo {
 	 */
 	public function add_admin_notices(): void {
 		// Inform users who are not connected to Kledo
-		if ( ! $this->is_plugin_settings() && ! $this->get_connection_handler()->is_connected() ) {
+		if ( ! $this->is_plugin_settings() && ! $this->get_connection_handler()->is_configured() ) {
 			// Direct these users to the new plugin settings page.
 			$message = sprintf(
 				esc_html__(
