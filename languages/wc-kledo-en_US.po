@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kledo\n"
-"POT-Creation-Date: 2025-08-07 13:02+0700\n"
-"PO-Revision-Date: 2025-08-07 13:02+0700\n"
+"POT-Creation-Date: 2026-02-02 14:51+0700\n"
+"PO-Revision-Date: 2026-02-02 14:51+0700\n"
 "Last-Translator: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language-Team: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language: en_US\n"
@@ -21,11 +21,13 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/abstracts/abstract-wc-kledo-request.php:194
-msgid "Can't do API request because the connection has not been made."
+#: includes/abstracts/abstract-wc-kledo-request.php:215
+msgid ""
+"Can't do API request because the api key & endpoint url has not been "
+"configured."
 msgstr ""
 
-#: includes/abstracts/abstract-wc-kledo-request.php:216
+#: includes/abstracts/abstract-wc-kledo-request.php:237
 msgid "There was a problem when connecting to the API."
 msgstr ""
 
@@ -81,62 +83,21 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:57
-#: includes/admin/screen/class-wc-kledo-configure.php:58
-#: includes/admin/screen/class-wc-kledo-configure.php:221
+#: includes/admin/screen/class-wc-kledo-configure.php:49
+#: includes/admin/screen/class-wc-kledo-configure.php:50
+#: includes/admin/screen/class-wc-kledo-configure.php:94
 msgid "Configure"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:96
-#: includes/admin/screen/class-wc-kledo-configure.php:102
-msgid "Token Expires In"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:145
-#: includes/admin/screen/class-wc-kledo-configure.php:151
-msgid "Redirect URI"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:157
-msgid "The redirect URI that should enter when create new OAuth App."
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:181
-#: includes/admin/screen/class-wc-kledo-configure.php:187
-msgid "Manage Connection"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:192
-msgid ""
-"Please fill in the Client ID, Client Secret and API Endpoint fields first "
-"and save before continuing."
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:196
-msgid "Request Token"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:199
-msgid "Disconnect"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:201
-msgid "Refresh Token"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:226
+#: includes/admin/screen/class-wc-kledo-configure.php:99
 msgid "Enable Integration"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:234
-msgid "Client ID"
+#: includes/admin/screen/class-wc-kledo-configure.php:107
+msgid "API Key"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:240
-msgid "Client Secret"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-configure.php:246
+#: includes/admin/screen/class-wc-kledo-configure.php:113
 msgid "API Endpoint"
 msgstr ""
 
@@ -223,50 +184,14 @@ msgid ""
 "back to you as soon as possible."
 msgstr ""
 
-#: includes/class-wc-kledo-connection.php:206
-msgid ""
-"There was a problem when refreshing the access token. Please disconnect and "
-"try to request new token."
-msgstr ""
-
-#: includes/class-wc-kledo-connection.php:296
-msgid "Does not expire"
-msgstr ""
-
-#: includes/class-wc-kledo-connection.php:300
-msgid "Expired"
-msgstr ""
-
-#: includes/class-wc-kledo-connection.php:404
-msgid ""
-"There was a problem when converting authorization code from the server. "
-"Please try again later."
-msgstr ""
-
-#: includes/class-wc-kledo-issuing-token.php:113
-msgid "State parameter not valid. Please request a new token again."
-msgstr ""
-
-#: includes/class-wc-kledo-issuing-token.php:132
-msgid "Successfully connected to kledo app. "
-msgstr ""
-
-#: includes/class-wc-kledo-issuing-token.php:152
-msgid "Successfully disconnect the connection."
-msgstr ""
-
-#: includes/class-wc-kledo-issuing-token.php:183
-msgid "Successfully refresh the access token."
-msgstr ""
-
-#: includes/class-wc-kledo.php:184
+#: includes/class-wc-kledo.php:183
 #, php-format
 msgid ""
 "%1$sWooCommerce Kledo is almost ready.%2$s To complete your configuration, "
 "%3$scomplete the setup steps%4$s."
 msgstr ""
 
-#: includes/class-wc-kledo.php:205
+#: includes/class-wc-kledo.php:204
 #, php-format
 msgid ""
 "For your convenience, the Kledo for WooCommerce settings are located under "

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kledo\n"
-"POT-Creation-Date: 2025-08-07 13:02+0700\n"
-"PO-Revision-Date: 2025-08-07 13:02+0700\n"
+"POT-Creation-Date: 2026-02-02 14:51+0700\n"
+"PO-Revision-Date: 2026-02-02 14:52+0700\n"
 "Last-Translator: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language-Team: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language: id_ID\n"
@@ -21,11 +21,15 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/abstracts/abstract-wc-kledo-request.php:194
-msgid "Can't do API request because the connection has not been made."
-msgstr "Tidak dapat melakukan permintaan API karena koneksi belum dibuat."
+#: includes/abstracts/abstract-wc-kledo-request.php:215
+msgid ""
+"Can't do API request because the api key & endpoint url has not been "
+"configured."
+msgstr ""
+"Tidak dapat melakukan permintaan API karena api key & endpoint url belum di "
+"atur."
 
-#: includes/abstracts/abstract-wc-kledo-request.php:216
+#: includes/abstracts/abstract-wc-kledo-request.php:237
 msgid "There was a problem when connecting to the API."
 msgstr "Terjadi masalah pada saat menghubungkan ke API."
 
@@ -81,64 +85,21 @@ msgstr "Memuat..."
 msgid "Search"
 msgstr "Cari"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:57
-#: includes/admin/screen/class-wc-kledo-configure.php:58
-#: includes/admin/screen/class-wc-kledo-configure.php:221
+#: includes/admin/screen/class-wc-kledo-configure.php:49
+#: includes/admin/screen/class-wc-kledo-configure.php:50
+#: includes/admin/screen/class-wc-kledo-configure.php:94
 msgid "Configure"
 msgstr "Konfigurasi"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:96
-#: includes/admin/screen/class-wc-kledo-configure.php:102
-msgid "Token Expires In"
-msgstr "Token Kadaluarsa Pada"
-
-#: includes/admin/screen/class-wc-kledo-configure.php:145
-#: includes/admin/screen/class-wc-kledo-configure.php:151
-msgid "Redirect URI"
-msgstr "Pengalihan URI"
-
-#: includes/admin/screen/class-wc-kledo-configure.php:157
-msgid "The redirect URI that should enter when create new OAuth App."
-msgstr "Pengalihan URL yang harus dimasukkan saat membuat baru aplikasi OAuth."
-
-#: includes/admin/screen/class-wc-kledo-configure.php:181
-#: includes/admin/screen/class-wc-kledo-configure.php:187
-msgid "Manage Connection"
-msgstr "Kelola Koneksi"
-
-#: includes/admin/screen/class-wc-kledo-configure.php:192
-msgid ""
-"Please fill in the Client ID, Client Secret and API Endpoint fields first "
-"and save before continuing."
-msgstr ""
-"Silahkan isi kolom Client ID, Client Secret dan API Endpoint terlebih dahulu "
-"dan simpan sebelum melanjutkan."
-
-#: includes/admin/screen/class-wc-kledo-configure.php:196
-msgid "Request Token"
-msgstr "Permintaan Token"
-
-#: includes/admin/screen/class-wc-kledo-configure.php:199
-msgid "Disconnect"
-msgstr "Memutuskan"
-
-#: includes/admin/screen/class-wc-kledo-configure.php:201
-msgid "Refresh Token"
-msgstr "Segarkan Token"
-
-#: includes/admin/screen/class-wc-kledo-configure.php:226
+#: includes/admin/screen/class-wc-kledo-configure.php:99
 msgid "Enable Integration"
 msgstr "Aktifkan Integrasi"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:234
-msgid "Client ID"
-msgstr "Client ID"
+#: includes/admin/screen/class-wc-kledo-configure.php:107
+msgid "API Key"
+msgstr "API Key"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:240
-msgid "Client Secret"
-msgstr "Client Secret"
-
-#: includes/admin/screen/class-wc-kledo-configure.php:246
+#: includes/admin/screen/class-wc-kledo-configure.php:113
 msgid "API Endpoint"
 msgstr "API Endpoint"
 
@@ -227,47 +188,7 @@ msgstr ""
 "Masih perlu bantuan? Kirim pesan dan salah satu pakar dukungan kami akan "
 "menghubungi anda sesegera mungkin."
 
-#: includes/class-wc-kledo-connection.php:206
-msgid ""
-"There was a problem when refreshing the access token. Please disconnect and "
-"try to request new token."
-msgstr ""
-"Terjadi masalah saat menyegarkan akses token. Harap putuskan sambungan dan "
-"coba minta token baru."
-
-#: includes/class-wc-kledo-connection.php:296
-msgid "Does not expire"
-msgstr "Tidak kadaluwarsa"
-
-#: includes/class-wc-kledo-connection.php:300
-msgid "Expired"
-msgstr "Kadaluwarsa"
-
-#: includes/class-wc-kledo-connection.php:404
-msgid ""
-"There was a problem when converting authorization code from the server. "
-"Please try again later."
-msgstr ""
-"Terjadi masalah saat mengonversi kode otorisasi dari server. Silakan coba "
-"lagi nanti."
-
-#: includes/class-wc-kledo-issuing-token.php:113
-msgid "State parameter not valid. Please request a new token again."
-msgstr "State parameter tidak valid. Silakan minta token baru lagi."
-
-#: includes/class-wc-kledo-issuing-token.php:132
-msgid "Successfully connected to kledo app. "
-msgstr "Berhasil menghubungkan aplikasi kledo "
-
-#: includes/class-wc-kledo-issuing-token.php:152
-msgid "Successfully disconnect the connection."
-msgstr "Berhasil memutuskan koneksi."
-
-#: includes/class-wc-kledo-issuing-token.php:183
-msgid "Successfully refresh the access token."
-msgstr "Berhasil menyegarkan akses token."
-
-#: includes/class-wc-kledo.php:184
+#: includes/class-wc-kledo.php:183
 #, php-format
 msgid ""
 "%1$sWooCommerce Kledo is almost ready.%2$s To complete your configuration, "
@@ -276,7 +197,7 @@ msgstr ""
 "%1$sWooCommerce Kledo hampir siap.%2$s. Untuk menyelesaikan konfigurasi, "
 "%3$sSelesaikan langkah berikut%4$s."
 
-#: includes/class-wc-kledo.php:205
+#: includes/class-wc-kledo.php:204
 #, php-format
 msgid ""
 "For your convenience, the Kledo for WooCommerce settings are located under "
@@ -307,6 +228,73 @@ msgstr ""
 #. Author URI of the plugin/theme
 msgid "https://kledo.com"
 msgstr "https://kledo.com"
+
+#~ msgid "Token Expires In"
+#~ msgstr "Token Kadaluarsa Pada"
+
+#~ msgid "Redirect URI"
+#~ msgstr "Pengalihan URI"
+
+#~ msgid "The redirect URI that should enter when create new OAuth App."
+#~ msgstr ""
+#~ "Pengalihan URL yang harus dimasukkan saat membuat baru aplikasi OAuth."
+
+#~ msgid "Manage Connection"
+#~ msgstr "Kelola Koneksi"
+
+#~ msgid ""
+#~ "Please fill in the Client ID, Client Secret and API Endpoint fields first "
+#~ "and save before continuing."
+#~ msgstr ""
+#~ "Silahkan isi kolom Client ID, Client Secret dan API Endpoint terlebih "
+#~ "dahulu dan simpan sebelum melanjutkan."
+
+#~ msgid "Request Token"
+#~ msgstr "Permintaan Token"
+
+#~ msgid "Disconnect"
+#~ msgstr "Memutuskan"
+
+#~ msgid "Refresh Token"
+#~ msgstr "Segarkan Token"
+
+#~ msgid "Client ID"
+#~ msgstr "Client ID"
+
+#~ msgid "Client Secret"
+#~ msgstr "Client Secret"
+
+#~ msgid ""
+#~ "There was a problem when refreshing the access token. Please disconnect "
+#~ "and try to request new token."
+#~ msgstr ""
+#~ "Terjadi masalah saat menyegarkan akses token. Harap putuskan sambungan "
+#~ "dan coba minta token baru."
+
+#~ msgid "Does not expire"
+#~ msgstr "Tidak kadaluwarsa"
+
+#~ msgid "Expired"
+#~ msgstr "Kadaluwarsa"
+
+#~ msgid ""
+#~ "There was a problem when converting authorization code from the server. "
+#~ "Please try again later."
+#~ msgstr ""
+#~ "Terjadi masalah saat mengonversi kode otorisasi dari server. Silakan coba "
+#~ "lagi nanti."
+
+#~ msgid "State parameter not valid. Please request a new token again."
+#~ msgstr "State parameter tidak valid. Silakan minta token baru lagi."
+
+#~ msgid "Successfully connected to kledo app. "
+#~ msgstr "Berhasil menghubungkan aplikasi kledo "
+
+#~ msgid "Successfully disconnect the connection."
+#~ msgstr "Berhasil memutuskan koneksi."
+
+#~ msgid "Successfully refresh the access token."
+#~ msgstr "Berhasil menyegarkan akses token."
 
 #~ msgid "WooCommerce Kledo"
 #~ msgstr "WooCommerce Kledo"
