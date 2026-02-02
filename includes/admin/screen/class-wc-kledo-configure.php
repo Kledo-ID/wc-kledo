@@ -20,21 +20,13 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	public const SETTING_ENABLE_API_CONNECTION = 'wc_kledo_enable_api_connection';
 
-	/**
-	 * The client id setting ID.
+    /**
+	 * The api key setting ID.
 	 *
 	 * @var string
-	 * @since 1.0.0
+	 * @since 1.4.0
 	 */
-	public const SETTING_CLIENT_ID = 'wc_kledo_client_id';
-
-	/**
-	 * The client secret setting ID.
-	 *
-	 * @var string
-	 * @since 1.0.0
-	 */
-	public const SETTING_CLIENT_SECRET = 'wc_kledo_client_secret';
+    public const SETTING_API_KEY = 'wc_kledo_api_key';
 
 	/**
 	 * The API endpoint setting ID.
@@ -69,47 +61,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	private function init_hooks(): void {
 		add_action( 'woocommerce_admin_field_wc_kledo_configure_title', array( $this, 'render_title' ) );
-		add_action( 'woocommerce_admin_field_wc_kledo_redirect_uri', array( $this, 'redirect_uri' ) );
-		add_action( 'woocommerce_admin_field_wc_kledo_manage_connection', array( $this, 'manage_connection' ) );
-		add_action( 'woocommerce_admin_field_wc_kledo_token_expires_in', array( $this, 'token_expires_in' ) );
     }
-
-	/**
-	 * Display the token expiration status.
-	 *
-	 * @param  array  $field  field data
-	 *
-	 * @return void
-	 * @since 1.0.0
-	 */
-	public function token_expires_in( array $field ): void {
-		$is_connected = wc_kledo()->get_connection_handler()->is_connected();
-
-		if ( ! $is_connected ) {
-			return;
-		}
-
-		?>
-
-		<tr>
-			<th scope="row" class="titledesc">
-				<label><?php esc_html_e( 'Token Expires In', WC_KLEDO_TEXT_DOMAIN ); ?></label>
-			</th>
-
-			<td class="forminp forminp-text">
-				<fieldset>
-					<legend class="screen-reader-text">
-						<span><?php esc_html_e( 'Token Expires In', WC_KLEDO_TEXT_DOMAIN ); ?></span>
-					</legend>
-
-					<code><?php echo wc_kledo()->get_connection_handler()->get_expires_token(); ?></code>
-
-				</fieldset>
-			</td>
-		</tr>
-
-		<?php
-	}
 
 	/**
 	 * Render configure admin settings title.
@@ -125,85 +77,6 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 		<h2><?php echo $field['title']; ?></h2>
 
 		<table class="form-table">
-
-		<?php
-	}
-
-	/**
-	 * Render the redirect uri field.
-	 *
-	 * @param  array  $field  field data
-	 *
-	 * @return void
-	 * @since 1.0.0
-	 */
-	public function redirect_uri( array $field ): void {
-		?>
-
-		<tr>
-			<th scope="row" class="titledesc">
-				<label><?php esc_html_e( 'Redirect URI', WC_KLEDO_TEXT_DOMAIN ); ?></label>
-			</th>
-
-			<td class="forminp forminp-text">
-				<fieldset>
-					<legend class="screen-reader-text">
-						<span><?php esc_html_e( 'Redirect URI', WC_KLEDO_TEXT_DOMAIN ); ?></span>
-					</legend>
-
-					<input class="input-text regular-input" type="text" value="<?php echo esc_url( wc_kledo()->get_connection_handler()->get_redirect_uri() ); ?>" readonly />
-
-					<p class="description">
-						<?php esc_html_e( 'The redirect URI that should enter when create new OAuth App.', WC_KLEDO_TEXT_DOMAIN ); ?>
-					</p>
-				</fieldset>
-			</td>
-		</tr>
-
-		<?php
-	}
-
-	/**
-	 * Render the manage connection field.
-	 *
-	 * @param  array  $field  field data
-	 *
-	 * @return void
-	 * @since 1.0.0
-	 */
-	public function manage_connection( array $field ): void {
-		$is_connected = wc_kledo()->get_connection_handler()->is_connected();
-
-		?>
-
-		<tr>
-			<th scope="row" class="titledesc">
-				<label><?php esc_html_e( 'Manage Connection', WC_KLEDO_TEXT_DOMAIN ); ?></label>
-			</th>
-
-			<td class="forminp forminp-text">
-				<fieldset>
-					<legend class="screen-reader-text">
-						<span><?php esc_html_e( 'Manage Connection', WC_KLEDO_TEXT_DOMAIN ); ?></span>
-					</legend>
-
-					<?php if ( ! wc_kledo()->get_connection_handler()->is_configured() ): ?>
-						<span>
-							<b> <?php esc_html_e( __( 'Please fill in the Client ID, Client Secret and API Endpoint fields first and save before continuing.', WC_KLEDO_TEXT_DOMAIN ) ); ?></b>
-						</span>
-					<?php else: ?>
-						<?php if ( ! $is_connected ): ?>
-							<a href="<?php echo esc_url( add_query_arg('action', 'redirect', wc_kledo()->get_settings_url() ) ); ?>" class="button button-info"><?php _e( 'Request Token', WC_KLEDO_TEXT_DOMAIN ); ?></a>
-
-						<?php else: ?>
-							<a href="<?php echo esc_url( add_query_arg('action', 'disconnect', wc_kledo()->get_settings_url() ) ); ?>" class="button button-danger"><?php _e( 'Disconnect', WC_KLEDO_TEXT_DOMAIN ); ?></a>
-
-							<a href="<?php echo esc_url( add_query_arg('action', 'refresh', wc_kledo()->get_settings_url() ) ); ?>" class="button button-success"><?php _e( 'Refresh Token', WC_KLEDO_TEXT_DOMAIN ); ?></a>
-						<?php endif; ?>
-					<?php endif; ?>
-				</fieldset>
-			</td>
-		</tr>
 
 		<?php
 	}
@@ -229,34 +102,16 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 				'default' => 'yes',
 			),
 
-			'client_id' => array(
-				'id'       => self::SETTING_CLIENT_ID,
-				'title'    => __( 'Client ID', WC_KLEDO_TEXT_DOMAIN ),
-				'type'     => 'text',
-			),
-
-			'client_secret' => array(
-				'id'       => self::SETTING_CLIENT_SECRET,
-				'title'    => __( 'Client Secret', WC_KLEDO_TEXT_DOMAIN ),
+			'api_key' => array(
+				'id'       => self::SETTING_API_KEY,
+				'title'    => __( 'API Key', WC_KLEDO_TEXT_DOMAIN ),
 				'type'     => 'text',
 			),
 
 			'api_endpoint' => array(
-				'id'       => self::SETTING_API_ENDPOINT,
-				'title'    => __( 'API Endpoint', WC_KLEDO_TEXT_DOMAIN ),
-				'type'     => 'text',
-			),
-
-			'redirect_uri' => array(
-				'type' => 'wc_kledo_redirect_uri',
-			),
-
-			'manage_connection' => array(
-				'type' => 'wc_kledo_manage_connection',
-			),
-
-			'token_expires_in' => array(
-				'type' => 'wc_kledo_token_expires_in',
+				'id'    => self::SETTING_API_ENDPOINT,
+				'title' => __( 'API Endpoint', WC_KLEDO_TEXT_DOMAIN ),
+				'type'  => 'text',
 			),
 
 			'section_end' => array(

@@ -59,7 +59,7 @@ abstract class WC_Kledo_Request {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		$this->api_host = wc_kledo()->get_connection_handler()->get_oauth_url();
+		$this->api_host = wc_kledo()->get_connection_handler()->get_api_endpoint();
 	}
 
 	/**
@@ -211,8 +211,8 @@ abstract class WC_Kledo_Request {
 	 */
 	public function do_request(): bool {
 		// Check if connected.
-		if ( ! wc_kledo()->get_connection_handler()->is_connected() ) {
-			throw new \RuntimeException( __( "Can't do API request because the connection has not been made.", WC_KLEDO_TEXT_DOMAIN ) );
+		if ( ! wc_kledo()->get_connection_handler()->is_configured() ) {
+			throw new \RuntimeException( __( "Can't do API request because the api key & endpoint url has not been configured.", WC_KLEDO_TEXT_DOMAIN ) );
 		}
 
 		// Do the request.
@@ -223,7 +223,7 @@ abstract class WC_Kledo_Request {
 				'timeout'    => 10,
 				'user-agent' => $this->get_request_user_agent(),
 				'headers'    => array(
-					'Authorization' => 'Bearer ' . wc_kledo()->get_connection_handler()->get_access_token(),
+					'Authorization' => 'Bearer ' . wc_kledo()->get_connection_handler()->get_api_key(),
 					'Accept'        => 'application/json',
 				),
 				'body'       => $this->get_body(),
