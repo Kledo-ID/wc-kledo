@@ -39,10 +39,11 @@ class WC_Kledo_Admin {
 	 */
 	public function __construct() {
 		$this->screens = array(
-			WC_Kledo_Configure_Screen::ID => new WC_Kledo_Configure_Screen,
-			WC_Kledo_Invoice_Screen::ID   => new WC_Kledo_Invoice_Screen,
-			WC_Kledo_Order_Screen::ID     => new WC_Kledo_Order_Screen,
-			WC_Kledo_Support_Screen::ID   => new WC_Kledo_Support_Screen,
+			WC_Kledo_Configure_Screen::ID           => new WC_Kledo_Configure_Screen,
+			WC_Kledo_Invoice_Screen::ID             => new WC_Kledo_Invoice_Screen,
+			WC_Kledo_Order_Screen::ID               => new WC_Kledo_Order_Screen,
+			WC_Kledo_Failed_Transactions_Screen::ID => new WC_Kledo_Failed_Transactions_Screen,
+			WC_Kledo_Support_Screen::ID             => new WC_Kledo_Support_Screen,
 		);
 
 		$this->init_hooks();
@@ -200,7 +201,7 @@ class WC_Kledo_Admin {
 			<?php if ( ! $this->use_woo_nav ) : ?>
 				<nav class="nav-tab-wrapper woo-nav-tab-wrapper">
 					<?php foreach ( $tabs as $id => $label ) : ?>
-						<a href="<?php echo esc_html( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . esc_attr( $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . rawurlencode( (string) $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>">
 							<?php echo esc_html( $label ); ?>
 						</a>
 					<?php endforeach; ?>
@@ -284,6 +285,7 @@ class WC_Kledo_Admin {
 			'wc_kledo',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'security' => wp_create_nonce( 'wc_kledo_admin' ),
 				'i18n'     => array(
 					'payment_account_placeholder' => esc_html__( 'Select Account', WC_KLEDO_TEXT_DOMAIN ),
 					'warehouse_placeholder'       => esc_html__( 'Select Warehouse', WC_KLEDO_TEXT_DOMAIN ),
