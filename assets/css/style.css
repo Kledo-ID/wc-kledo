@@ -52,3 +52,70 @@
     display: block;
     padding-bottom: 5px;
 }
+
+/* Transactions tab: header checkbox — WP core uses asymmetric padding on thead th.check-column (e.g. 11px top, 0 bottom) */
+#wc-kledo-transactions-form .wp-list-table.wc-kledo-transactions-table.widefat thead th.check-column {
+    vertical-align: middle !important;
+    text-align: center;
+    padding: 10px 6px 10px 4px !important;
+}
+
+.wp-list-table.wc-kledo-transactions-table.widefat thead th.check-column {
+    vertical-align: middle !important;
+    text-align: center;
+    padding: 10px 6px 10px 4px !important;
+}
+
+#wc-kledo-transactions-form .wp-list-table.wc-kledo-transactions-table.widefat thead th.check-column .wc-kledo-tx-th-cb-inner,
+.wp-list-table.wc-kledo-transactions-table.widefat thead th.check-column .wc-kledo-tx-th-cb-inner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.wp-list-table.wc-kledo-transactions-table.widefat thead th.check-column input[type="checkbox"] {
+    float: none !important;
+    margin: 0 !important;
+    vertical-align: middle;
+}
+
+/* Align header row with sortable cells (core / WooCommerce may set th { vertical-align: top }) */
+#wc-kledo-transactions-form .wp-list-table.wc-kledo-transactions-table.widefat thead th,
+.wp-list-table.wc-kledo-transactions-table.widefat thead th {
+    vertical-align: middle !important;
+}
+
+.wp-list-table.wc-kledo-transactions-table tbody th.check-column {
+    vertical-align: middle;
+}
+
+/* Sortable headers: Dashicons only (no core sorting-indicator glyph) */
+.wp-list-table.wc-kledo-transactions-table thead th.sortable a.wc-kledo-tx-sort-link,
+.wp-list-table.wc-kledo-transactions-table thead th.sorted a.wc-kledo-tx-sort-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-right: 0;
+}
+
+.wp-list-table.wc-kledo-transactions-table thead th.sortable a.wc-kledo-tx-sort-link span,
+.wp-list-table.wc-kledo-transactions-table thead th.sorted a.wc-kledo-tx-sort-link span {
+    float: none;
+}
+
+.wp-list-table.wc-kledo-transactions-table thead th .wc-kledo-tx-sort-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.55;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.wp-list-table.wc-kledo-transactions-table thead th.sortable:hover .wc-kledo-tx-sort-icon,
+.wp-list-table.wc-kledo-transactions-table thead th.sorted .wc-kledo-tx-sort-icon {
+    opacity: 1;
+}
