@@ -78,7 +78,12 @@ abstract class WC_Kledo_Request {
 	 * @since 1.3.0 Add `ref_number_prefix` parameter.
 	 * @since 1.3.0 Add `tags` parameter.
 	 */
-	protected function create_transaction( WC_Order $order, string $ref_number_prefix, ?string $warehouse, array $tags) {
+	protected function create_transaction(
+		WC_Order $order,
+		string $ref_number_prefix,
+		?string $warehouse,
+		array $tags
+	) {
 		$this->set_method( 'POST' );
 
 		$body = array(
@@ -102,7 +107,7 @@ abstract class WC_Kledo_Request {
 		);
 
 		// Get shipping tracking data if exists.
-		if ($shipping_data = $this->get_shipping_tracking( $order ) ) {
+		if ( $shipping_data = $this->get_shipping_tracking( $order ) ) {
 			$body['shipping_tracking'] = $shipping_data;
 		}
 
@@ -139,8 +144,7 @@ abstract class WC_Kledo_Request {
 	 * @return string
 	 * @since 1.3.1
 	 */
-	protected function get_due_date( WC_Order $order ): string
-	{
+	protected function get_due_date( WC_Order $order ): string {
 		$date_completed = $order->get_date_completed();
 
 		if ( $date_completed ) {
@@ -148,7 +152,7 @@ abstract class WC_Kledo_Request {
 		}
 
 		return $order->get_date_created()
-		             ->modify('+1 month')
+		             ->modify( '+1 month' )
 		             ->format( 'Y-m-d' );
 	}
 
@@ -160,8 +164,7 @@ abstract class WC_Kledo_Request {
 	 * @return array
 	 * @since 1.3.0
 	 */
-	protected function get_shipping_tracking( WC_Order $order ): array
-	{
+	protected function get_shipping_tracking( WC_Order $order ): array {
 		if ( ! class_exists( 'WC_Shipment_Tracking' ) ) {
 			return [];
 		}
@@ -215,7 +218,7 @@ abstract class WC_Kledo_Request {
 	public function do_request(): bool {
 		// Check if connected.
 		if ( ! wc_kledo()->get_connection_handler()->is_configured() ) {
-			throw new \RuntimeException( __( "Can't do API request because the api key & endpoint url has not been configured.", WC_KLEDO_TEXT_DOMAIN ) );
+			throw new RuntimeException( __( "Can't do API request because the api key & endpoint url has not been configured.", WC_KLEDO_TEXT_DOMAIN ) );
 		}
 
 		// Do the request.
@@ -244,8 +247,14 @@ abstract class WC_Kledo_Request {
 
 		// Check if request is an error.
 		if ( is_wp_error( $this->response ) ) {
+			$wp_error_msg = $this->response->get_error_message();
 			$this->clear_response();
-			throw new \RuntimeException( __( 'There was a problem when connecting to the API.', WC_KLEDO_TEXT_DOMAIN ) );
+
+			if ( '' !== trim( $wp_error_msg ) ) {
+				throw new RuntimeException( sprintf( 'Connection error: %s', $wp_error_msg ) );
+			}
+
+			throw new RuntimeException( __( 'There was a problem when connecting to the API.', WC_KLEDO_TEXT_DOMAIN ) );
 		}
 
 		return true;
