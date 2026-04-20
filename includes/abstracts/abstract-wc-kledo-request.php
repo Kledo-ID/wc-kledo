@@ -424,6 +424,106 @@ abstract class WC_Kledo_Request {
 	}
 
 	/**
+	 * Build a human-readable error label from the current HTTP response.
+	 *
+	 * Combines HTTP status code + reason phrase with any message extracted from
+	 * the response body (JSON fields: message > error > errors). Safe for
+	 * storage and admin display.
+	 *
+	 * @return string Non-empty label.
+	 * @throws \JsonException
+	 * @since 1.7.0
+	 */
+	public function get_api_error_label(): string {
+		$code   = (int) $this->get_response_code();
+		$phrase = $this->get_response_message();
+
+		$label = $code > 0 ? sprintf( 'HTTP %d', $code ) : 'HTTP error';
+
+		if ( '' !== $phrase ) {
+			$label .= ' - ' . $phrase;
+		}
+
+		$api_msg = $this->extract_body_error_message();
+
+		if ( '' !== $api_msg ) {
+			$label .= ': ' . $api_msg;
+		}
+
+		return $label;
+	}
+
+	/**
+	 * Extract a meaningful error string from the raw response body.
+	 *
+	 * Priority for JSON bodies: `message` > `error` > `errors` (first 3 items).
+	 * Falls back to short plain-text body when response is not JSON.
+	 *
+	 * @return string Empty string when nothing useful is found.
+	 * @throws \JsonException
+	 */
+	private function extract_body_error_message(): string {
+		$raw = $this->get_response( false );
+
+		if ( ! is_string( $raw ) || '' === trim( $raw ) ) {
+			return '';
+		}
+
+		$data = json_decode( $raw, true, 512, JSON_THROW_ON_ERROR );
+
+		if ( is_array( $data ) ) {
+			foreach ( array( 'message', 'error' ) as $field ) {
+				if ( ! empty( $data[ $field ] ) && is_string( $data[ $field ] ) ) {
+					return wp_strip_all_tags( $data[ $field ] );
+				}
+			}
+
+			if ( ! empty( $data['errors'] ) ) {
+				$errors = $data['errors'];
+
+				if ( is_string( $errors ) && '' !== trim( $errors ) ) {
+					return wp_strip_all_tags( $errors );
+				}
+
+				if ( is_array( $errors ) ) {
+					$parts = array();
+
+					foreach ( $errors as $value ) {
+						if ( is_string( $value ) && '' !== trim( $value ) ) {
+							$parts[] = wp_strip_all_tags( $value );
+						} elseif ( is_array( $value ) ) {
+							foreach ( $value as $v ) {
+								if ( is_string( $v ) && '' !== trim( $v ) ) {
+									$parts[] = wp_strip_all_tags( $v );
+								}
+							}
+						}
+
+						if ( count( $parts ) >= 3 ) {
+							break;
+						}
+					}
+
+					if ( ! empty( $parts ) ) {
+						return implode( '; ', $parts );
+					}
+				}
+			}
+
+			return '';
+		}
+
+		// Plain-text fallback: include only when short enough to be meaningful.
+		$text = trim( wp_strip_all_tags( $raw ) );
+
+		if ( '' !== $text && mb_strlen( $text ) <= 200 ) {
+			return $text;
+		}
+
+		return '';
+	}
+
+	/**
 	 * Clear the request response.
 	 *
 	 * @return void
