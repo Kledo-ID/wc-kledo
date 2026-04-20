@@ -48,6 +48,9 @@ class WC_Kledo_Admin {
 
 		$this->init_hooks();
 
+		$order_sync_admin = new WC_Kledo_Admin_Order_Sync();
+		$order_sync_admin->init();
+
 		$this->use_woo_nav = class_exists( WooAdminFeatures::class ) && class_exists( WooAdminMenu::class ) && WooAdminFeatures::is_enabled( 'navigation' );
 	}
 
@@ -61,7 +64,43 @@ class WC_Kledo_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_js' ) );
 		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
+		add_action( 'admin_init', array( $this, 'maybe_redirect_legacy_transactions_tab' ) );
 		add_action( 'wp_loaded', array( $this, 'save' ) );
+	}
+
+	/**
+	 * Redirect old Failed Transactions tab URL to the Transactions tab.
+	 *
+	 * @return void
+	 */
+	public function maybe_redirect_legacy_transactions_tab(): void {
+		if ( ! is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( wc_kledo_get_requested_value( 'page' ) !== self::PAGE_ID ) {
+			return;
+		}
+
+		if ( wc_kledo_get_requested_value( 'tab' ) !== 'failed_transactions' ) {
+			return;
+		}
+
+		$params = array(
+			'page' => self::PAGE_ID,
+			'tab'  => WC_Kledo_Failed_Transactions_Screen::ID,
+		);
+
+		$passthrough = array( 'wc_kledo_tx_status', 'wc_kledo_tx_orderby', 'wc_kledo_tx_order', 'paged' );
+
+		foreach ( $passthrough as $key ) {
+			if ( isset( $_GET[ $key ] ) ) {
+				$params[ $key ] = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
+			}
+		}
+
+		wp_safe_redirect( add_query_arg( $params, admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/**
