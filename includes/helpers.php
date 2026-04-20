@@ -216,3 +216,175 @@ if ( ! function_exists( 'wc_kledo_include_tax_or_not' ) ) {
 		return ($total_tax > 0) ? 'yes' : 'no';
 	}
 }
+
+if ( ! function_exists( 'wc_kledo_get_delivery_meta_key' ) ) {
+	/**
+	 * Order meta key used to mark a successful Kledo delivery for a type.
+	 *
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return string|null
+	 * @since 1.5.0
+	 */
+	function wc_kledo_get_delivery_meta_key( string $type ): ?string {
+		if ( 'order' === $type ) {
+			return '_wc_kledo_order_synced';
+		}
+
+		if ( 'invoice' === $type ) {
+			return '_wc_kledo_invoice_synced';
+		}
+
+		return null;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_is_delivery_synced' ) ) {
+	/**
+	 * Whether the order or invoice was already accepted by Kledo (HTTP 200 + valid payload path).
+	 *
+	 * @param  \WC_Order  $order
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return bool
+	 * @since 1.5.0
+	 */
+	function wc_kledo_is_delivery_synced( WC_Order $order, string $type ): bool {
+		$key = wc_kledo_get_delivery_meta_key( $type );
+
+		if ( ! $key ) {
+			return false;
+		}
+
+		return 'yes' === $order->get_meta( $key );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_mark_delivery_synced' ) ) {
+	/**
+	 * Persist successful delivery and clear any stale queue row.
+	 *
+	 * @param  \WC_Order  $order
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	function wc_kledo_mark_delivery_synced( WC_Order $order, string $type ): void {
+		$key = wc_kledo_get_delivery_meta_key( $type );
+
+		if ( ! $key ) {
+			return;
+		}
+
+		$order->update_meta_data( $key, 'yes' );
+		$order->save();
+
+		wc_kledo_remove_failed_transaction_from_queue( $order->get_id(), $type );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_remove_failed_transaction_from_queue' ) ) {
+	/**
+	 * Remove a failed-transaction queue entry for an order and type.
+	 *
+	 * @param  int  $order_id
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	function wc_kledo_remove_failed_transaction_from_queue( int $order_id, string $type ): void {
+		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+			return;
+		}
+
+		$option_name = 'wc_kledo_failed_transactions';
+		$queue       = get_option( $option_name, array() );
+
+		if ( ! is_array( $queue ) ) {
+			return;
+		}
+
+		$key = $type . ':' . $order_id;
+
+		if ( ! isset( $queue[ $key ] ) ) {
+			return;
+		}
+
+		unset( $queue[ $key ] );
+		update_option( $option_name, $queue, false );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_sanitize_api_error_message' ) ) {
+	/**
+	 * Shorten and strip unsafe characters from messages stored or shown in admin.
+	 *
+	 * @param  string  $message
+	 *
+	 * @return string
+	 * @since 1.5.0
+	 */
+	function wc_kledo_sanitize_api_error_message( string $message ): string {
+		$message = wp_strip_all_tags( $message );
+
+		return substr( $message, 0, 500 );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_add_failed_transaction_to_queue' ) ) {
+	/**
+	 * Add failed transaction (order or invoice) to retry queue and schedule cron.
+	 *
+	 * @param  int  $order_id
+	 * @param  string  $type  Either "order" or "invoice".
+	 * @param  string  $error_message
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	function wc_kledo_add_failed_transaction_to_queue( int $order_id, string $type, string $error_message = '' ): void {
+		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+			return;
+		}
+
+		$option_name = 'wc_kledo_failed_transactions';
+		$queue       = get_option( $option_name, array() );
+		$key         = $type . ':' . $order_id;
+
+		if ( ! is_array( $queue ) ) {
+			$queue = array();
+		}
+
+		$now = time();
+
+		$error_message = wc_kledo_sanitize_api_error_message( $error_message );
+
+		if ( ! isset( $queue[ $key ] ) ) {
+			$queue[ $key ] = array(
+				'order_id'    => $order_id,
+				'type'        => $type,
+				'attempts'    => 0,
+				'last_error'  => $error_message,
+				'created_at'  => $now,
+				'next_run_at' => $now,
+			);
+		} else {
+			$queue[ $key ]['last_error'] = $error_message;
+			if ( empty( $queue[ $key ]['created_at'] ) ) {
+				$queue[ $key ]['created_at'] = $now;
+			}
+
+			if ( empty( $queue[ $key ]['next_run_at'] ) ) {
+				$queue[ $key ]['next_run_at'] = $now;
+			}
+		}
+
+		update_option( $option_name, $queue, false );
+
+		if ( ! wp_next_scheduled( 'wc_kledo_retry_failed_transactions' ) ) {
+			wp_schedule_single_event( $now + MINUTE_IN_SECONDS, 'wc_kledo_retry_failed_transactions' );
+		}
+	}
+}

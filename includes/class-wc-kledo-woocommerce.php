@@ -52,10 +52,47 @@ class WC_Kledo_WooCommerce {
 			return;
 		}
 
+		if (
+			wc_kledo_is_delivery_synced( $order, 'invoice' )
+			&& ! apply_filters( 'wc_kledo_force_resend_delivery', false, $order, 'invoice' )
+		) {
+			return;
+		}
+
 		do_action( 'wc_kledo_create_invoice', $order_id, $order );
 
-		$request = new WC_Kledo_Request_Invoice();
-		$request->create_invoice( $order );
+		try {
+			$request = new WC_Kledo_Request_Invoice();
+			$result  = $request->create_invoice( $order );
+
+			$response_code = method_exists( $request, 'get_response_code' ) ? (int) $request->get_response_code() : 0;
+
+			if ( false !== $result && 200 === $response_code ) {
+				wc_kledo_mark_delivery_synced( $order, 'invoice' );
+
+				return;
+			}
+
+			$error_message = sprintf(
+				/* translators: 1: HTTP status code */
+				__( 'Kledo: failed to send invoice to Kledo (HTTP %d). Will retry automatically.', WC_KLEDO_TEXT_DOMAIN ),
+				$response_code
+			);
+
+			$order->add_order_note( $error_message );
+
+			wc_kledo_add_failed_transaction_to_queue( $order_id, 'invoice', $error_message );
+		} catch ( Throwable $e ) {
+			$safe_detail = wc_kledo_sanitize_api_error_message( $e->getMessage() );
+			$error_message = sprintf(
+				__( 'Kledo: error when sending invoice to Kledo: %s. Will retry automatically.', WC_KLEDO_TEXT_DOMAIN ),
+				$safe_detail
+			);
+
+			$order->add_order_note( $error_message );
+
+			wc_kledo_add_failed_transaction_to_queue( $order_id, 'invoice', $safe_detail );
+		}
 	}
 
 	/**
@@ -77,9 +114,46 @@ class WC_Kledo_WooCommerce {
 			return;
 		}
 
+		if (
+			wc_kledo_is_delivery_synced( $order, 'order' )
+			&& ! apply_filters( 'wc_kledo_force_resend_delivery', false, $order, 'order' )
+		) {
+			return;
+		}
+
 		do_action( 'wc_kledo_create_order', $order_id );
 
-		$request = new WC_Kledo_Request_Order();
-		$request->create_order( $order );
+		try {
+			$request = new WC_Kledo_Request_Order();
+			$result  = $request->create_order( $order );
+
+			$response_code = method_exists( $request, 'get_response_code' ) ? (int) $request->get_response_code() : 0;
+
+			if ( false !== $result && 200 === $response_code ) {
+				wc_kledo_mark_delivery_synced( $order, 'order' );
+
+				return;
+			}
+
+			$error_message = sprintf(
+				/* translators: 1: HTTP status code */
+				__( 'Kledo: failed to send order to Kledo (HTTP %d). Will retry automatically.', WC_KLEDO_TEXT_DOMAIN ),
+				$response_code
+			);
+
+			$order->add_order_note( $error_message );
+
+			wc_kledo_add_failed_transaction_to_queue( $order_id, 'order', $error_message );
+		} catch ( Throwable $e ) {
+			$safe_detail = wc_kledo_sanitize_api_error_message( $e->getMessage() );
+			$error_message = sprintf(
+				__( 'Kledo: error when sending order to Kledo: %s. Will retry automatically.', WC_KLEDO_TEXT_DOMAIN ),
+				$safe_detail
+			);
+
+			$order->add_order_note( $error_message );
+
+			wc_kledo_add_failed_transaction_to_queue( $order_id, 'order', $safe_detail );
+		}
 	}
 }

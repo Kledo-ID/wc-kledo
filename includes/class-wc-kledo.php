@@ -161,11 +161,169 @@ final class WC_Kledo {
 		// Add the admin notices.
 		add_action( 'admin_notices', array( $this, 'add_admin_notices' ) );
 
-		// Disable ssl verify.
-		add_filter( 'https_ssl_verify', '__return_false' );
-
 		// Declare the compatibility with WooCommerce plugin HPOS.
 		add_action( 'before_woocommerce_init', array( $this, 'add_woocommerce_hpos_compatibility' ) );
+
+		// Retry cron for failed transactions.
+		add_action( 'wc_kledo_retry_failed_transactions', array( $this, 'retry_failed_transactions' ) );
+	}
+
+	/**
+	 * Retry failed order / invoice transactions via WP-Cron.
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	public function retry_failed_transactions(): void {
+		$option_name = 'wc_kledo_failed_transactions';
+		$queue       = get_option( $option_name, array() );
+
+		if ( empty( $queue ) || ! is_array( $queue ) ) {
+			return;
+		}
+
+		$max_attempts        = 20;
+		$max_lifetime        = 2 * DAY_IN_SECONDS;
+		$next_retry_required = false;
+		$updated_queue       = array();
+		$now                 = time();
+
+		foreach ( $queue as $key => $item ) {
+			$order_id = isset( $item['order_id'] ) ? (int) $item['order_id'] : 0;
+			$type     = $item['type'] ?? '';
+			$attempts = isset( $item['attempts'] ) ? (int) $item['attempts'] : 0;
+			$created  = isset( $item['created_at'] ) ? (int) $item['created_at'] : $now;
+			$next_run = isset( $item['next_run_at'] ) ? (int) $item['next_run_at'] : $now;
+
+			if ( ! $order_id || ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+				continue;
+			}
+
+			if ( $next_run > $now ) {
+				$updated_queue[ $key ] = $item;
+				$next_retry_required   = true;
+				continue;
+			}
+
+			$order = wc_get_order( $order_id );
+
+			if ( ( $now - $created ) > $max_lifetime ) {
+				if ( $order instanceof WC_Order ) {
+					$order->add_order_note(
+						sprintf(
+							/* translators: %s: transaction type (order/invoice) */
+							__( 'Kledo: automatic retry for %s was dropped after the maximum queue lifetime. Use Failed Transactions or change order status to retry if still needed.', WC_KLEDO_TEXT_DOMAIN ),
+							$type
+						)
+					);
+				}
+
+				continue;
+			}
+
+			if ( ! $order instanceof WC_Order ) {
+				continue;
+			}
+
+			if ( wc_kledo_is_delivery_synced( $order, $type ) ) {
+				wc_kledo_remove_failed_transaction_from_queue( $order_id, $type );
+				continue;
+			}
+
+			if ( $attempts >= $max_attempts ) {
+				$order->add_order_note(
+					sprintf(
+						/* translators: 1: transaction type (order/invoice), 2: attempts count */
+						__( 'Kledo: stopped retrying %1$s after %2$d failed attempts.', WC_KLEDO_TEXT_DOMAIN ),
+						$type,
+						$attempts
+					)
+				);
+
+				continue;
+			}
+
+			$attempts++;
+
+			try {
+				if ( 'order' === $type ) {
+					$request = new WC_Kledo_Request_Order();
+					$result  = $request->create_order( $order );
+				} else {
+					$request = new WC_Kledo_Request_Invoice();
+					$result  = $request->create_invoice( $order );
+				}
+
+				$response_code = method_exists( $request, 'get_response_code' ) ? (int) $request->get_response_code() : 0;
+
+				if ( false !== $result && 200 === $response_code ) {
+					wc_kledo_mark_delivery_synced( $order, $type );
+					wc_kledo_remove_failed_transaction_from_queue( $order_id, $type );
+
+					$order->add_order_note(
+						sprintf(
+							/* translators: 1: transaction type (order/invoice), 2: attempts count */
+							__( 'Kledo: successfully resent %1$s to Kledo after %2$d attempt(s).', WC_KLEDO_TEXT_DOMAIN ),
+							$type,
+							$attempts
+						)
+					);
+
+					continue;
+				}
+
+				$last_error = wc_kledo_sanitize_api_error_message(
+					sprintf(
+						'HTTP %d',
+						$response_code
+					)
+				);
+			} catch ( Throwable $e ) {
+				$last_error = wc_kledo_sanitize_api_error_message( $e->getMessage() );
+			}
+
+			$updated_queue[ $key ] = array(
+				'order_id'    => $order_id,
+				'type'        => $type,
+				'attempts'    => $attempts,
+				'last_error'  => $last_error,
+				'created_at'  => $created,
+				'next_run_at' => $now + $this->get_retry_delay( $attempts ),
+			);
+
+			$next_retry_required = true;
+		}
+
+		update_option( $option_name, $updated_queue, false );
+
+		if ( $next_retry_required && ! wp_next_scheduled( 'wc_kledo_retry_failed_transactions' ) ) {
+			wp_schedule_single_event( $now + MINUTE_IN_SECONDS, 'wc_kledo_retry_failed_transactions' );
+		}
+	}
+
+	/**
+	 * Get delay (in seconds) before next retry using exponential backoff.
+	 *
+	 * @param  int  $attempt
+	 *
+	 * @return int
+	 * @since 1.5.0
+	 */
+	private function get_retry_delay( int $attempt ): int {
+		// Base delays (in seconds) for first few attempts.
+		$mapping = array(
+			1  => 60, // 1 minute
+			2  => 5 * MINUTE_IN_SECONDS,
+			3  => 15 * MINUTE_IN_SECONDS,
+			4  => 30 * MINUTE_IN_SECONDS,
+			5  => HOUR_IN_SECONDS,
+			6  => 2 * HOUR_IN_SECONDS,
+			7  => 4 * HOUR_IN_SECONDS,
+			8  => 8 * HOUR_IN_SECONDS,
+		);
+
+		// After that, stay at 8 hours until the 2 days limit is reached.
+		return $mapping[ $attempt ] ?? ( 8 * HOUR_IN_SECONDS );
 	}
 
 	/**
