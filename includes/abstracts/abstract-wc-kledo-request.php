@@ -184,8 +184,11 @@ abstract class WC_Kledo_Request {
 		$items = array();
 
 		foreach ( $order->get_items() as $item ) {
-			/** @var \WC_Product $product */
 			$product = $item->get_product();
+
+			if ( ! $product instanceof WC_Product ) {
+				continue;
+			}
 
 			$items[] = array(
 				'name'          => $product->get_name(),
@@ -227,7 +230,15 @@ abstract class WC_Kledo_Request {
 					'Accept'        => 'application/json',
 				),
 				'body'       => $this->get_body(),
-				'sslverify'  => false,
+				/**
+				 * Whether to verify SSL for outbound Kledo requests.
+				 * Default false for backward compatibility with legacy stacks; set to true in production when possible.
+				 *
+				 * @param  bool  $sslverify
+				 *
+				 * @since 1.5.0
+				 */
+				'sslverify'  => (bool) apply_filters( 'wc_kledo_http_sslverify', false ),
 			)
 		);
 
