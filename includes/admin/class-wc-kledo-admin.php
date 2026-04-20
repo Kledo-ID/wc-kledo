@@ -113,12 +113,7 @@ class WC_Kledo_Admin {
 		if ( wc_kledo()->is_plugin_settings() ) {
 			$version = WC_KLEDO_VERSION;
 
-			wp_enqueue_style(
-				'wc_kledo_admin_style',
-				wc_kledo()->asset_dir_url() . '/css/style.css',
-				array(),
-				$version
-			);
+			wp_enqueue_style( 'dashicons' );
 
 			wp_enqueue_style(
 				'woocommerce_admin_styles',
@@ -128,6 +123,16 @@ class WC_Kledo_Admin {
 			);
 
 			wp_enqueue_style( 'woocommerce_admin_styles' );
+
+			/* WP_List_Table-style column headers (th.sortable / th.sorted). */
+			wp_enqueue_style( 'list-tables' );
+
+			wp_enqueue_style(
+				'wc_kledo_admin_style',
+				wc_kledo()->asset_dir_url() . '/css/style.css',
+				array( 'dashicons', 'list-tables' ),
+				$version
+			);
 		}
 	}
 
