@@ -55,6 +55,14 @@ final class WC_Kledo {
 	private ?WC_Kledo_Admin $admin_settings = null;
 
 	/**
+	 * WooCommerce ↔ Kledo bridge (status hooks + shared delivery pipeline).
+	 *
+	 * @var \WC_Kledo_WooCommerce
+	 * @since 1.6.0
+	 */
+	private WC_Kledo_WooCommerce $woocommerce_bridge;
+
+	/**
 	 * Gets the main class instance.
 	 *
 	 * Ensures only one instance can be loaded.
@@ -147,8 +155,18 @@ final class WC_Kledo {
 		}
 
 		// Setup WooCommerce.
-		$wc = new WC_Kledo_WooCommerce();
-		$wc->setup_hooks();
+		$this->woocommerce_bridge = new WC_Kledo_WooCommerce();
+		$this->woocommerce_bridge->setup_hooks();
+	}
+
+	/**
+	 * Shared WooCommerce order/invoice delivery logic (used by status hooks, retries, and manual admin).
+	 *
+	 * @return \WC_Kledo_WooCommerce
+	 * @since 1.6.0
+	 */
+	public function get_woocommerce_bridge(): WC_Kledo_WooCommerce {
+		return $this->woocommerce_bridge;
 	}
 
 	/**
@@ -166,6 +184,14 @@ final class WC_Kledo {
 
 		// Retry cron for failed transactions.
 		add_action( 'wc_kledo_retry_failed_transactions', array( $this, 'retry_failed_transactions' ) );
+
+		// Admin-side fallback: process overdue retries synchronously on admin page
+		// loads.  WP-Cron spawns an async HTTP request to wp-cron.php that silently
+		// fails in development environments and some production servers that cannot
+		// reach themselves (localhost, strict firewall, DISABLE_WP_CRON, etc.).
+		// This hook guarantees retries execute whenever an admin user refreshes any
+		// admin page after the scheduled time has passed.
+		add_action( 'admin_init', array( $this, 'maybe_process_due_retries' ) );
 	}
 
 	/**
@@ -175,12 +201,36 @@ final class WC_Kledo {
 	 * @since 1.5.0
 	 */
 	public function retry_failed_transactions(): void {
+		// Single-execution lock prevents concurrent runs when both the admin
+		// fallback and a WP-Cron spawn fire at the same time.  The 60 s TTL
+		// ensures a stale lock (e.g. from an unexpected PHP fatal) never blocks
+		// future runs permanently.
+		$lock_key = 'wc_kledo_retry_lock';
+
+		if ( get_transient( $lock_key ) ) {
+			return;
+		}
+
 		$option_name = 'wc_kledo_failed_transactions';
 		$queue       = get_option( $option_name, array() );
 
 		if ( empty( $queue ) || ! is_array( $queue ) ) {
 			return;
 		}
+
+		set_transient( $lock_key, 1, 60 );
+
+		$context = wp_doing_cron() ? 'wp-cron' : 'other';
+
+		if ( is_admin() ) {
+			$context = 'admin';
+		}
+
+		wc_kledo_log_info( sprintf(
+			'Retry run started: %d item(s) in queue, context: %s.',
+			count( $queue ),
+			$context
+		) );
 
 		$max_attempts        = 20;
 		$max_lifetime        = 2 * DAY_IN_SECONDS;
@@ -189,13 +239,20 @@ final class WC_Kledo {
 		$now                 = time();
 
 		foreach ( $queue as $key => $item ) {
-			$order_id = isset( $item['order_id'] ) ? (int) $item['order_id'] : 0;
-			$type     = $item['type'] ?? '';
-			$attempts = isset( $item['attempts'] ) ? (int) $item['attempts'] : 0;
-			$created  = isset( $item['created_at'] ) ? (int) $item['created_at'] : $now;
-			$next_run = isset( $item['next_run_at'] ) ? (int) $item['next_run_at'] : $now;
+			$order_id    = isset( $item['order_id'] ) ? (int) $item['order_id'] : 0;
+			$type        = $item['type'] ?? '';
+			$attempts    = isset( $item['attempts'] ) ? (int) $item['attempts'] : 0;
+			$created     = isset( $item['created_at'] ) ? (int) $item['created_at'] : $now;
+			$next_run    = isset( $item['next_run_at'] ) ? (int) $item['next_run_at'] : $now;
+			$item_status = isset( $item['status'] ) ? (string) $item['status'] : 'retrying';
 
 			if ( ! $order_id || ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+				continue;
+			}
+
+			// Terminal failures remain in the queue for audit / manual retry; skip auto-retry only.
+			if ( 'failed' === $item_status ) {
+				$updated_queue[ $key ] = $item;
 				continue;
 			}
 
@@ -212,12 +269,15 @@ final class WC_Kledo {
 					$order->add_order_note(
 						sprintf(
 							/* translators: %s: transaction type (order/invoice) */
-							__( 'Kledo: automatic retry for %s was dropped after the maximum queue lifetime. Use Failed Transactions or change order status to retry if still needed.', WC_KLEDO_TEXT_DOMAIN ),
+							__( 'Kledo: automatic retry for %s has stopped: maximum queue lifetime reached. Manual retry is still available from the Transactions screen.', WC_KLEDO_TEXT_DOMAIN ),
 							$type
 						)
 					);
 				}
 
+				// Keep as terminal failure so it is visible in the Transactions screen.
+				$item['status']      = 'failed';
+				$updated_queue[ $key ] = $item;
 				continue;
 			}
 
@@ -234,7 +294,34 @@ final class WC_Kledo {
 				$order->add_order_note(
 					sprintf(
 						/* translators: 1: transaction type (order/invoice), 2: attempts count */
-						__( 'Kledo: stopped retrying %1$s after %2$d failed attempts.', WC_KLEDO_TEXT_DOMAIN ),
+						__( 'Kledo: automatic retry for %1$s has stopped after %2$d failed attempts. Manual retry is still available from the Transactions screen.', WC_KLEDO_TEXT_DOMAIN ),
+						$type,
+						$attempts
+					)
+				);
+
+				// Keep as terminal failure so it is visible in the Transactions screen.
+				$item['status']        = 'failed';
+				$updated_queue[ $key ] = $item;
+				continue;
+			}
+
+			$attempts++;
+
+			$result = $this->get_woocommerce_bridge()->deliver(
+				$order,
+				$type,
+				array(
+					'trigger'            => 'retry',
+					'enqueue_on_failure'  => false,
+				)
+			);
+
+			if ( ! empty( $result['success'] ) ) {
+				$order->add_order_note(
+					sprintf(
+						/* translators: 1: transaction type (order/invoice), 2: attempts count */
+						__( 'Kledo: successfully resent %1$s to Kledo after %2$d attempt(s).', WC_KLEDO_TEXT_DOMAIN ),
 						$type,
 						$attempts
 					)
@@ -243,52 +330,33 @@ final class WC_Kledo {
 				continue;
 			}
 
-			$attempts++;
+			if ( ! empty( $result['skipped'] ) && 'already_synced' === ( $result['reason'] ?? '' ) ) {
+				continue;
+			}
 
-			try {
-				if ( 'order' === $type ) {
-					$request = new WC_Kledo_Request_Order();
-					$result  = $request->create_order( $order );
-				} else {
-					$request = new WC_Kledo_Request_Invoice();
-					$result  = $request->create_invoice( $order );
-				}
-
-				$response_code = method_exists( $request, 'get_response_code' ) ? (int) $request->get_response_code() : 0;
-
-				if ( false !== $result && 200 === $response_code ) {
-					wc_kledo_mark_delivery_synced( $order, $type );
-					wc_kledo_remove_failed_transaction_from_queue( $order_id, $type );
-
-					$order->add_order_note(
-						sprintf(
-							/* translators: 1: transaction type (order/invoice), 2: attempts count */
-							__( 'Kledo: successfully resent %1$s to Kledo after %2$d attempt(s).', WC_KLEDO_TEXT_DOMAIN ),
-							$type,
-							$attempts
-						)
-					);
-
-					continue;
-				}
-
+			if ( ! empty( $result['error'] ) ) {
+				$last_error = $result['error'];
+			} else {
 				$last_error = wc_kledo_sanitize_api_error_message(
 					sprintf(
 						'HTTP %d',
-						$response_code
+						(int) $result['http_code']
 					)
 				);
-			} catch ( Throwable $e ) {
-				$last_error = wc_kledo_sanitize_api_error_message( $e->getMessage() );
 			}
 
+			// $attempts was pre-incremented before deliver (0→1 for the first cron
+			// retry). Use ($attempts + 1) so each cron retry consumes the NEXT
+			// backoff step rather than repeating the delay used for initial enqueue.
+			// Progression: enqueue→5 min, retry1→10 min, retry2→30 min, …
 			$updated_queue[ $key ] = array(
 				'order_id'    => $order_id,
 				'type'        => $type,
 				'attempts'    => $attempts,
 				'last_error'  => $last_error,
 				'created_at'  => $created,
-				'next_run_at' => $now + $this->get_retry_delay( $attempts ),
+				'next_run_at' => $now + $this->get_retry_delay( $attempts + 1 ),
+				'status'      => 'retrying',
 			);
 
 			$next_retry_required = true;
@@ -297,33 +365,83 @@ final class WC_Kledo {
 		update_option( $option_name, $updated_queue, false );
 
 		if ( $next_retry_required && ! wp_next_scheduled( 'wc_kledo_retry_failed_transactions' ) ) {
-			wp_schedule_single_event( $now + MINUTE_IN_SECONDS, 'wc_kledo_retry_failed_transactions' );
+			// Schedule the cron at the earliest next_run_at across all retrying
+			// items rather than a fixed 60-second heartbeat.  This avoids firing
+			// the hook multiple times before any item is actually due.
+			$min_next = PHP_INT_MAX;
+
+			foreach ( $updated_queue as $q_item ) {
+				if ( 'failed' !== ( $q_item['status'] ?? '' ) && isset( $q_item['next_run_at'] ) ) {
+					$min_next = min( $min_next, (int) $q_item['next_run_at'] );
+				}
+			}
+
+			// Ensure the event is always at least 30 s in the future to give
+			// WP-Cron time to record the scheduled event before it fires again.
+			$schedule_at = PHP_INT_MAX !== $min_next
+				? max( $now + 30, $min_next )
+				: $now + MINUTE_IN_SECONDS;
+
+			wp_schedule_single_event( $schedule_at, 'wc_kledo_retry_failed_transactions' );
+		}
+
+		delete_transient( $lock_key );
+	}
+
+	/**
+	 * Admin-side synchronous fallback for overdue retry items.
+	 *
+	 * WP-Cron spawns an async HTTP request to wp-cron.php to execute scheduled
+	 * events.  That spawn silently fails whenever the server cannot reach itself
+	 * (localhost, Docker, strict firewall, DISABLE_WP_CRON = true, etc.).  In
+	 * those cases the retry queue grows stale and no retries ever execute.
+	 *
+	 * By hooking into admin_init this method ensures that any overdue item is
+	 * processed synchronously on the next admin page load, providing a reliable
+	 * execution path independently of WP-Cron spawn health.
+	 *
+	 * @return void
+	 * @since 1.7.3
+	 */
+	public function maybe_process_due_retries(): void {
+		// Skip AJAX and WP-Cron contexts — they have their own execution paths.
+		if ( wp_doing_ajax() || wp_doing_cron() ) {
+			return;
+		}
+
+		$queue = get_option( 'wc_kledo_failed_transactions', array() );
+
+		if ( empty( $queue ) || ! is_array( $queue ) ) {
+			return;
+		}
+
+		$now = time();
+
+		foreach ( $queue as $item ) {
+			if ( 'failed' !== ( $item['status'] ?? '' )
+				&& isset( $item['next_run_at'] )
+				&& (int) $item['next_run_at'] <= $now ) {
+				// At least one item is due — delegate to the main retry runner.
+				// The lock inside retry_failed_transactions() prevents concurrent
+				// double-processing if WP-Cron spawns at the same moment.
+				$this->retry_failed_transactions();
+
+				return;
+			}
 		}
 	}
 
 	/**
-	 * Get delay (in seconds) before next retry using exponential backoff.
+	 * Seconds to wait before the nth retry attempt. Delegates to the global
+	 * helper so the backoff table is defined in one place.
 	 *
-	 * @param  int  $attempt
+	 * @param  int  $attempt  1-based attempt index.
 	 *
-	 * @return int
+	 * @return int Delay in seconds.
 	 * @since 1.5.0
 	 */
 	private function get_retry_delay( int $attempt ): int {
-		// Base delays (in seconds) for first few attempts.
-		$mapping = array(
-			1  => 60, // 1 minute
-			2  => 5 * MINUTE_IN_SECONDS,
-			3  => 15 * MINUTE_IN_SECONDS,
-			4  => 30 * MINUTE_IN_SECONDS,
-			5  => HOUR_IN_SECONDS,
-			6  => 2 * HOUR_IN_SECONDS,
-			7  => 4 * HOUR_IN_SECONDS,
-			8  => 8 * HOUR_IN_SECONDS,
-		);
-
-		// After that, stay at 8 hours until the 2 days limit is reached.
-		return $mapping[ $attempt ] ?? ( 8 * HOUR_IN_SECONDS );
+		return wc_kledo_get_retry_delay( $attempt );
 	}
 
 	/**
