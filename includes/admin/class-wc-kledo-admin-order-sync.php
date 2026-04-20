@@ -92,64 +92,109 @@ class WC_Kledo_Admin_Order_Sync {
 		$allow_order_ui   = $order_on && wc_kledo_order_status_allows_manual_sales_order( $order );
 		$allow_invoice_ui = $invoice_on && wc_kledo_order_status_allows_manual_invoice( $order );
 
-		$action_url = admin_url( 'admin-post.php' );
-
 		$any_button = ( $allow_order_ui ) || ( $allow_invoice_ui );
+
+		// Do not nest <form> inside WooCommerce's order edit <form>. In HTML5 the inner
+		// <form> start tag is ignored while the inner </form> closes the outer form early,
+		// leaving order status + Update outside any form (status appears not to save).
+		$manual_sync_root_id = 'wc-kledo-manual-sync-' . (string) $order->get_id();
+		$nonce               = wp_create_nonce( 'wc_kledo_manual_push' );
+		$post_url            = admin_url( 'admin-post.php' );
+		$confirm_order       = __( 'Re-sending may create a duplicate sales order in Kledo. Continue?', WC_KLEDO_TEXT_DOMAIN );
+		$confirm_invoice     = __( 'Re-sending may create a duplicate invoice in Kledo. Continue?', WC_KLEDO_TEXT_DOMAIN );
 		?>
         <p class="description">
 			<?php
 			esc_html_e(
-				'Manual actions match plugin rules: sales order when the order is Processing or Completed (same lifecycle as automatic sync on Processing); invoice only when the order is Completed. Re-send appears only after a successful sync (meta yes).',
+				'Manual actions match plugin rules: sales order when the order is Processing (same lifecycle as automatic sync on Processing); invoice only when the order is Completed. Re-send appears only after a successful sync.',
 				WC_KLEDO_TEXT_DOMAIN
 			);
 			?>
         </p>
+		<div id="<?php echo esc_attr( $manual_sync_root_id ); ?>" class="wc-kledo-manual-sync-root"
+			data-post-url="<?php echo esc_url( $post_url ); ?>"
+			data-nonce="<?php echo esc_attr( $nonce ); ?>"
+			style="margin-bottom:0;">
 		<?php if ( $allow_order_ui ) : ?>
-            <form method="post" action="<?php echo esc_url( $action_url ); ?>" style="margin-bottom:8px;">
-				<?php wp_nonce_field( 'wc_kledo_manual_push' ); ?>
-
-                <input type="hidden" name="action" value="wc_kledo_manual_push"/>
-                <input type="hidden" name="order_id" value="<?php echo esc_attr( (string) $order->get_id() ); ?>"/>
-                <input type="hidden" name="wc_kledo_type" value="order"/>
-
+			<div style="margin-bottom:8px;">
 				<?php if ( $order_synced ) : ?>
-                    <input type="hidden" name="wc_kledo_force" value="1"/>
-                    <button type="submit" class="button button-small"
-                            onclick="return window.confirm('<?php echo esc_js( __( 'Re-sending may create a duplicate sales order in Kledo. Continue?', WC_KLEDO_TEXT_DOMAIN ) ); ?>');">
-					    <?php esc_html_e( 'Re-send sales order to Kledo', WC_KLEDO_TEXT_DOMAIN ); ?>
-                    </button>
+					<button type="button" class="button button-small wc-kledo-manual-push-btn"
+						data-order-id="<?php echo esc_attr( (string) $order->get_id() ); ?>"
+						data-type="order"
+						data-force="1"
+						data-confirm="<?php echo esc_attr( $confirm_order ); ?>">
+						<?php esc_html_e( 'Re-send sales order to Kledo', WC_KLEDO_TEXT_DOMAIN ); ?>
+					</button>
 				<?php else : ?>
-                    <input type="hidden" name="wc_kledo_force" value="0"/>
-                    <button type="submit" class="button button-small">
+					<button type="button" class="button button-small wc-kledo-manual-push-btn"
+						data-order-id="<?php echo esc_attr( (string) $order->get_id() ); ?>"
+						data-type="order"
+						data-force="0"
+						data-confirm="">
 						<?php esc_html_e( 'Send sales order to Kledo (first manual)', WC_KLEDO_TEXT_DOMAIN ); ?>
-                    </button>
-				<?php
-				endif; ?>
-            </form>
+					</button>
+				<?php endif; ?>
+			</div>
 		<?php endif; ?>
 
 		<?php if ( $allow_invoice_ui ) : ?>
-            <form method="post" action="<?php echo esc_url( $action_url ); ?>">
-				<?php wp_nonce_field( 'wc_kledo_manual_push' ); ?>
-
-                <input type="hidden" name="action" value="wc_kledo_manual_push"/>
-                <input type="hidden" name="order_id" value="<?php echo esc_attr( (string) $order->get_id() ); ?>"/>
-                <input type="hidden" name="wc_kledo_type" value="invoice"/>
-
+			<div>
 				<?php if ( $invoice_synced ) : ?>
-                    <input type="hidden" name="wc_kledo_force" value="1"/>
-                    <button type="submit" class="button button-small"
-                            onclick="return window.confirm('<?php echo esc_js( __( 'Re-sending may create a duplicate invoice in Kledo. Continue?', WC_KLEDO_TEXT_DOMAIN ) ); ?>');">
+					<button type="button" class="button button-small wc-kledo-manual-push-btn"
+						data-order-id="<?php echo esc_attr( (string) $order->get_id() ); ?>"
+						data-type="invoice"
+						data-force="1"
+						data-confirm="<?php echo esc_attr( $confirm_invoice ); ?>">
 						<?php esc_html_e( 'Re-send invoice to Kledo', WC_KLEDO_TEXT_DOMAIN ); ?>
-                    </button>
+					</button>
 				<?php else : ?>
-                    <input type="hidden" name="wc_kledo_force" value="0"/>
-                    <button type="submit" class="button button-small">
+					<button type="button" class="button button-small wc-kledo-manual-push-btn"
+						data-order-id="<?php echo esc_attr( (string) $order->get_id() ); ?>"
+						data-type="invoice"
+						data-force="0"
+						data-confirm="">
 						<?php esc_html_e( 'Send invoice to Kledo (first manual)', WC_KLEDO_TEXT_DOMAIN ); ?>
-                    </button>
+					</button>
 				<?php endif; ?>
-            </form>
+			</div>
 		<?php endif; ?>
+		</div>
+		<script>
+		(function () {
+			var root = document.getElementById( <?php echo wp_json_encode( $manual_sync_root_id ); ?> );
+			if ( ! root || root.dataset.wcKledoBound === '1' ) {
+				return;
+			}
+			root.dataset.wcKledoBound = '1';
+			root.addEventListener( 'click', function ( event ) {
+				var btn = event.target.closest( '.wc-kledo-manual-push-btn' );
+				if ( ! btn || ! root.contains( btn ) ) {
+					return;
+				}
+				var confirmMsg = btn.getAttribute( 'data-confirm' ) || '';
+				if ( confirmMsg && ! window.confirm( confirmMsg ) ) {
+					return;
+				}
+				var form = document.createElement( 'form' );
+				form.method = 'post';
+				form.action = root.getAttribute( 'data-post-url' ) || '';
+				function addField( name, value ) {
+					var input = document.createElement( 'input' );
+					input.type = 'hidden';
+					input.name = name;
+					input.value = value;
+					form.appendChild( input );
+				}
+				addField( '_wpnonce', root.getAttribute( 'data-nonce' ) || '' );
+				addField( 'action', 'wc_kledo_manual_push' );
+				addField( 'order_id', btn.getAttribute( 'data-order-id' ) || '' );
+				addField( 'wc_kledo_type', btn.getAttribute( 'data-type' ) || '' );
+				addField( 'wc_kledo_force', btn.getAttribute( 'data-force' ) || '0' );
+				document.body.appendChild( form );
+				form.submit();
+			} );
+		})();
+		</script>
 
 		<?php if ( ! $order_on && ! $invoice_on ) : ?>
             <p><?php esc_html_e( 'Both sales order and invoice creation are disabled in Kledo settings.', WC_KLEDO_TEXT_DOMAIN ); ?></p>
