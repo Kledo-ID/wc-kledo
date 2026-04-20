@@ -42,7 +42,7 @@ class WC_Kledo_Admin {
 			WC_Kledo_Configure_Screen::ID           => new WC_Kledo_Configure_Screen,
 			WC_Kledo_Invoice_Screen::ID             => new WC_Kledo_Invoice_Screen,
 			WC_Kledo_Order_Screen::ID               => new WC_Kledo_Order_Screen,
-			WC_Kledo_Failed_Transactions_Screen::ID => new WC_Kledo_Failed_Transactions_Screen,
+			WC_Kledo_Transactions_Screen::ID        => new WC_Kledo_Transactions_Screen,
 			WC_Kledo_Support_Screen::ID             => new WC_Kledo_Support_Screen,
 		);
 
@@ -88,7 +88,7 @@ class WC_Kledo_Admin {
 
 		$params = array(
 			'page' => self::PAGE_ID,
-			'tab'  => WC_Kledo_Failed_Transactions_Screen::ID,
+			'tab'  => WC_Kledo_Transactions_Screen::ID,
 		);
 
 		$passthrough = array( 'wc_kledo_tx_status', 'wc_kledo_tx_orderby', 'wc_kledo_tx_order', 'paged' );
