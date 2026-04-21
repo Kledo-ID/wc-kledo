@@ -528,7 +528,9 @@ if ( ! function_exists( 'wc_kledo_add_failed_transaction_to_queue' ) ) {
 
 		update_option( $option_name, $queue, false );
 
-		if ( ! wp_next_scheduled( 'wc_kledo_retry_failed_transactions' ) ) {
+		$next_scheduled = wp_next_scheduled( 'wc_kledo_retry_failed_transactions' );
+
+		if ( ! $next_scheduled ) {
 			$scheduled = wp_schedule_single_event( $now + $first_delay, 'wc_kledo_retry_failed_transactions' );
 
 			if ( false === $scheduled ) {
@@ -551,7 +553,7 @@ if ( ! function_exists( 'wc_kledo_add_failed_transaction_to_queue' ) ) {
 		} else {
 			wc_kledo_log_info( sprintf(
 				'Retry cron already scheduled (next: %s). Order %d (%s) added to queue.',
-				gmdate( 'Y-m-d H:i:s', (int) wp_next_scheduled( 'wc_kledo_retry_failed_transactions' ) ),
+				gmdate( 'Y-m-d H:i:s', (int) $next_scheduled ),
 				$order_id,
 				$type
 			) );
@@ -589,8 +591,10 @@ if ( ! function_exists( 'wc_kledo_log' ) ) {
 
 if ( ! function_exists( 'wc_kledo_log_info' ) ) {
 	/**
-	 * @param  string  $message
-	 * @param  array  $context
+	 * Writes an informational line to the WooCommerce logger.
+	 *
+	 * @param string               $message Context message.
+	 * @param array<string, mixed> $context Optional structured context.
 	 *
 	 * @return void
 	 * @since 1.6.0
@@ -602,8 +606,10 @@ if ( ! function_exists( 'wc_kledo_log_info' ) ) {
 
 if ( ! function_exists( 'wc_kledo_log_warning' ) ) {
 	/**
-	 * @param  string  $message
-	 * @param  array  $context
+	 * Writes a warning line to the WooCommerce logger.
+	 *
+	 * @param string               $message Context message.
+	 * @param array<string, mixed> $context Optional structured context.
 	 *
 	 * @return void
 	 * @since 1.6.0
