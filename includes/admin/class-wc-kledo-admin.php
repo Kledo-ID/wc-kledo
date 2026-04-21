@@ -69,9 +69,10 @@ class WC_Kledo_Admin {
 	}
 
 	/**
-	 * Redirect old Failed Transactions tab URL to the Transactions tab.
+	 * Redirects legacy Failed Transactions tab URLs to the Transactions tab.
 	 *
 	 * @return void
+	 * @since 1.5.0
 	 */
 	public function maybe_redirect_legacy_transactions_tab(): void {
 		if ( ! is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {

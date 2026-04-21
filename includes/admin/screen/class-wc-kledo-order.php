@@ -67,6 +67,12 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 		), 10, 3 );
 	}
 
+	/**
+	 * Returns WooCommerce settings API field definitions for the Order tab.
+	 *
+	 * @return array<int|string, mixed>
+	 * @since 1.3.0
+	 */
 	public function get_settings(): array {
 		return array(
 			'title' => array(

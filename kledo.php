@@ -20,6 +20,11 @@ if ( ! defined( 'WC_KLEDO_PLUGIN_FILE' ) ) {
 	define( 'WC_KLEDO_PLUGIN_FILE', __FILE__ );
 }
 
+/**
+ * Bootstraps environment checks, constants, and loads the main plugin when dependencies are satisfied.
+ *
+ * @since 1.0.0
+ */
 class WC_Kledo_Loader {
 	/**
 	 * The plugin version.
@@ -94,14 +99,14 @@ class WC_Kledo_Loader {
 	private static ?WC_Kledo_Loader $instance = null;
 
 	/**
-	 * Gets the main class instance.
+	 * Returns the main loader instance.
 	 *
-	 * Ensures only one instance can be loaded.
+	 * Ensures only one instance is loaded.
 	 *
 	 * @return self
 	 * @since 1.0.0
 	 */
-	public static function instance(): ?WC_Kledo_Loader {
+	public static function instance(): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}

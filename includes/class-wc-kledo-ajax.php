@@ -19,10 +19,9 @@ class WC_Kledo_Ajax {
 	}
 
 	/**
-	 * Get the payment account.
+	 * AJAX handler: returns finance accounts for the payment account SelectWoo field.
 	 *
 	 * @return void
-	 * @throws \Exception
 	 * @since 1.0.0
 	 */
 	public static function get_payment_account(): void {
@@ -78,10 +77,9 @@ class WC_Kledo_Ajax {
 	}
 
 	/**
-	 * Get the warehouse.
+	 * AJAX handler: returns warehouses for the warehouse SelectWoo field.
 	 *
 	 * @return void
-	 * @throws \Exception
 	 * @since 1.0.0
 	 */
 	public static function get_warehouse(): void {
