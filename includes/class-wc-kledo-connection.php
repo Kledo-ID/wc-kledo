@@ -3,6 +3,11 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Holds Kledo API credentials loaded from options (with filters applied).
+ *
+ * @since 1.0.0
+ */
 class WC_Kledo_Connection {
 	/**
 	 * The kledo api key.
@@ -27,16 +32,16 @@ class WC_Kledo_Connection {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		add_action( 'wp_loaded', array( $this, 'setup_Credentials' ), 9998 );
+		add_action( 'wp_loaded', array( $this, 'setup_credentials' ), 9998 );
 	}
 
 	/**
-	 * Set up the connection credentials.
+	 * Loads API credentials from options and applies filters.
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function setup_Credentials(): void {
+	public function setup_credentials(): void {
 		/**
 		 * Filters the api key.
 		 *
