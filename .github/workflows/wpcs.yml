@@ -16,12 +16,18 @@ jobs:
           php-version: 8.1
           tools: composer
 
-      - name: Install dependencies
+      - name: Install PHPCS and WPCS
         run: |
-          composer require --dev squizlabs/php_codesniffer
-          composer require --dev wp-coding-standards/wpcs
-          composer require --dev dealerdirect/phpcodesniffer-composer-installer
+          composer require --dev squizlabs/php_codesniffer:^3.13
+          composer require --dev wp-coding-standards/wpcs:^3.3
+          composer require --dev dealerdirect/phpcodesniffer-composer-installer:^1.1
+
+      - name: Check installed standards
+        run: vendor/bin/phpcs -i
 
       - name: Run PHPCS
         run: |
-          vendor/bin/phpcs --standard=WordPress .
+          vendor/bin/phpcs \
+            --standard=WordPress \
+            --ignore=.github/*,.wordpress-org/*,languages/* \
+            .
