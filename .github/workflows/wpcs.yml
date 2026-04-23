@@ -1,20 +1,27 @@
-name: Inspections
+name: WPCS
 
-on: pull_request
+on:
+  pull_request:
 
 jobs:
-  runPHPCSInspection:
-    name: Run PHPCS inspection
+  phpcs:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Run PHPCS inspection
-      uses: rtCamp/action-phpcs-code-review@v2
-      env:
-        GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-        SKIP_FOLDERS: ".github,.wordpress-org,languages"
-        PHPCS_SNIFFS_EXCLUDE: "WordPress.Files.FileName"
-      with:
-        args: "WordPress,WordPress-Core,WordPress-Docs"
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          tools: composer
+
+      - name: Install dependencies
+        run: |
+          composer require --dev squizlabs/php_codesniffer
+          composer require --dev wp-coding-standards/wpcs
+          composer require --dev dealerdirect/phpcodesniffer-composer-installer
+
+      - name: Run PHPCS
+        run: |
+          vendor/bin/phpcs --standard=WordPress .
