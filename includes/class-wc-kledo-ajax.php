@@ -19,25 +19,44 @@ class WC_Kledo_Ajax {
 	}
 
 	/**
-	 * Get the payment account.
+	 * AJAX handler: returns finance accounts for the payment account SelectWoo field.
 	 *
 	 * @return void
-	 * @throws \Exception
 	 * @since 1.0.0
 	 */
 	public static function get_payment_account(): void {
+		check_ajax_referer( 'wc_kledo_admin', 'security' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', WC_KLEDO_TEXT_DOMAIN ) ), 403 );
+		}
+
 		$request = new WC_Kledo_Request_Account();
 
-		$keyword = sanitize_text_field( $_POST['keyword'] ?? '' );
-		$page    = sanitize_text_field( $_POST['page'] ?? '1' );
+		$keyword = isset( $_POST['keyword'] ) ? sanitize_text_field( wp_unslash( $_POST['keyword'] ) ) : '';
+		$page    = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 1;
 
-		$response = $request->get_accounts_suggestion_per_page( $keyword, $page );
+		try {
+			$response = $request->get_accounts_suggestion_per_page( $keyword, $page );
+		} catch ( Throwable $e ) {
+			wp_send_json_error( array( 'message' => __( 'Request failed.', WC_KLEDO_TEXT_DOMAIN ) ), 500 );
+		}
+
+		if (
+			isset( $response ) &&
+			( false === $response
+			  || ! is_array( $response )
+			  || empty( $response['data']['data'] )
+			  || ! is_array( $response['data']['data'] ) )
+		) {
+			wp_send_json_error( array( 'message' => __( 'Invalid response from Kledo.', WC_KLEDO_TEXT_DOMAIN ) ), 502 );
+		}
 
 		$items = array();
 
 		foreach ( $response['data']['data'] as $item ) {
-			$name = $item['name'];
-			$code = $item['ref_code'];
+			$name = isset( $item['name'] ) ? (string) $item['name'] : '';
+			$code = isset( $item['ref_code'] ) ? (string) $item['ref_code'] : '';
 
 			$value = $code . ' | ' . $name;
 
@@ -50,29 +69,47 @@ class WC_Kledo_Ajax {
 		wp_send_json(
 			array(
 				'items'    => $items,
-				'page'     => $response['data']['current_page'],
-				'per_page' => $response['data']['per_page'],
-				'total'    => $response['data']['total'],
+				'page'     => isset( $response['data']['current_page'] ) ? (int) $response['data']['current_page'] : 1,
+				'per_page' => isset( $response['data']['per_page'] ) ? (int) $response['data']['per_page'] : 10,
+				'total'    => isset( $response['data']['total'] ) ? (int) $response['data']['total'] : 0,
 			)
 		);
 	}
 
 	/**
-	 * Get the warehouse.
+	 * AJAX handler: returns warehouses for the warehouse SelectWoo field.
 	 *
 	 * @return void
-	 * @throws \Exception
 	 * @since 1.0.0
 	 */
 	public static function get_warehouse(): void {
+		check_ajax_referer( 'wc_kledo_admin', 'security' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', WC_KLEDO_TEXT_DOMAIN ) ), 403 );
+		}
+
 		$request = new WC_Kledo_Request_Warehouse();
 
-		$response = $request->get_warehouse();
+		try {
+			$response = $request->get_warehouse();
+		} catch ( Throwable $e ) {
+			wp_send_json_error( array( 'message' => __( 'Request failed.', WC_KLEDO_TEXT_DOMAIN ) ), 500 );
+		}
+
+		if (
+			false === $response
+			|| ! is_array( $response )
+			|| empty( $response['data']['data'] )
+			|| ! is_array( $response['data']['data'] )
+		) {
+			wp_send_json_error( array( 'message' => __( 'Invalid response from Kledo.', WC_KLEDO_TEXT_DOMAIN ) ), 502 );
+		}
 
 		$items = array();
 
 		foreach ( $response['data']['data'] as $item ) {
-			$name = $item['name'];
+			$name = isset( $item['name'] ) ? (string) $item['name'] : '';
 
 			$items[] = array(
 				'id'   => $name,

@@ -1,20 +1,105 @@
 name: Inspections
 
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - '**.php'
+      - 'phpcs.xml'
+      - 'phpcs.xml.dist'
+      - '.phpcs.xml'
+      - '.phpcs.xml.dist'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   runPHPCSInspection:
-    name: Run PHPCS inspection
+    name: Run PHPCS Inspection (WordPress Coding Standards)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Run PHPCS inspection
-      uses: rtCamp/action-phpcs-code-review@v2
-      env:
-        GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-        SKIP_FOLDERS: ".github,.wordpress-org,languages"
-        PHPCS_SNIFFS_EXCLUDE: "WordPress.Files.FileName"
-      with:
-        args: "WordPress,WordPress-Core,WordPress-Docs"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2, cs2pr
+          coverage: none
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-wpcs-phpcs3.13-wpcs3.3
+          restore-keys: |
+            ${{ runner.os }}-composer-wpcs-
+
+      - name: Initialize Composer project (if not present)
+        run: |
+          if [ ! -f composer.json ]; then
+            composer init \
+              --no-interaction \
+              --name=temp/wpcs-check \
+              --type=project \
+              --stability=dev
+          fi
+
+      - name: Configure Composer plugins
+        run: |
+          composer config --no-interaction \
+            allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+
+      - name: Install PHPCS and WordPress Coding Standards
+        run: |
+          composer require --no-interaction --dev \
+            squizlabs/php_codesniffer:^3.13 \
+            wp-coding-standards/wpcs:^3.3 \
+            dealerdirect/phpcodesniffer-composer-installer:^1.2
+
+      - name: Verify installed standards
+        run: vendor/bin/phpcs -i
+
+      - name: Get changed PHP files
+        id: changed-files
+        uses: tj-actions/changed-files@v46
+        with:
+          files: '**.php'
+
+      - name: Run PHPCS on changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          PHPCS_STANDARD="WordPress"
+
+          # Use project-level config if it exists.
+          if [ -f phpcs.xml ] || [ -f phpcs.xml.dist ] || [ -f .phpcs.xml ] || [ -f .phpcs.xml.dist ]; then
+            echo "📋 Using project-level PHPCS config."
+            vendor/bin/phpcs \
+              --report=checkstyle \
+              ${{ steps.changed-files.outputs.all_changed_files }} \
+            | cs2pr
+          else
+            echo "📋 No project-level PHPCS config found. Using default WordPress standard."
+            vendor/bin/phpcs \
+              --standard=$PHPCS_STANDARD \
+              --extensions=php \
+              --ignore=.github/*,.wordpress-org/*,languages/*,vendor/* \
+              --report=checkstyle \
+              ${{ steps.changed-files.outputs.all_changed_files }} \
+            | cs2pr
+          fi
+
+      - name: No PHP files changed
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: echo "✅ No PHP files changed in this pull request. Skipping PHPCS."

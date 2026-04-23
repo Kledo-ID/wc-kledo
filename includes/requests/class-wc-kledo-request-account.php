@@ -5,14 +5,14 @@ defined( 'ABSPATH' ) || exit;
 
 class WC_Kledo_Request_Account extends WC_Kledo_Request {
 	/**
-	 * Get accounts suggestion per page.
+	 * Requests a paginated list of finance accounts for SelectWoo suggestions.
 	 *
-	 * @param  int  $page
-	 * @param  string  $search
-	 * @param  int  $per_page
+	 * @param string $search   Search keyword.
+	 * @param int    $page     Page number (1-based).
+	 * @param int    $per_page Results per page.
 	 *
-	 * @return bool|array
-	 * @throws \Exception
+	 * @return array|false Response payload, or false when the API reports failure.
+	 * @throws \Exception When the HTTP layer fails before a parseable response exists.
 	 * @since 1.0.0
 	 */
 	public function get_accounts_suggestion_per_page( string $search, int $page = 1, int $per_page = 10 ) {

@@ -1,6 +1,8 @@
 <?php
 
 // Exit if accessed directly.
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
 defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'wc_kledo_get_requested_value' ) ) {
@@ -214,5 +216,452 @@ if ( ! function_exists( 'wc_kledo_include_tax_or_not' ) ) {
 		$total_tax = $order->get_total_tax();
 
 		return ($total_tax > 0) ? 'yes' : 'no';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_delivery_meta_key' ) ) {
+	/**
+	 * Order meta key used to mark a successful Kledo delivery for a type.
+	 *
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return string|null
+	 * @since 1.5.0
+	 */
+	function wc_kledo_get_delivery_meta_key( string $type ): ?string {
+		if ( 'order' === $type ) {
+			return '_wc_kledo_order_synced';
+		}
+
+		if ( 'invoice' === $type ) {
+			return '_wc_kledo_invoice_synced';
+		}
+
+		return null;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_is_delivery_synced' ) ) {
+	/**
+	 * Whether the order or invoice was already accepted by Kledo (HTTP 200 + valid payload path).
+	 *
+	 * @param  \WC_Order  $order
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return bool
+	 * @since 1.5.0
+	 */
+	function wc_kledo_is_delivery_synced( WC_Order $order, string $type ): bool {
+		$key = wc_kledo_get_delivery_meta_key( $type );
+
+		if ( ! $key ) {
+			return false;
+		}
+
+		return 'yes' === $order->get_meta( $key );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_mark_delivery_synced' ) ) {
+	/**
+	 * Persist successful delivery and clear any stale queue row.
+	 *
+	 * @param  \WC_Order  $order
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	function wc_kledo_mark_delivery_synced( WC_Order $order, string $type ): void {
+		$key = wc_kledo_get_delivery_meta_key( $type );
+
+		if ( ! $key ) {
+			return;
+		}
+
+		$order->update_meta_data( $key, 'yes' );
+		$order->save();
+
+		wc_kledo_remove_failed_transaction_from_queue( $order->get_id(), $type );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_remove_failed_transaction_from_queue' ) ) {
+	/**
+	 * Remove a failed-transaction queue entry for an order and type.
+	 *
+	 * @param  int  $order_id
+	 * @param  string  $type  "order" or "invoice".
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	function wc_kledo_remove_failed_transaction_from_queue( int $order_id, string $type ): void {
+		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+			return;
+		}
+
+		$option_name = 'wc_kledo_failed_transactions';
+		$queue       = get_option( $option_name, array() );
+
+		if ( ! is_array( $queue ) ) {
+			return;
+		}
+
+		$key = $type . ':' . $order_id;
+
+		if ( ! isset( $queue[ $key ] ) ) {
+			return;
+		}
+
+		unset( $queue[ $key ] );
+		update_option( $option_name, $queue, false );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_admin_datetime_format' ) ) {
+	/**
+	 * Returns the WordPress admin-style absolute datetime format string.
+	 *
+	 * Matches the convention used by WordPress post list screens:
+	 * e.g. "2026/04/16 at 8:03 am".
+	 *
+	 * Always uses WordPress site timezone via wp_date().
+	 *
+	 * @return string PHP date format string.
+	 * @since 1.7.1
+	 */
+	function wc_kledo_admin_datetime_format(): string {
+		return 'Y/m/d \a\t g:i a';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_format_admin_timestamp' ) ) {
+	/**
+	 * Format a UNIX timestamp for display in the WordPress admin.
+	 *
+	 * Produces an absolute datetime in WordPress admin style
+	 * (e.g. "2026/04/16 at 8:03 am") and optionally appends a
+	 * human-readable relative string in parentheses:
+	 *
+	 *   past   → "2026/04/16 at 8:03 am (30 minutes ago)"
+	 *   future → "2026/04/16 at 8:03 am (in 30 minutes)"
+	 *
+	 * Relative text is omitted when:
+	 * - $relative_mode is 'none'
+	 * - the difference is less than 60 seconds (avoids "0 seconds ago")
+	 * - the timestamp direction contradicts the requested mode
+	 *   (e.g. mode='future' but timestamp is already in the past)
+	 *
+	 * @param  int     $timestamp      UNIX timestamp. Pass 0 or negative to get the placeholder.
+	 * @param  string  $relative_mode  Direction hint: 'none' | 'past' | 'future'. Default 'none'.
+	 *
+	 * @return string  Formatted string or '—'. NOT HTML-escaped; caller must esc_html() the output.
+	 * @since 1.7.1
+	 */
+	function wc_kledo_format_admin_timestamp( int $timestamp, string $relative_mode = 'none' ): string {
+		if ( $timestamp <= 0 ) {
+			return '—';
+		}
+
+		$absolute = wp_date( wc_kledo_admin_datetime_format(), $timestamp );
+
+		if ( false === $absolute || '' === $absolute ) {
+			return '—';
+		}
+
+		if ( 'none' === $relative_mode ) {
+			return $absolute;
+		}
+
+		$now  = time();
+		$diff = $timestamp - $now;
+
+		if ( 'past' === $relative_mode ) {
+			// Timestamp should be in the past; skip relative if it is not or too recent.
+			if ( $diff >= 0 || abs( $diff ) < 60 ) {
+				return $absolute;
+			}
+
+			/* translators: %s: human-readable time difference, e.g. "30 minutes" */
+			$relative = sprintf( __( '(%s ago)', WC_KLEDO_TEXT_DOMAIN ), human_time_diff( $timestamp, $now ) );
+
+			return $absolute.' '.$relative;
+		}
+
+		if ( 'future' === $relative_mode ) {
+			// Timestamp should be in the future; skip relative gracefully if overdue or too near.
+			if ( $diff < 60 ) {
+				return $absolute;
+			}
+
+			/* translators: %s: human-readable time difference, e.g. "30 minutes" */
+			$relative = sprintf( __( '(in %s)', WC_KLEDO_TEXT_DOMAIN ), human_time_diff( $now, $timestamp ) );
+
+			return $absolute.' '.$relative;
+		}
+
+		return $absolute;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_sanitize_api_error_message' ) ) {
+	/**
+	 * Shorten and strip unsafe characters from messages stored or shown in admin.
+	 *
+	 * @param  string  $message
+	 *
+	 * @return string
+	 * @since 1.5.0
+	 */
+	function wc_kledo_sanitize_api_error_message( string $message ): string {
+		$message = wp_strip_all_tags( $message );
+
+		return substr( $message, 0, 500 );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_retry_delay' ) ) {
+	/**
+	 * Seconds to wait before the nth retry attempt (1-based).
+	 *
+	 * Defines the progressive backoff schedule used by both the automatic cron
+	 * retry loop and the initial queue entry so that every scheduled next_run_at
+	 * value is consistent and meaningfully in the future.
+	 *
+	 * Attempt index semantics:
+	 *   1 = delay before the first automatic retry (applied when item is first enqueued)
+	 *   2 = delay applied after the first automatic retry fails
+	 *   3+ = continuing backoff up to the 8-hour cap
+	 *
+	 * @param  int  $attempt  1-based attempt index. Values outside the map cap at 8 hours.
+	 *
+	 * @return int Delay in seconds.
+	 * @since 1.7.2
+	 */
+	function wc_kledo_get_retry_delay( int $attempt ): int {
+		// Index 1 is always the delay applied when a new item is first enqueued.
+		// The cron retry loop uses index (attempts + 1) after incrementing the
+		// counter, so each consecutive retry advances exactly one step forward.
+		//
+		// Full schedule (cumulative time from initial failure):
+		//   enqueue       → retry 1 in  5 min
+		//   retry 1 fails → retry 2 in 10 min  (total ~15 min)
+		//   retry 2 fails → retry 3 in 30 min  (total ~45 min)
+		//   retry 3 fails → retry 4 in  1 h    (total ~1 h 45 min)
+		//   retry 4 fails → retry 5 in  2 h    (total ~3 h 45 min)
+		//   retry 5 fails → retry 6 in  4 h    (total ~7 h 45 min)
+		//   retry 6+ fails → 8 h cap each
+		$map = array(
+			1 => 5 * MINUTE_IN_SECONDS,   //  5 min – initial enqueue wait
+			2 => 10 * MINUTE_IN_SECONDS,  // 10 min – after retry 1 fails
+			3 => 30 * MINUTE_IN_SECONDS,  // 30 min – after retry 2 fails
+			4 => HOUR_IN_SECONDS,         //  1 h   – after retry 3 fails
+			5 => 2 * HOUR_IN_SECONDS,     //  2 h   – after retry 4 fails
+			6 => 4 * HOUR_IN_SECONDS,     //  4 h   – after retry 5 fails
+			7 => 8 * HOUR_IN_SECONDS,     //  8 h   – after retry 6 fails (cap)
+		);
+
+		return $map[ $attempt ] ?? 8 * HOUR_IN_SECONDS;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_add_failed_transaction_to_queue' ) ) {
+	/**
+	 * Add failed transaction (order or invoice) to retry queue and schedule cron.
+	 *
+	 * @param  int  $order_id
+	 * @param  string  $type  Either "order" or "invoice".
+	 * @param  string  $error_message
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	function wc_kledo_add_failed_transaction_to_queue( int $order_id, string $type, string $error_message = '' ): void {
+		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+			return;
+		}
+
+		$option_name = 'wc_kledo_failed_transactions';
+		$queue       = get_option( $option_name, array() );
+		$key         = $type . ':' . $order_id;
+
+		if ( ! is_array( $queue ) ) {
+			$queue = array();
+		}
+
+		$now = time();
+
+		$error_message = wc_kledo_sanitize_api_error_message( $error_message );
+
+		// Delay before the first automatic retry. Used both for the queue entry and
+		// for scheduling the cron so they stay aligned.
+		$first_delay = wc_kledo_get_retry_delay( 1 );
+
+		if ( ! isset( $queue[ $key ] ) ) {
+			$queue[ $key ] = array(
+				'order_id'    => $order_id,
+				'type'        => $type,
+				'attempts'    => 0,
+				'last_error'  => $error_message,
+				'created_at'  => $now,
+				'next_run_at' => $now + $first_delay,
+				'status'      => 'retrying',
+			);
+		} else {
+			$queue[ $key ]['last_error'] = $error_message;
+
+			if ( empty( $queue[ $key ]['created_at'] ) ) {
+				$queue[ $key ]['created_at'] = $now;
+			}
+
+			// Only backfill next_run_at when truly absent; never move a future schedule backwards.
+			if ( empty( $queue[ $key ]['next_run_at'] ) ) {
+				$queue[ $key ]['next_run_at'] = $now + $first_delay;
+			}
+
+			// Preserve 'failed' (terminal) status; only set default when field is absent.
+			if ( empty( $queue[ $key ]['status'] ) ) {
+				$queue[ $key ]['status'] = 'retrying';
+			}
+		}
+
+		update_option( $option_name, $queue, false );
+
+		$next_scheduled = wp_next_scheduled( 'wc_kledo_retry_failed_transactions' );
+
+		if ( ! $next_scheduled ) {
+			$scheduled = wp_schedule_single_event( $now + $first_delay, 'wc_kledo_retry_failed_transactions' );
+
+			if ( false === $scheduled ) {
+				wc_kledo_log_warning( sprintf(
+					'wp_schedule_single_event returned false for order %d (%s). ' .
+					'The retry cron event was NOT registered. ' .
+					'Retries will still execute via the admin-page fallback.',
+					$order_id,
+					$type
+				) );
+			} else {
+				wc_kledo_log_info( sprintf(
+					'Retry cron event scheduled for order %d (%s) at %s (in %d s).',
+					$order_id,
+					$type,
+					gmdate( 'Y-m-d H:i:s', $now + $first_delay ),
+					$first_delay
+				) );
+			}
+		} else {
+			wc_kledo_log_info( sprintf(
+				'Retry cron already scheduled (next: %s). Order %d (%s) added to queue.',
+				gmdate( 'Y-m-d H:i:s', (int) $next_scheduled ),
+				$order_id,
+				$type
+			) );
+		}
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_log' ) ) {
+	/**
+	 * Write a line to the WooCommerce logger when available.
+	 *
+	 * @param  string  $level  WC_Log_Levels level, e.g. info, warning, error.
+	 * @param  string  $message
+	 * @param  array  $context
+	 *
+	 * @return void
+	 * @since 1.6.0
+	 */
+	function wc_kledo_log( string $level, string $message, array $context = array() ): void {
+		if ( ! function_exists( 'wc_get_logger' ) ) {
+			return;
+		}
+
+		$logger = wc_get_logger();
+
+		if ( ! is_object( $logger ) || ! method_exists( $logger, 'log' ) ) {
+			return;
+		}
+
+		$payload = array_merge( array( 'source' => 'wc-kledo' ), $context );
+
+		$logger->log( $level, $message, $payload );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_log_info' ) ) {
+	/**
+	 * Writes an informational line to the WooCommerce logger.
+	 *
+	 * @param string               $message Context message.
+	 * @param array<string, mixed> $context Optional structured context.
+	 *
+	 * @return void
+	 * @since 1.6.0
+	 */
+	function wc_kledo_log_info( string $message, array $context = array() ): void {
+		wc_kledo_log( 'info', $message, $context );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_log_warning' ) ) {
+	/**
+	 * Writes a warning line to the WooCommerce logger.
+	 *
+	 * @param string               $message Context message.
+	 * @param array<string, mixed> $context Optional structured context.
+	 *
+	 * @return void
+	 * @since 1.6.0
+	 */
+	function wc_kledo_log_warning( string $message, array $context = array() ): void {
+		wc_kledo_log( 'warning', $message, $context );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_order_admin_screen_id' ) ) {
+	/**
+	 * Screen id for WooCommerce order edit (classic CPT or HPOS).
+	 *
+	 * @return string
+	 * @since 1.6.0
+	 */
+	function wc_kledo_get_order_admin_screen_id(): string {
+		if ( function_exists( 'wc_get_page_screen_id' )
+		     && class_exists( OrderUtil::class )
+		     && call_user_func( array( OrderUtil::class, 'custom_orders_table_usage_is_enabled' ) )
+		) {
+			return wc_get_page_screen_id( 'shop-order' );
+		}
+
+		return 'shop_order';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_order_status_allows_manual_sales_order' ) ) {
+	/**
+	 * Whether the order status allows a manual sales-order push (aligns with automatic hook on `processing`, extended to `completed` if sync was missed).
+	 *
+	 * @param  \WC_Order  $order
+	 *
+	 * @return bool
+	 * @since 1.6.0
+	 */
+	function wc_kledo_order_status_allows_manual_sales_order( WC_Order $order ): bool {
+		return $order->has_status( array( 'processing', 'completed' ) );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_order_status_allows_manual_invoice' ) ) {
+	/**
+	 * Whether the order status allows a manual invoice push (matches automatic hook on `completed`).
+	 *
+	 * @param  \WC_Order  $order
+	 *
+	 * @return bool
+	 * @since 1.6.0
+	 */
+	function wc_kledo_order_status_allows_manual_invoice( WC_Order $order ): bool {
+		return $order->has_status( 'completed' );
 	}
 }

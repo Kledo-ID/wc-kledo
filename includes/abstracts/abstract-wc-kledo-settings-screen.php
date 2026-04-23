@@ -239,10 +239,10 @@ abstract class WC_Kledo_Settings_Screen {
 
 			<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $field['type'] ) ); ?>">
 				<select name="<?php echo esc_attr( $field['id'] ); ?>[]" id="<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>" multiple="multiple">
-					<?php if ( $tags ): ?>
-                        <?php foreach ($tags as $tag): ?>
-						    <option value="<?php echo $tag; ?>" selected="selected"><?php echo $tag; ?></option>
-                        <?php endforeach; ?>
+					<?php if ( $tags ) : ?>
+						<?php foreach ( $tags as $tag ) : ?>
+							<option value="<?php echo esc_attr( $tag ); ?>" selected="selected"><?php echo esc_html( $tag ); ?></option>
+						<?php endforeach; ?>
 					<?php endif; ?>
 				</select>
 			</td>

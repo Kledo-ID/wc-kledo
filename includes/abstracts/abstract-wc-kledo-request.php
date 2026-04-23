@@ -78,7 +78,12 @@ abstract class WC_Kledo_Request {
 	 * @since 1.3.0 Add `ref_number_prefix` parameter.
 	 * @since 1.3.0 Add `tags` parameter.
 	 */
-	protected function create_transaction( WC_Order $order, string $ref_number_prefix, ?string $warehouse, array $tags) {
+	protected function create_transaction(
+		WC_Order $order,
+		string $ref_number_prefix,
+		?string $warehouse,
+		array $tags
+	) {
 		$this->set_method( 'POST' );
 
 		$body = array(
@@ -102,7 +107,7 @@ abstract class WC_Kledo_Request {
 		);
 
 		// Get shipping tracking data if exists.
-		if ($shipping_data = $this->get_shipping_tracking( $order ) ) {
+		if ( $shipping_data = $this->get_shipping_tracking( $order ) ) {
 			$body['shipping_tracking'] = $shipping_data;
 		}
 
@@ -139,8 +144,7 @@ abstract class WC_Kledo_Request {
 	 * @return string
 	 * @since 1.3.1
 	 */
-	protected function get_due_date( WC_Order $order ): string
-	{
+	protected function get_due_date( WC_Order $order ): string {
 		$date_completed = $order->get_date_completed();
 
 		if ( $date_completed ) {
@@ -148,7 +152,7 @@ abstract class WC_Kledo_Request {
 		}
 
 		return $order->get_date_created()
-		             ->modify('+1 month')
+		             ->modify( '+1 month' )
 		             ->format( 'Y-m-d' );
 	}
 
@@ -160,8 +164,7 @@ abstract class WC_Kledo_Request {
 	 * @return array
 	 * @since 1.3.0
 	 */
-	protected function get_shipping_tracking( WC_Order $order ): array
-	{
+	protected function get_shipping_tracking( WC_Order $order ): array {
 		if ( ! class_exists( 'WC_Shipment_Tracking' ) ) {
 			return [];
 		}
@@ -184,8 +187,11 @@ abstract class WC_Kledo_Request {
 		$items = array();
 
 		foreach ( $order->get_items() as $item ) {
-			/** @var \WC_Product $product */
 			$product = $item->get_product();
+
+			if ( ! $product instanceof WC_Product ) {
+				continue;
+			}
 
 			$items[] = array(
 				'name'          => $product->get_name(),
@@ -212,7 +218,7 @@ abstract class WC_Kledo_Request {
 	public function do_request(): bool {
 		// Check if connected.
 		if ( ! wc_kledo()->get_connection_handler()->is_configured() ) {
-			throw new \RuntimeException( __( "Can't do API request because the api key & endpoint url has not been configured.", WC_KLEDO_TEXT_DOMAIN ) );
+			throw new RuntimeException( __( "Can't do API request because the api key & endpoint url has not been configured.", WC_KLEDO_TEXT_DOMAIN ) );
 		}
 
 		// Do the request.
@@ -227,14 +233,28 @@ abstract class WC_Kledo_Request {
 					'Accept'        => 'application/json',
 				),
 				'body'       => $this->get_body(),
-				'sslverify'  => false,
+				/**
+				 * Whether to verify SSL for outbound Kledo requests.
+				 * Default false for backward compatibility with legacy stacks; set to true in production when possible.
+				 *
+				 * @param  bool  $sslverify
+				 *
+				 * @since 1.5.0
+				 */
+				'sslverify'  => (bool) apply_filters( 'wc_kledo_http_sslverify', false ),
 			)
 		);
 
 		// Check if request is an error.
 		if ( is_wp_error( $this->response ) ) {
+			$wp_error_msg = $this->response->get_error_message();
 			$this->clear_response();
-			throw new \RuntimeException( __( 'There was a problem when connecting to the API.', WC_KLEDO_TEXT_DOMAIN ) );
+
+			if ( '' !== trim( $wp_error_msg ) ) {
+				throw new RuntimeException( sprintf( 'Connection error: %s', $wp_error_msg ) );
+			}
+
+			throw new RuntimeException( __( 'There was a problem when connecting to the API.', WC_KLEDO_TEXT_DOMAIN ) );
 		}
 
 		return true;
@@ -401,6 +421,106 @@ abstract class WC_Kledo_Request {
 	 */
 	private function get_request_user_agent(): string {
 		return sprintf( '%s/%s (WooCommerce/%s; WordPress/%s)', str_replace( ' ', '-', WC_KLEDO_PLUGIN_NAME ), WC_KLEDO_VERSION, WC_VERSION, $GLOBALS['wp_version'] );
+	}
+
+	/**
+	 * Build a human-readable error label from the current HTTP response.
+	 *
+	 * Combines HTTP status code + reason phrase with any message extracted from
+	 * the response body (JSON fields: message > error > errors). Safe for
+	 * storage and admin display.
+	 *
+	 * @return string Non-empty label.
+	 * @throws \JsonException
+	 * @since 1.7.0
+	 */
+	public function get_api_error_label(): string {
+		$code   = (int) $this->get_response_code();
+		$phrase = $this->get_response_message();
+
+		$label = $code > 0 ? sprintf( 'HTTP %d', $code ) : 'HTTP error';
+
+		if ( '' !== $phrase ) {
+			$label .= ' - ' . $phrase;
+		}
+
+		$api_msg = $this->extract_body_error_message();
+
+		if ( '' !== $api_msg ) {
+			$label .= ': ' . $api_msg;
+		}
+
+		return $label;
+	}
+
+	/**
+	 * Extract a meaningful error string from the raw response body.
+	 *
+	 * Priority for JSON bodies: `message` > `error` > `errors` (first 3 items).
+	 * Falls back to short plain-text body when response is not JSON.
+	 *
+	 * @return string Empty string when nothing useful is found.
+	 * @throws \JsonException
+	 */
+	private function extract_body_error_message(): string {
+		$raw = $this->get_response( false );
+
+		if ( ! is_string( $raw ) || '' === trim( $raw ) ) {
+			return '';
+		}
+
+		$data = json_decode( $raw, true, 512, JSON_THROW_ON_ERROR );
+
+		if ( is_array( $data ) ) {
+			foreach ( array( 'message', 'error' ) as $field ) {
+				if ( ! empty( $data[ $field ] ) && is_string( $data[ $field ] ) ) {
+					return wp_strip_all_tags( $data[ $field ] );
+				}
+			}
+
+			if ( ! empty( $data['errors'] ) ) {
+				$errors = $data['errors'];
+
+				if ( is_string( $errors ) && '' !== trim( $errors ) ) {
+					return wp_strip_all_tags( $errors );
+				}
+
+				if ( is_array( $errors ) ) {
+					$parts = array();
+
+					foreach ( $errors as $value ) {
+						if ( is_string( $value ) && '' !== trim( $value ) ) {
+							$parts[] = wp_strip_all_tags( $value );
+						} elseif ( is_array( $value ) ) {
+							foreach ( $value as $v ) {
+								if ( is_string( $v ) && '' !== trim( $v ) ) {
+									$parts[] = wp_strip_all_tags( $v );
+								}
+							}
+						}
+
+						if ( count( $parts ) >= 3 ) {
+							break;
+						}
+					}
+
+					if ( ! empty( $parts ) ) {
+						return implode( '; ', $parts );
+					}
+				}
+			}
+
+			return '';
+		}
+
+		// Plain-text fallback: include only when short enough to be meaningful.
+		$text = trim( wp_strip_all_tags( $raw ) );
+
+		if ( '' !== $text && mb_strlen( $text ) <= 200 ) {
+			return $text;
+		}
+
+		return '';
 	}
 
 	/**

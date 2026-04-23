@@ -75,6 +75,7 @@ jQuery(document).ready(function ($) {
                     data: function (params) {
                         return {
                             action: action,
+                            security: wc_kledo.security,
                             keyword: params.term,
                             page: params.page || 1,
                         };

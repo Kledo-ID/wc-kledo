@@ -3,7 +3,19 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Renders dismissible admin notices and persists per-user dismissal state.
+ *
+ * @since 1.0.0
+ */
 class WC_Kledo_Admin_Notice_Handler {
+	/**
+	 * Nonce action for the dismiss-notice AJAX request.
+	 *
+	 * @var string
+	 * @since 1.5.0
+	 */
+	public const DISMISS_NOTICE_NONCE_ACTION = 'wc_kledo_dismiss_notice';
 	/**
 	 * The plugin instance.
 	 *
@@ -246,6 +258,8 @@ class WC_Kledo_Admin_Notice_Handler {
 
 		?>
 
+		var wcKledoDismissNoticeNonce = <?php echo wp_json_encode( wp_create_nonce( self::DISMISS_NOTICE_NONCE_ACTION ) ); ?>;
+
 		// Log dismissed notices.
 		$('.js-wc-kledo-admin-notice').on('click.wp-dismiss-notice', '.notice-dismiss', function(e) {
 			var $notice = $(this).closest('.js-wc-kledo-admin-notice');
@@ -273,7 +287,8 @@ class WC_Kledo_Admin_Notice_Handler {
 		function log_dismissed_notice(pluginID, messageID) {
 			$.get(ajaxurl, {
 				action: pluginID + '_dismiss_notice',
-				messageid: messageID
+				messageid: messageID,
+				security: wcKledoDismissNoticeNonce
 			});
 		}
 
@@ -381,13 +396,27 @@ class WC_Kledo_Admin_Notice_Handler {
 	}
 
 	/**
-	 * Dismiss the identified notice.
+	 * Handles AJAX dismissal of an admin notice (persists per-user).
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
 	public function handle_dismiss_notice(): void {
-		$this->dismiss_notice( $_REQUEST['messageid'] );
+		check_ajax_referer( self::DISMISS_NOTICE_NONCE_ACTION, 'security' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( -1 );
+		}
+
+		$message_id = isset( $_REQUEST['messageid'] )
+			? sanitize_text_field( wp_unslash( $_REQUEST['messageid'] ) )
+			: '';
+
+		if ( '' === $message_id ) {
+			wp_die( -1 );
+		}
+
+		$this->dismiss_notice( $message_id );
 	}
 
 	/**

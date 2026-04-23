@@ -39,13 +39,17 @@ class WC_Kledo_Admin {
 	 */
 	public function __construct() {
 		$this->screens = array(
-			WC_Kledo_Configure_Screen::ID => new WC_Kledo_Configure_Screen,
-			WC_Kledo_Invoice_Screen::ID   => new WC_Kledo_Invoice_Screen,
-			WC_Kledo_Order_Screen::ID     => new WC_Kledo_Order_Screen,
-			WC_Kledo_Support_Screen::ID   => new WC_Kledo_Support_Screen,
+			WC_Kledo_Configure_Screen::ID           => new WC_Kledo_Configure_Screen,
+			WC_Kledo_Invoice_Screen::ID             => new WC_Kledo_Invoice_Screen,
+			WC_Kledo_Order_Screen::ID               => new WC_Kledo_Order_Screen,
+			WC_Kledo_Transactions_Screen::ID        => new WC_Kledo_Transactions_Screen,
+			WC_Kledo_Support_Screen::ID             => new WC_Kledo_Support_Screen,
 		);
 
 		$this->init_hooks();
+
+		$order_sync_admin = new WC_Kledo_Admin_Order_Sync();
+		$order_sync_admin->init();
 
 		$this->use_woo_nav = class_exists( WooAdminFeatures::class ) && class_exists( WooAdminMenu::class ) && WooAdminFeatures::is_enabled( 'navigation' );
 	}
@@ -60,7 +64,44 @@ class WC_Kledo_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_js' ) );
 		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
+		add_action( 'admin_init', array( $this, 'maybe_redirect_legacy_transactions_tab' ) );
 		add_action( 'wp_loaded', array( $this, 'save' ) );
+	}
+
+	/**
+	 * Redirects legacy Failed Transactions tab URLs to the Transactions tab.
+	 *
+	 * @return void
+	 * @since 1.5.0
+	 */
+	public function maybe_redirect_legacy_transactions_tab(): void {
+		if ( ! is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( wc_kledo_get_requested_value( 'page' ) !== self::PAGE_ID ) {
+			return;
+		}
+
+		if ( wc_kledo_get_requested_value( 'tab' ) !== 'failed_transactions' ) {
+			return;
+		}
+
+		$params = array(
+			'page' => self::PAGE_ID,
+			'tab'  => WC_Kledo_Transactions_Screen::ID,
+		);
+
+		$passthrough = array( 'wc_kledo_tx_status', 'wc_kledo_tx_orderby', 'wc_kledo_tx_order', 'paged' );
+
+		foreach ( $passthrough as $key ) {
+			if ( isset( $_GET[ $key ] ) ) {
+				$params[ $key ] = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
+			}
+		}
+
+		wp_safe_redirect( add_query_arg( $params, admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/**
@@ -73,12 +114,7 @@ class WC_Kledo_Admin {
 		if ( wc_kledo()->is_plugin_settings() ) {
 			$version = WC_KLEDO_VERSION;
 
-			wp_enqueue_style(
-				'wc_kledo_admin_style',
-				wc_kledo()->asset_dir_url() . '/css/style.css',
-				array(),
-				$version
-			);
+			wp_enqueue_style( 'dashicons' );
 
 			wp_enqueue_style(
 				'woocommerce_admin_styles',
@@ -88,6 +124,16 @@ class WC_Kledo_Admin {
 			);
 
 			wp_enqueue_style( 'woocommerce_admin_styles' );
+
+			/* WP_List_Table-style column headers (th.sortable / th.sorted). */
+			wp_enqueue_style( 'list-tables' );
+
+			wp_enqueue_style(
+				'wc_kledo_admin_style',
+				wc_kledo()->asset_dir_url() . '/css/style.css',
+				array( 'dashicons', 'list-tables' ),
+				$version
+			);
 		}
 	}
 
@@ -200,7 +246,7 @@ class WC_Kledo_Admin {
 			<?php if ( ! $this->use_woo_nav ) : ?>
 				<nav class="nav-tab-wrapper woo-nav-tab-wrapper">
 					<?php foreach ( $tabs as $id => $label ) : ?>
-						<a href="<?php echo esc_html( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . esc_attr( $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . rawurlencode( (string) $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>">
 							<?php echo esc_html( $label ); ?>
 						</a>
 					<?php endforeach; ?>
@@ -284,6 +330,7 @@ class WC_Kledo_Admin {
 			'wc_kledo',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'security' => wp_create_nonce( 'wc_kledo_admin' ),
 				'i18n'     => array(
 					'payment_account_placeholder' => esc_html__( 'Select Account', WC_KLEDO_TEXT_DOMAIN ),
 					'warehouse_placeholder'       => esc_html__( 'Select Warehouse', WC_KLEDO_TEXT_DOMAIN ),

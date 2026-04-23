@@ -62,12 +62,14 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Gets the settings.
+	 * Gets the settings definition for this screen.
 	 *
-	 * @return void
+	 * The Support tab uses a custom {@see render()} implementation and does not expose WooCommerce settings fields.
+	 *
+	 * @return array<int|string, mixed> Empty array.
 	 * @since 1.0.0
 	 */
 	public function get_settings(): array {
-		// TODO: Implement get_settings() method.
+		return array();
 	}
 }

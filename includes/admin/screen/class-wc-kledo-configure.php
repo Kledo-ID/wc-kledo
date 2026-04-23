@@ -74,7 +74,7 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	public function render_title( array $field ): void {
 		?>
 
-		<h2><?php echo $field['title']; ?></h2>
+		<h2><?php echo esc_html( $field['title'] ); ?></h2>
 
 		<table class="form-table">
 

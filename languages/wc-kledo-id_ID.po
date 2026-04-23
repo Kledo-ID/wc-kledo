@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kledo\n"
-"POT-Creation-Date: 2026-02-02 14:51+0700\n"
-"PO-Revision-Date: 2026-02-02 14:52+0700\n"
+"POT-Creation-Date: 2026-04-21 13:07+0700\n"
+"PO-Revision-Date: 2026-04-21 13:27+0700\n"
 "Last-Translator: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language-Team: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language: id_ID\n"
@@ -21,15 +21,16 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/abstracts/abstract-wc-kledo-request.php:215
+#: includes/abstracts/abstract-wc-kledo-request.php:221
 msgid ""
 "Can't do API request because the api key & endpoint url has not been "
 "configured."
 msgstr ""
-"Tidak dapat melakukan permintaan API karena api key & endpoint url belum di "
-"atur."
+"Tidak dapat melakukan permintaan API karena API key & API Endpoint belum "
+"diatur."
 
-#: includes/abstracts/abstract-wc-kledo-request.php:237
+#: includes/abstracts/abstract-wc-kledo-request.php:257
+#: includes/admin/screen/class-wc-kledo-transactions.php:2069
 msgid "There was a problem when connecting to the API."
 msgstr "Terjadi masalah pada saat menghubungkan ke API."
 
@@ -37,51 +38,218 @@ msgstr "Terjadi masalah pada saat menghubungkan ke API."
 msgid "Save changes"
 msgstr "Simpan perubahan"
 
-#: includes/admin/class-wc-kledo-admin.php:118
+#: includes/admin/class-wc-kledo-admin-order-sync.php:60
+msgid "Kledo sync"
+msgstr "Sinkronisasi Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:81
+msgid "You do not have permission to sync this order to Kledo."
+msgstr "Anda tidak memiliki izin untuk menyinkronkan pesanan ini ke Kledo."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:103
+msgid "Re-sending may create a duplicate sales order in Kledo. Continue?"
+msgstr ""
+"Mengirim ulang dapat membuat duplikasi pesanan penjualan di Kledo. Lanjutkan?"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:104
+msgid "Re-sending may create a duplicate invoice in Kledo. Continue?"
+msgstr "Mengirim ulang dapat membuat duplikasi tagihan di Kledo. Lanjutkan?"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:109
+msgid ""
+"Manual actions match plugin rules: sales order when the order is Processing "
+"(same lifecycle as automatic sync on Processing); invoice only when the "
+"order is Completed. Re-send appears only after a successful sync."
+msgstr ""
+"Aksi manual mengikuti aturan plugin: pesanan penjualan saat status pesanan "
+"Processing (sama seperti sinkronisasi otomatis); tagihan hanya saat status "
+"Completed. Kirim ulang hanya tersedia setelah sinkronisasi berhasil."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:126
+msgid "Re-send sales order to Kledo"
+msgstr "Kirim ulang pesanan penjualan ke Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:134
+msgid "Send sales order to Kledo (first manual)"
+msgstr "Kirim pesanan penjualan ke Kledo (manual pertama)"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:148
+msgid "Re-send invoice to Kledo"
+msgstr "Kirim ulang tagihan ke Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:156
+msgid "Send invoice to Kledo (first manual)"
+msgstr "Kirim tagihan ke Kledo (manual pertama)"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:200
+msgid "Both sales order and invoice creation are disabled in Kledo settings."
+msgstr ""
+"Pembuatan pesanan penjualan dan tagihan dinonaktifkan di pengaturan Kledo."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:202
+msgid ""
+"No manual Kledo actions apply to this order status. Automatic sync still "
+"runs on status changes (Processing → sales order, Completed → invoice)."
+msgstr ""
+"Tidak ada aksi manual Kledo untuk status pesanan ini. Sinkronisasi otomatis "
+"tetap berjalan saat perubahan status (Processing → pesanan penjualan, "
+"Completed → tagihan)."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:223
+msgid "Kledo: Re-send sales order (already synced; may duplicate)"
+msgstr ""
+"Kledo: Kirim ulang pesanan penjualan (sudah tersinkron; berpotensi duplikat)"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:225
+msgid "Kledo: Send sales order (first manual)"
+msgstr "Kledo: Kirim pesanan penjualan (manual pertama)"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:231
+msgid "Kledo: Re-send invoice (already synced; may duplicate)"
+msgstr "Kledo: Kirim ulang tagihan (sudah tersinkron; dapat duplikat)"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:233
+msgid "Kledo: Send invoice (first manual)"
+msgstr "Kirim tagihan ke Kledo (manual pertama)"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:289
+msgid "You do not have permission to run this action."
+msgstr "Anda tidak memiliki izin untuk menjalankan tindakan ini."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:299
+msgid "Invalid request."
+msgstr "Permintaan tidak valid."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:305
+msgid "Order not found."
+msgstr "Pesanan tidak ditemukan."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:309
+msgid "You do not have permission to sync this order."
+msgstr "Anda tidak memiliki izin untuk menyinkronkan pesanan ini."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:453
+msgid ""
+"Kledo: manual sales order actions are only available when the order is "
+"Processing or Completed."
+msgstr ""
+"Kledo: aksi manual pesanan penjualan hanya tersedia saat status Processing "
+"atau Completed."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:457
+msgid ""
+"Kledo: manual invoice actions are only available when the order is Completed."
+msgstr "Kledo: aksi manual tagihan hanya tersedia saat status Completed."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:460
+msgid "Kledo: invalid sync type."
+msgstr "Kledo: tipe sinkronisasi tidak valid."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:467
+msgid ""
+"Kledo: re-send is only available when this record is already marked synced "
+"in WooCommerce."
+msgstr ""
+"Kledo: kirim ulang hanya tersedia jika data ini sudah ditandai tersinkron di "
+"WooCommerce."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:470
+msgid ""
+"Kledo: initial manual send is not available because this is already marked "
+"synced. Use the re-send action instead."
+msgstr ""
+"Kledo: pengiriman manual awal tidak tersedia karena sudah tersinkron. "
+"Gunakan fitur kirim ulang."
+
+#. translators: %s: order or invoice
+#: includes/admin/class-wc-kledo-admin-order-sync.php:486
+#, php-format
+msgid "Kledo: %s was sent successfully."
+msgstr "Kledo: %s berhasil dikirim."
+
+#. translators: %s: order or invoice
+#: includes/admin/class-wc-kledo-admin-order-sync.php:495
+#, php-format
+msgid ""
+"Kledo: %s is already marked synced. Use the re-send action if you need to "
+"push again."
+msgstr ""
+"Kledo: %s sudah ditandai tersinkron. Gunakan aksi kirim ulang jika perlu "
+"mengirim kembali."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:501
+msgid "Kledo: API connection is disabled; nothing was sent."
+msgstr "Kledo: Koneksi API dinonaktifkan; tidak ada yang dikirim."
+
+#. translators: %s: order or invoice
+#: includes/admin/class-wc-kledo-admin-order-sync.php:507
+#, php-format
+msgid "Kledo: %s push is disabled in plugin settings."
+msgstr "Kledo: Pengiriman %s dinonaktifkan di pengaturan plugin."
+
+#. translators: %s: order or invoice
+#: includes/admin/class-wc-kledo-admin-order-sync.php:514
+#, php-format
+msgid "Kledo: %s was skipped."
+msgstr "Kledo: %s dilewati."
+
+#. translators: 1: type, 2: error
+#: includes/admin/class-wc-kledo-admin-order-sync.php:522
+#, php-format
+msgid "Kledo: failed to push %1$s — %2$s"
+msgstr "Kledo: gagal mengirim %1$s — %2$s"
+
+#. translators: 1: type, 2: HTTP code
+#: includes/admin/class-wc-kledo-admin-order-sync.php:530
+#, php-format
+msgid "Kledo: failed to push %1$s (HTTP %2$d)."
+msgstr "Kledo: gagal mengirim %1$s (HTTP %2$d)."
+
+#: includes/admin/class-wc-kledo-admin.php:164
 msgid "You do not have permission to save these settings."
 msgstr "Anda tidak memiliki izin untuk menyimpan pengaturan ini."
 
-#: includes/admin/class-wc-kledo-admin.php:127
+#: includes/admin/class-wc-kledo-admin.php:173
 msgid "Your settings have been saved."
-msgstr "Pengaturan anda telah disimpan."
+msgstr "Pengaturan Anda telah disimpan."
 
-#: includes/admin/class-wc-kledo-admin.php:132
+#: includes/admin/class-wc-kledo-admin.php:178
 #, php-format
 msgid "Your settings could not be saved. %s"
 msgstr "Pengaturan tidak dapat disimpan. %s"
 
 #. Plugin Name of the plugin/theme
 #. Author of the plugin/theme
-#: includes/admin/class-wc-kledo-admin.php:148
-#: includes/admin/class-wc-kledo-admin.php:149
+#: includes/admin/class-wc-kledo-admin.php:194
+#: includes/admin/class-wc-kledo-admin.php:195
 msgid "Kledo"
 msgstr "Kledo"
 
-#: includes/admin/class-wc-kledo-admin.php:288
+#: includes/admin/class-wc-kledo-admin.php:335
 msgid "Select Account"
 msgstr "Pilih Akun"
 
-#: includes/admin/class-wc-kledo-admin.php:289
+#: includes/admin/class-wc-kledo-admin.php:336
 msgid "Select Warehouse"
 msgstr "Pilih Gudang"
 
-#: includes/admin/class-wc-kledo-admin.php:291
+#: includes/admin/class-wc-kledo-admin.php:338
 msgid "The results could not be loaded."
 msgstr "Hasil tidak dapat dimuat."
 
-#: includes/admin/class-wc-kledo-admin.php:292
+#: includes/admin/class-wc-kledo-admin.php:339
 msgid "Loading more results..."
 msgstr "Memuat hasil lainnya..."
 
-#: includes/admin/class-wc-kledo-admin.php:293
+#: includes/admin/class-wc-kledo-admin.php:340
 msgid "No results found"
 msgstr "Tidak ada hasil yang ditemukan"
 
-#: includes/admin/class-wc-kledo-admin.php:294
+#: includes/admin/class-wc-kledo-admin.php:341
 msgid "Loading..."
 msgstr "Memuat..."
 
-#: includes/admin/class-wc-kledo-admin.php:295
+#: includes/admin/class-wc-kledo-admin.php:342
 msgid "Search"
 msgstr "Cari"
 
@@ -139,31 +307,32 @@ msgid "Payment Account"
 msgstr "Akun Pembayaran"
 
 #: includes/admin/screen/class-wc-kledo-invoice.php:172
-#: includes/admin/screen/class-wc-kledo-order.php:99
+#: includes/admin/screen/class-wc-kledo-order.php:105
 msgid "Warehouse"
 msgstr "Gudang"
 
 #: includes/admin/screen/class-wc-kledo-invoice.php:179
-#: includes/admin/screen/class-wc-kledo-order.php:106
+#: includes/admin/screen/class-wc-kledo-order.php:112
 msgid "Tags"
 msgstr "Tag"
 
 #: includes/admin/screen/class-wc-kledo-order.php:57
 #: includes/admin/screen/class-wc-kledo-order.php:58
-#: includes/admin/screen/class-wc-kledo-order.php:73
+#: includes/admin/screen/class-wc-kledo-order.php:79
+#: includes/admin/screen/class-wc-kledo-transactions.php:701
 msgid "Order"
 msgstr "Pesanan"
 
-#: includes/admin/screen/class-wc-kledo-order.php:79
+#: includes/admin/screen/class-wc-kledo-order.php:85
 msgid "Enable Create Order"
 msgstr "Aktifkan Pembuatan Pesanan"
 
-#: includes/admin/screen/class-wc-kledo-order.php:84
+#: includes/admin/screen/class-wc-kledo-order.php:90
 #, php-format
 msgid "Create new order on Kledo when order status is %s."
 msgstr "Buat pesanan baru di Kledo ketika status pesanan %s."
 
-#: includes/admin/screen/class-wc-kledo-order.php:91
+#: includes/admin/screen/class-wc-kledo-order.php:97
 msgid "Order Prefix"
 msgstr "Awalan Nomor Pesanan"
 
@@ -188,7 +357,355 @@ msgstr ""
 "Masih perlu bantuan? Kirim pesan dan salah satu pakar dukungan kami akan "
 "menghubungi anda sesegera mungkin."
 
-#: includes/class-wc-kledo.php:183
+#: includes/admin/screen/class-wc-kledo-transactions.php:173
+#: includes/admin/screen/class-wc-kledo-transactions.php:174
+msgid "Transactions"
+msgstr "Transaksi"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:228
+#: includes/admin/screen/class-wc-kledo-transactions.php:348
+msgid "You do not have permission to perform this action."
+msgstr "Anda tidak memiliki izin untuk melakukan tindakan ini."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:273
+msgid "Retry succeeded. The transaction was sent to Kledo successfully."
+msgstr "Retry berhasil. Transaksi berhasil dikirim ke Kledo."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:277
+msgid ""
+"Retry skipped: the transaction was already synced. The stale queue row has "
+"been removed."
+msgstr ""
+"Retry dilewati: transaksi sudah tersinkron. Data antrian lama telah dihapus."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:281
+msgid ""
+"Retry skipped: the associated WooCommerce order no longer exists. The queue "
+"row has been removed."
+msgstr ""
+"Retry dilewati: pesanan WooCommerce terkait sudah tidak ada. Data antrian "
+"telah dihapus."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:285
+msgid ""
+"Retry failed. The API returned an error. The transaction will be retried "
+"automatically by the next cron run."
+msgstr ""
+"Retry gagal. API mengembalikan error. Transaksi akan dicoba ulang otomatis "
+"pada cron berikutnya."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:291
+msgid ""
+"Retry skipped: the selected transaction row is no longer in the queue or has "
+"an invalid format."
+msgstr ""
+"Retry dilewati: data transaksi tidak ada di antrian atau format tidak valid."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:295
+msgid ""
+"An unexpected error occurred during retry. Please check the WooCommerce logs "
+"for details."
+msgstr ""
+"Terjadi error tak terduga saat retry. Periksa log WooCommerce untuk detail."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:363
+msgid "Choose the bulk action \"Retry selected\" before applying."
+msgstr "Pilih aksi massal \\\"Retry selected\\\" sebelum menerapkan."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:393
+msgid ""
+"No failed transactions were selected. Choose one or more rows and try again."
+msgstr ""
+"Tidak ada transaksi gagal yang dipilih. Pilih satu atau lebih lalu coba lagi."
+
+#. translators: 1: selected count, 2: succeeded count, 3: failed count, 4: invalid/skipped count
+#: includes/admin/screen/class-wc-kledo-transactions.php:455
+#, php-format
+msgid ""
+"Bulk retry finished. Selected: %1$d. Succeeded: %2$d. Failed: %3$d. Not "
+"processed (invalid or missing row): %4$d."
+msgstr ""
+"Retry massal selesai. Dipilih: %1$d. Berhasil: %2$d. Gagal: %3$d. Tidak "
+"diproses (invalid / hilang): %4$d."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:541
+msgid "You do not have permission to view this page."
+msgstr "Anda tidak memiliki izin untuk melihat halaman ini."
+
+#. translators: %d: max number of recent orders scanned for success rows
+#: includes/admin/screen/class-wc-kledo-transactions.php:643
+#, php-format
+msgid ""
+"Success list is built from the %d most recently modified orders that have "
+"Kledo sync meta. Older successes may not appear; use filters or order search "
+"if you need a specific order."
+msgstr ""
+"Daftar sukses dibuat dari %d pesanan terbaru yang memiliki meta sinkronisasi "
+"Kledo. Data lama mungkin tidak muncul; gunakan filter atau pencarian pesanan."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:669
+#: includes/admin/screen/class-wc-kledo-transactions.php:671
+msgid "Bulk actions"
+msgstr "Aksi massal"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:672
+msgid "Retry selected"
+msgstr "Retry yang dipilih"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:674
+msgid "Apply"
+msgstr "Terapkan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:697
+msgid "Select all retryable rows"
+msgstr "Pilih semua baris yang bisa di-retry"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:704
+#: includes/admin/screen/class-wc-kledo-transactions.php:1969
+msgid "Type"
+msgstr "Tipe"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:706
+msgid "Status"
+msgstr "Status"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:709
+#: includes/admin/screen/class-wc-kledo-transactions.php:1970
+msgid "Attempts"
+msgstr "Percobaan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:712
+#: includes/admin/screen/class-wc-kledo-transactions.php:1131
+#: includes/admin/screen/class-wc-kledo-transactions.php:1971
+msgid "Created At"
+msgstr "Dibuat Pada"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:715
+#: includes/admin/screen/class-wc-kledo-transactions.php:1138
+#: includes/admin/screen/class-wc-kledo-transactions.php:1972
+msgid "Next Retry"
+msgstr "Retry Berikutnya"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:718
+#: includes/admin/screen/class-wc-kledo-transactions.php:1973
+msgid "Last Error"
+msgstr "Error Terakhir"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:720
+msgid "Actions"
+msgstr "Aksi"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:729
+msgid "No transactions match the current filter."
+msgstr "Tidak ada transaksi yang sesuai dengan filter."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:788
+msgid "Retry now"
+msgstr "Retry sekarang"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1119
+msgid "Transaction type"
+msgstr "Tipe transaksi"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1121
+msgid "All types"
+msgstr "Semua tipe"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1127
+msgid "Attempts (exact)"
+msgstr "Jumlah percobaan (tepat)"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1127
+msgid ""
+"Column Attempts: exact count for queue rows only. Leave empty to ignore."
+msgstr ""
+"Kolom Attempts: jumlah pasti untuk antrian saja. Kosongkan jika tidak "
+"digunakan."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1133
+msgid "Same column as the table: one calendar day in the site timezone."
+msgstr "Sama seperti tabel: satu hari kalender sesuai timezone situs."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1140
+msgid ""
+"Same column as the table: queue rows only, one calendar day in the site "
+"timezone."
+msgstr ""
+"Sama seperti tabel: hanya antrian, satu hari kalender sesuai timezone situs."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1143
+msgid "Last error contains…"
+msgstr "Error terakhir mengandung…"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1145
+msgid "Filter"
+msgstr "Filter"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1553
+msgid "All"
+msgstr "Semua"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1554
+#: includes/admin/screen/class-wc-kledo-transactions.php:1568
+#: includes/admin/screen/class-wc-kledo-transactions.php:1737
+msgid "Success"
+msgstr "Berhasil"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1555
+#: includes/admin/screen/class-wc-kledo-transactions.php:1742
+msgid "Failed"
+msgstr "Gagal"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1556
+#: includes/admin/screen/class-wc-kledo-transactions.php:1739
+msgid "Retrying"
+msgstr "Sedang retry"
+
+#. translators: %s: translated word "Success" when the success list may be truncated
+#: includes/admin/screen/class-wc-kledo-transactions.php:1567
+#, php-format
+msgid "%s+"
+msgstr "%s+"
+
+#. translators: %s: sort direction, ascending or descending
+#: includes/admin/screen/class-wc-kledo-transactions.php:1644
+#, php-format
+msgid "Sorted %s."
+msgstr "Diurutkan %s."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1645
+msgid "ascending"
+msgstr "naik"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1645
+msgid "descending"
+msgstr "turun"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1648
+msgid "Sort by this column."
+msgstr "Urutkan berdasarkan kolom ini."
+
+#. translators: %d: number of items
+#: includes/admin/screen/class-wc-kledo-transactions.php:1723
+#, php-format
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d item"
+msgstr[1] "%d item"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1838
+msgid "Order no longer exists."
+msgstr "Pesanan sudah tidak ada."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1839
+msgid "deleted"
+msgstr "dihapus"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1904
+msgid "Transactions per page"
+msgstr "Transaksi per halaman"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:2050
+#, php-format
+msgid "Kledo: manually resent %s to Kledo from Transactions screen."
+msgstr "Kledo: %s dikirim ulang secara manual dari halaman Transaksi."
+
+#: includes/class-wc-kledo-ajax.php:31 includes/class-wc-kledo-ajax.php:89
+msgid "Unauthorized"
+msgstr "Tidak diizinkan"
+
+#: includes/class-wc-kledo-ajax.php:42 includes/class-wc-kledo-ajax.php:97
+msgid "Request failed."
+msgstr "Permintaan gagal."
+
+#: includes/class-wc-kledo-ajax.php:52 includes/class-wc-kledo-ajax.php:106
+msgid "Invalid response from Kledo."
+msgstr "Respon dari Kledo tidak valid."
+
+#: includes/class-wc-kledo-woocommerce.php:130
+msgid ""
+"Kledo: API connection is disabled in plugin settings; sync was not attempted."
+msgstr "Kledo: Koneksi API dinonaktifkan; sinkronisasi tidak dijalankan."
+
+#. translators: %s: transaction type (order/invoice)
+#: includes/class-wc-kledo-woocommerce.php:167
+#, php-format
+msgid "Kledo: %s was already synced; removed stale entry from failed queue."
+msgstr "Kledo: %s sudah tersinkron; entri lama dihapus dari antrian gagal."
+
+#. translators: %s: order or invoice
+#: includes/class-wc-kledo-woocommerce.php:213
+#, php-format
+msgid ""
+"Kledo: admin manually re-sent %s to Kledo (record was already marked synced; "
+"possible duplicate in Kledo)."
+msgstr ""
+"Kledo: admin mengirim ulang %s secara manual (sudah tersinkron; kemungkinan "
+"duplikat di Kledo)."
+
+#. translators: %s: order or invoice
+#: includes/class-wc-kledo-woocommerce.php:221
+#, php-format
+msgid ""
+"Kledo: admin manually sent %s to Kledo (first manual push; automatic sync "
+"still uses order status transitions)."
+msgstr ""
+"Kledo: admin mengirim %s secara manual (pengiriman pertama; sinkronisasi "
+"otomatis tetap berdasarkan status pesanan)."
+
+#. translators: 1: HTTP status code
+#: includes/class-wc-kledo-woocommerce.php:250
+#, php-format
+msgid ""
+"Kledo: failed to send %1$s to Kledo (HTTP %2$d). Will retry automatically."
+msgstr "Kledo: gagal mengirim %1$s (HTTP %2$d). Akan dicoba ulang otomatis."
+
+#. translators: 1: type, 2: HTTP code
+#: includes/class-wc-kledo-woocommerce.php:258
+#, php-format
+msgid "Kledo: admin manual push failed for %1$s (HTTP %2$d)."
+msgstr "Kledo: pengiriman manual gagal untuk %1$s (HTTP %2$d)."
+
+#. translators: 1: type, 2: error detail
+#: includes/class-wc-kledo-woocommerce.php:291
+#, php-format
+msgid ""
+"Kledo: error when sending %1$s to Kledo: %2$s. Will retry automatically."
+msgstr "Kledo: error saat mengirim %1$s: %2$s. Akan dicoba ulang otomatis."
+
+#. translators: 1: type, 2: error
+#: includes/class-wc-kledo-woocommerce.php:299
+#, php-format
+msgid "Kledo: admin manual push error for %1$s: %2$s"
+msgstr "Kledo: error manual push untuk %1$s: %2$s"
+
+#. translators: %s: transaction type (order/invoice)
+#: includes/class-wc-kledo.php:272
+#, php-format
+msgid ""
+"Kledo: automatic retry for %s has stopped: maximum queue lifetime reached. "
+"Manual retry is still available from the Transactions screen."
+msgstr ""
+"Kledo: retry otomatis untuk %s dihentikan: batas waktu antrian tercapai. "
+"Retry manual masih tersedia."
+
+#. translators: 1: transaction type (order/invoice), 2: attempts count
+#: includes/class-wc-kledo.php:297
+#, php-format
+msgid ""
+"Kledo: automatic retry for %1$s has stopped after %2$d failed attempts. "
+"Manual retry is still available from the Transactions screen."
+msgstr ""
+"Kledo: retry otomatis untuk %1$s dihentikan setelah %2$d kali gagal. Retry "
+"manual masih tersedia."
+
+#. translators: 1: transaction type (order/invoice), 2: attempts count
+#: includes/class-wc-kledo.php:324
+#, php-format
+msgid "Kledo: successfully resent %1$s to Kledo after %2$d attempt(s)."
+msgstr "Kledo: %1$s berhasil dikirim ulang setelah %2$d percobaan."
+
+#: includes/class-wc-kledo.php:459
 #, php-format
 msgid ""
 "%1$sWooCommerce Kledo is almost ready.%2$s To complete your configuration, "
@@ -197,7 +714,7 @@ msgstr ""
 "%1$sWooCommerce Kledo hampir siap.%2$s. Untuk menyelesaikan konfigurasi, "
 "%3$sSelesaikan langkah berikut%4$s."
 
-#: includes/class-wc-kledo.php:204
+#: includes/class-wc-kledo.php:480
 #, php-format
 msgid ""
 "For your convenience, the Kledo for WooCommerce settings are located under "
@@ -206,14 +723,26 @@ msgstr ""
 "Pengaturan WooCommerce Kledo terletak di dalam menu %1$sWooCommerce > Kledo"
 "%2$s."
 
-#: kledo.php:297
+#. translators: %s: human-readable time difference, e.g. "30 minutes"
+#: includes/helpers.php:387
+#, php-format
+msgid "(%s ago)"
+msgstr "(%s yang lalu)"
+
+#. translators: %s: human-readable time difference, e.g. "30 minutes"
+#: includes/helpers.php:399
+#, php-format
+msgid "(in %s)"
+msgstr "(dalam %s)"
+
+#: kledo.php:302
 #, php-format
 msgid "WooCommerce Kledo requires %s to be installed and active."
 msgstr "Diperlukan %s untuk menggunakan WooCommerce Kledo."
 
 #. Plugin URI of the plugin/theme
 msgid "https://github.com/Kledo-ID/wc-kledo"
-msgstr ""
+msgstr "https://github.com/Kledo-ID/wc-kledo"
 
 #. Description of the plugin/theme
 msgid ""
@@ -222,7 +751,7 @@ msgid ""
 "\">Kledo</a> accounting software."
 msgstr ""
 "Hubungkan <a href=\"https://woocommerce.com/\" target=\"_blank\" "
-">WooCommerce</a> dengan software akuntasi <a href=\"https://kledo.com\" "
+">WooCommerce</a> dengan software akuntansi <a href=\"https://kledo.com\" "
 "target=\"_blank\">Kledo</a>."
 
 #. Author URI of the plugin/theme
@@ -248,9 +777,6 @@ msgstr "https://kledo.com"
 #~ msgstr ""
 #~ "Silahkan isi kolom Client ID, Client Secret dan API Endpoint terlebih "
 #~ "dahulu dan simpan sebelum melanjutkan."
-
-#~ msgid "Request Token"
-#~ msgstr "Permintaan Token"
 
 #~ msgid "Disconnect"
 #~ msgstr "Memutuskan"
