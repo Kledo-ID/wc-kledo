@@ -66,7 +66,10 @@ Integrates WooCommerce with Kledo accounting software: sales orders and invoices
 == Screenshots ==
 
 1. Connect your WooCommerce with Kledo
-2. The Kledo invoice plugin Settings pages
+2. Invoice plugin settings page
+3. Order plugin settings page
+4. Transaction page for manual/bulk retry failed transactions
+5. Manual sync controls on order screens and order actions
 
 == Changelog ==
 
