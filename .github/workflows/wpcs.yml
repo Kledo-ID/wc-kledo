@@ -1,10 +1,11 @@
-name: WPCS
+name: Inspections
 
 on:
   pull_request:
 
 jobs:
-  phpcs:
+  runPHPCSInspection:
+    name: Run PHPCS inspection
     runs-on: ubuntu-latest
 
     steps:
@@ -16,16 +17,19 @@ jobs:
           php-version: 8.1
           tools: composer
 
-      - name: Install PHPCS and WPCS
+      - name: Configure Composer
+        run: composer config --no-interaction allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+
+      - name: Install coding standards
         run: |
           composer require --dev squizlabs/php_codesniffer:^3.13
           composer require --dev wp-coding-standards/wpcs:^3.3
           composer require --dev dealerdirect/phpcodesniffer-composer-installer:^1.1
 
-      - name: Check installed standards
+      - name: Show installed standards
         run: vendor/bin/phpcs -i
 
-      - name: Run PHPCS
+      - name: Run PHPCS inspection
         run: |
           vendor/bin/phpcs \
             --standard=WordPress \
