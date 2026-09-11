@@ -27,22 +27,34 @@ class WC_Kledo_Admin_Order_Sync {
 
 		add_filter( 'woocommerce_order_actions', array( $this, 'register_order_actions' ), 10, 2 );
 
-		add_action( 'woocommerce_order_action_wc_kledo_manual_send_order', array(
-			$this,
-			'order_action_manual_send_order',
-		) );
-		add_action( 'woocommerce_order_action_wc_kledo_manual_resend_order', array(
-			$this,
-			'order_action_manual_resend_order',
-		) );
-		add_action( 'woocommerce_order_action_wc_kledo_manual_send_invoice', array(
-			$this,
-			'order_action_manual_send_invoice',
-		) );
-		add_action( 'woocommerce_order_action_wc_kledo_manual_resend_invoice', array(
-			$this,
-			'order_action_manual_resend_invoice',
-		) );
+		add_action(
+			'woocommerce_order_action_wc_kledo_manual_send_order',
+			array(
+				$this,
+				'order_action_manual_send_order',
+			)
+		);
+		add_action(
+			'woocommerce_order_action_wc_kledo_manual_resend_order',
+			array(
+				$this,
+				'order_action_manual_resend_order',
+			)
+		);
+		add_action(
+			'woocommerce_order_action_wc_kledo_manual_send_invoice',
+			array(
+				$this,
+				'order_action_manual_send_invoice',
+			)
+		);
+		add_action(
+			'woocommerce_order_action_wc_kledo_manual_resend_invoice',
+			array(
+				$this,
+				'order_action_manual_resend_invoice',
+			)
+		);
 	}
 
 	/**
@@ -57,7 +69,7 @@ class WC_Kledo_Admin_Order_Sync {
 
 		add_meta_box(
 			'wc_kledo_manual_sync',
-			__( 'Kledo sync', WC_KLEDO_TEXT_DOMAIN ),
+			__( 'Kledo sync', 'wc-kledo' ),
 			array( $this, 'render_meta_box' ),
 			$screen,
 			'side',
@@ -66,7 +78,7 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  \WP_Post|\WC_Order  $post_or_order_object
+	 * @param  \WP_Post|\WC_Order $post_or_order_object
 	 *
 	 * @return void
 	 */
@@ -78,7 +90,7 @@ class WC_Kledo_Admin_Order_Sync {
 		}
 
 		if ( ! $this->current_user_can_sync_order( $order->get_id() ) ) {
-			echo '<p>' . esc_html__( 'You do not have permission to sync this order to Kledo.', WC_KLEDO_TEXT_DOMAIN ) . '</p>';
+			echo '<p>' . esc_html__( 'You do not have permission to sync this order to Kledo.', 'wc-kledo' ) . '</p>';
 
 			return;
 		}
@@ -100,17 +112,17 @@ class WC_Kledo_Admin_Order_Sync {
 		$manual_sync_root_id = 'wc-kledo-manual-sync-' . (string) $order->get_id();
 		$nonce               = wp_create_nonce( 'wc_kledo_manual_push' );
 		$post_url            = admin_url( 'admin-post.php' );
-		$confirm_order       = __( 'Re-sending may create a duplicate sales order in Kledo. Continue?', WC_KLEDO_TEXT_DOMAIN );
-		$confirm_invoice     = __( 'Re-sending may create a duplicate invoice in Kledo. Continue?', WC_KLEDO_TEXT_DOMAIN );
+		$confirm_order       = __( 'Re-sending may create a duplicate sales order in Kledo. Continue?', 'wc-kledo' );
+		$confirm_invoice     = __( 'Re-sending may create a duplicate invoice in Kledo. Continue?', 'wc-kledo' );
 		?>
-        <p class="description">
+		<p class="description">
 			<?php
 			esc_html_e(
 				'Manual actions match plugin rules: sales order when the order is Processing (same lifecycle as automatic sync on Processing); invoice only when the order is Completed. Re-send appears only after a successful sync.',
-				WC_KLEDO_TEXT_DOMAIN
+				'wc-kledo'
 			);
 			?>
-        </p>
+		</p>
 		<div id="<?php echo esc_attr( $manual_sync_root_id ); ?>" class="wc-kledo-manual-sync-root"
 			data-post-url="<?php echo esc_url( $post_url ); ?>"
 			data-nonce="<?php echo esc_attr( $nonce ); ?>"
@@ -123,7 +135,7 @@ class WC_Kledo_Admin_Order_Sync {
 						data-type="order"
 						data-force="1"
 						data-confirm="<?php echo esc_attr( $confirm_order ); ?>">
-						<?php esc_html_e( 'Re-send sales order to Kledo', WC_KLEDO_TEXT_DOMAIN ); ?>
+						<?php esc_html_e( 'Re-send sales order to Kledo', 'wc-kledo' ); ?>
 					</button>
 				<?php else : ?>
 					<button type="button" class="button button-small wc-kledo-manual-push-btn"
@@ -131,7 +143,7 @@ class WC_Kledo_Admin_Order_Sync {
 						data-type="order"
 						data-force="0"
 						data-confirm="">
-						<?php esc_html_e( 'Send sales order to Kledo (first manual)', WC_KLEDO_TEXT_DOMAIN ); ?>
+						<?php esc_html_e( 'Send sales order to Kledo (first manual)', 'wc-kledo' ); ?>
 					</button>
 				<?php endif; ?>
 			</div>
@@ -145,7 +157,7 @@ class WC_Kledo_Admin_Order_Sync {
 						data-type="invoice"
 						data-force="1"
 						data-confirm="<?php echo esc_attr( $confirm_invoice ); ?>">
-						<?php esc_html_e( 'Re-send invoice to Kledo', WC_KLEDO_TEXT_DOMAIN ); ?>
+						<?php esc_html_e( 'Re-send invoice to Kledo', 'wc-kledo' ); ?>
 					</button>
 				<?php else : ?>
 					<button type="button" class="button button-small wc-kledo-manual-push-btn"
@@ -153,7 +165,7 @@ class WC_Kledo_Admin_Order_Sync {
 						data-type="invoice"
 						data-force="0"
 						data-confirm="">
-						<?php esc_html_e( 'Send invoice to Kledo (first manual)', WC_KLEDO_TEXT_DOMAIN ); ?>
+						<?php esc_html_e( 'Send invoice to Kledo (first manual)', 'wc-kledo' ); ?>
 					</button>
 				<?php endif; ?>
 			</div>
@@ -197,16 +209,16 @@ class WC_Kledo_Admin_Order_Sync {
 		</script>
 
 		<?php if ( ! $order_on && ! $invoice_on ) : ?>
-            <p><?php esc_html_e( 'Both sales order and invoice creation are disabled in Kledo settings.', WC_KLEDO_TEXT_DOMAIN ); ?></p>
+			<p><?php esc_html_e( 'Both sales order and invoice creation are disabled in Kledo settings.', 'wc-kledo' ); ?></p>
 		<?php elseif ( ! $any_button ) : ?>
-            <p><?php esc_html_e( 'No manual Kledo actions apply to this order status. Automatic sync still runs on status changes (Processing → sales order, Completed → invoice).', WC_KLEDO_TEXT_DOMAIN ); ?></p>
+			<p><?php esc_html_e( 'No manual Kledo actions apply to this order status. Automatic sync still runs on status changes (Processing → sales order, Completed → invoice).', 'wc-kledo' ); ?></p>
 		<?php endif; ?>
 		<?php
 	}
 
 	/**
-	 * @param  array  $actions
-	 * @param  \WC_Order|null  $order
+	 * @param  array          $actions
+	 * @param  \WC_Order|null $order
 	 *
 	 * @return array
 	 */
@@ -220,17 +232,17 @@ class WC_Kledo_Admin_Order_Sync {
 
 		if ( $order_on && wc_kledo_order_status_allows_manual_sales_order( $order ) ) {
 			if ( wc_kledo_is_delivery_synced( $order, 'order' ) ) {
-				$actions['wc_kledo_manual_resend_order'] = __( 'Kledo: Re-send sales order (already synced; may duplicate)', WC_KLEDO_TEXT_DOMAIN );
+				$actions['wc_kledo_manual_resend_order'] = __( 'Kledo: Re-send sales order (already synced; may duplicate)', 'wc-kledo' );
 			} else {
-				$actions['wc_kledo_manual_send_order'] = __( 'Kledo: Send sales order (first manual)', WC_KLEDO_TEXT_DOMAIN );
+				$actions['wc_kledo_manual_send_order'] = __( 'Kledo: Send sales order (first manual)', 'wc-kledo' );
 			}
 		}
 
 		if ( $invoice_on && wc_kledo_order_status_allows_manual_invoice( $order ) ) {
 			if ( wc_kledo_is_delivery_synced( $order, 'invoice' ) ) {
-				$actions['wc_kledo_manual_resend_invoice'] = __( 'Kledo: Re-send invoice (already synced; may duplicate)', WC_KLEDO_TEXT_DOMAIN );
+				$actions['wc_kledo_manual_resend_invoice'] = __( 'Kledo: Re-send invoice (already synced; may duplicate)', 'wc-kledo' );
 			} else {
-				$actions['wc_kledo_manual_send_invoice'] = __( 'Kledo: Send invoice (first manual)', WC_KLEDO_TEXT_DOMAIN );
+				$actions['wc_kledo_manual_send_invoice'] = __( 'Kledo: Send invoice (first manual)', 'wc-kledo' );
 			}
 		}
 
@@ -238,7 +250,7 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return void
 	 */
@@ -249,7 +261,7 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return void
 	 */
@@ -260,7 +272,7 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return void
 	 */
@@ -271,7 +283,7 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return void
 	 */
@@ -286,27 +298,28 @@ class WC_Kledo_Admin_Order_Sync {
 	 */
 	public function handle_admin_post_manual_push(): void {
 		if ( ! $this->current_user_can_sync_any() ) {
-			wp_die( esc_html__( 'You do not have permission to run this action.', WC_KLEDO_TEXT_DOMAIN ) );
+			wp_die( esc_html__( 'You do not have permission to run this action.', 'wc-kledo' ) );
 		}
 
 		check_admin_referer( 'wc_kledo_manual_push' );
 
-		$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
-		$type     = isset( $_POST['wc_kledo_type'] ) ? sanitize_key( wp_unslash( $_POST['wc_kledo_type'] ) ) : '';
-		$force    = ! empty( $_POST['wc_kledo_force'] ) && '1' === (string) wp_unslash( $_POST['wc_kledo_force'] );
+		$order_id  = isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0;
+		$type      = isset( $_POST['wc_kledo_type'] ) ? sanitize_key( (string) wp_unslash( $_POST['wc_kledo_type'] ) ) : '';
+		$raw_force = isset( $_POST['wc_kledo_force'] ) ? sanitize_text_field( (string) wp_unslash( $_POST['wc_kledo_force'] ) ) : '';
+		$force     = ( '1' === $raw_force );
 
 		if ( ! $order_id || ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
-			wp_die( esc_html__( 'Invalid request.', WC_KLEDO_TEXT_DOMAIN ) );
+			wp_die( esc_html__( 'Invalid request.', 'wc-kledo' ) );
 		}
 
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order instanceof WC_Order ) {
-			wp_die( esc_html__( 'Order not found.', WC_KLEDO_TEXT_DOMAIN ) );
+			wp_die( esc_html__( 'Order not found.', 'wc-kledo' ) );
 		}
 
 		if ( ! $this->current_user_can_sync_order( $order_id ) ) {
-			wp_die( esc_html__( 'You do not have permission to sync this order.', WC_KLEDO_TEXT_DOMAIN ) );
+			wp_die( esc_html__( 'You do not have permission to sync this order.', 'wc-kledo' ) );
 		}
 
 		$validation = $this->validate_manual_deliver_request( $order, $type, $force );
@@ -381,9 +394,9 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  \WC_Order  $order
-	 * @param  string  $type
-	 * @param  bool  $resend
+	 * @param  \WC_Order $order
+	 * @param  string    $type
+	 * @param  bool      $resend
 	 *
 	 * @return void
 	 */
@@ -441,40 +454,40 @@ class WC_Kledo_Admin_Order_Sync {
 	 * Validate manual send/resend against sync meta and order status. Returns null if OK, or an admin-facing error
 	 * string.
 	 *
-	 * @param  \WC_Order  $order
-	 * @param  string  $type
-	 * @param  bool  $resend
+	 * @param  \WC_Order $order
+	 * @param  string    $type
+	 * @param  bool      $resend
 	 *
 	 * @return string|null
 	 */
 	private function validate_manual_deliver_request( WC_Order $order, string $type, bool $resend ): ?string {
 		if ( 'order' === $type ) {
 			if ( ! wc_kledo_order_status_allows_manual_sales_order( $order ) ) {
-				return __( 'Kledo: manual sales order actions are only available when the order is Processing or Completed.', WC_KLEDO_TEXT_DOMAIN );
+				return __( 'Kledo: manual sales order actions are only available when the order is Processing or Completed.', 'wc-kledo' );
 			}
 		} elseif ( 'invoice' === $type ) {
 			if ( ! wc_kledo_order_status_allows_manual_invoice( $order ) ) {
-				return __( 'Kledo: manual invoice actions are only available when the order is Completed.', WC_KLEDO_TEXT_DOMAIN );
+				return __( 'Kledo: manual invoice actions are only available when the order is Completed.', 'wc-kledo' );
 			}
 		} else {
-			return __( 'Kledo: invalid sync type.', WC_KLEDO_TEXT_DOMAIN );
+			return __( 'Kledo: invalid sync type.', 'wc-kledo' );
 		}
 
 		$synced = wc_kledo_is_delivery_synced( $order, $type );
 
 		if ( $resend ) {
 			if ( ! $synced ) {
-				return __( 'Kledo: re-send is only available when this record is already marked synced in WooCommerce.', WC_KLEDO_TEXT_DOMAIN );
+				return __( 'Kledo: re-send is only available when this record is already marked synced in WooCommerce.', 'wc-kledo' );
 			}
 		} elseif ( $synced ) {
-			return __( 'Kledo: initial manual send is not available because this is already marked synced. Use the re-send action instead.', WC_KLEDO_TEXT_DOMAIN );
+			return __( 'Kledo: initial manual send is not available because this is already marked synced. Use the re-send action instead.', 'wc-kledo' );
 		}
 
 		return null;
 	}
 
 	/**
-	 * @param  string  $type
+	 * @param  string $type
 	 * @param  array  $result
 	 *
 	 * @return string
@@ -483,7 +496,7 @@ class WC_Kledo_Admin_Order_Sync {
 		if ( ! empty( $result['success'] ) ) {
 			return sprintf(
 			/* translators: %s: order or invoice */
-				__( 'Kledo: %s was sent successfully.', WC_KLEDO_TEXT_DOMAIN ),
+				__( 'Kledo: %s was sent successfully.', 'wc-kledo' ),
 				$type
 			);
 		}
@@ -492,26 +505,26 @@ class WC_Kledo_Admin_Order_Sync {
 			if ( 'already_synced' === ( $result['reason'] ?? '' ) ) {
 				return sprintf(
 				/* translators: %s: order or invoice */
-					__( 'Kledo: %s is already marked synced. Use the re-send action if you need to push again.', WC_KLEDO_TEXT_DOMAIN ),
+					__( 'Kledo: %s is already marked synced. Use the re-send action if you need to push again.', 'wc-kledo' ),
 					$type
 				);
 			}
 
 			if ( 'api_disabled' === ( $result['reason'] ?? '' ) ) {
-				return __( 'Kledo: API connection is disabled; nothing was sent.', WC_KLEDO_TEXT_DOMAIN );
+				return __( 'Kledo: API connection is disabled; nothing was sent.', 'wc-kledo' );
 			}
 
 			if ( 'feature_disabled' === ( $result['reason'] ?? '' ) ) {
 				return sprintf(
 				/* translators: %s: order or invoice */
-					__( 'Kledo: %s push is disabled in plugin settings.', WC_KLEDO_TEXT_DOMAIN ),
+					__( 'Kledo: %s push is disabled in plugin settings.', 'wc-kledo' ),
 					$type
 				);
 			}
 
 			return sprintf(
 			/* translators: %s: order or invoice */
-				__( 'Kledo: %s was skipped.', WC_KLEDO_TEXT_DOMAIN ),
+				__( 'Kledo: %s was skipped.', 'wc-kledo' ),
 				$type
 			);
 		}
@@ -519,7 +532,7 @@ class WC_Kledo_Admin_Order_Sync {
 		if ( ! empty( $result['error'] ) ) {
 			return sprintf(
 			/* translators: 1: type, 2: error */
-				__( 'Kledo: failed to push %1$s — %2$s', WC_KLEDO_TEXT_DOMAIN ),
+				__( 'Kledo: failed to push %1$s — %2$s', 'wc-kledo' ),
 				$type,
 				$result['error']
 			);
@@ -527,14 +540,14 @@ class WC_Kledo_Admin_Order_Sync {
 
 		return sprintf(
 		/* translators: 1: type, 2: HTTP code */
-			__( 'Kledo: failed to push %1$s (HTTP %2$d).', WC_KLEDO_TEXT_DOMAIN ),
+			__( 'Kledo: failed to push %1$s (HTTP %2$d).', 'wc-kledo' ),
 			$type,
 			(int) $result['http_code']
 		);
 	}
 
 	/**
-	 * @param  string  $message
+	 * @param  string $message
 	 *
 	 * @return void
 	 */
@@ -573,7 +586,7 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  int  $order_id
+	 * @param  int $order_id
 	 *
 	 * @return bool
 	 */
@@ -586,7 +599,7 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * @param  \WP_Post|\WC_Order|null  $post_or_order_object
+	 * @param  \WP_Post|\WC_Order|null $post_or_order_object
 	 *
 	 * @return \WC_Order|null
 	 */
@@ -608,8 +621,10 @@ class WC_Kledo_Admin_Order_Sync {
 		}
 
 		// HPOS screen may pass a different object; fall back to query arg.
+		// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.NonceVerification.Recommended,WordPress.Security.NonceVerification.Missing
 		if ( isset( $_GET['id'] ) ) {
-			$order = wc_get_order( absint( wp_unslash( $_GET['id'] ) ) );
+			// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.NonceVerification.Recommended
+			$order = wc_get_order( absint( wp_unslash( (string) $_GET['id'] ) ) );
 
 			return $order instanceof WC_Order ? $order : null;
 		}

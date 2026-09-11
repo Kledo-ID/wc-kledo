@@ -20,7 +20,7 @@ class WC_Kledo_Request_Invoice extends WC_Kledo_Request {
 	/**
 	 * Create new invoice.
 	 *
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return bool|array
 	 * @throws \Exception

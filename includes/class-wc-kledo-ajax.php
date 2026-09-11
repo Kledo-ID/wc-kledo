@@ -28,7 +28,7 @@ class WC_Kledo_Ajax {
 		check_ajax_referer( 'wc_kledo_admin', 'security' );
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Unauthorized', WC_KLEDO_TEXT_DOMAIN ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-kledo' ) ), 403 );
 		}
 
 		$request = new WC_Kledo_Request_Account();
@@ -39,17 +39,17 @@ class WC_Kledo_Ajax {
 		try {
 			$response = $request->get_accounts_suggestion_per_page( $keyword, $page );
 		} catch ( Throwable $e ) {
-			wp_send_json_error( array( 'message' => __( 'Request failed.', WC_KLEDO_TEXT_DOMAIN ) ), 500 );
+			wp_send_json_error( array( 'message' => __( 'Request failed.', 'wc-kledo' ) ), 500 );
 		}
 
 		if (
 			isset( $response ) &&
 			( false === $response
-			  || ! is_array( $response )
-			  || empty( $response['data']['data'] )
-			  || ! is_array( $response['data']['data'] ) )
+				|| ! is_array( $response )
+				|| empty( $response['data']['data'] )
+				|| ! is_array( $response['data']['data'] ) )
 		) {
-			wp_send_json_error( array( 'message' => __( 'Invalid response from Kledo.', WC_KLEDO_TEXT_DOMAIN ) ), 502 );
+			wp_send_json_error( array( 'message' => __( 'Invalid response from Kledo.', 'wc-kledo' ) ), 502 );
 		}
 
 		$items = array();
@@ -86,7 +86,7 @@ class WC_Kledo_Ajax {
 		check_ajax_referer( 'wc_kledo_admin', 'security' );
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Unauthorized', WC_KLEDO_TEXT_DOMAIN ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-kledo' ) ), 403 );
 		}
 
 		$request = new WC_Kledo_Request_Warehouse();
@@ -94,7 +94,7 @@ class WC_Kledo_Ajax {
 		try {
 			$response = $request->get_warehouse();
 		} catch ( Throwable $e ) {
-			wp_send_json_error( array( 'message' => __( 'Request failed.', WC_KLEDO_TEXT_DOMAIN ) ), 500 );
+			wp_send_json_error( array( 'message' => __( 'Request failed.', 'wc-kledo' ) ), 500 );
 		}
 
 		if (
@@ -103,7 +103,7 @@ class WC_Kledo_Ajax {
 			|| empty( $response['data']['data'] )
 			|| ! is_array( $response['data']['data'] )
 		) {
-			wp_send_json_error( array( 'message' => __( 'Invalid response from Kledo.', WC_KLEDO_TEXT_DOMAIN ) ), 502 );
+			wp_send_json_error( array( 'message' => __( 'Invalid response from Kledo.', 'wc-kledo' ) ), 502 );
 		}
 
 		$items = array();

@@ -14,5 +14,4 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.0.0
  */
 class WC_Kledo_Exception extends RuntimeException {
-	//
 }

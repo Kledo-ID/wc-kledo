@@ -53,18 +53,26 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 	public function __construct() {
 		$this->id = self::ID;
 
-		add_action( 'load-woocommerce_page_wc-kledo', function () {
-			$this->label = __( 'Order', WC_KLEDO_TEXT_DOMAIN );
-			$this->title = __( 'Order', WC_KLEDO_TEXT_DOMAIN );
-		} );
+		add_action(
+			'load-woocommerce_page_wc-kledo',
+			function () {
+				$this->label = __( 'Order', 'wc-kledo' );
+				$this->title = __( 'Order', 'wc-kledo' );
+			}
+		);
 
 		add_action( 'woocommerce_admin_field_order_warehouse', array( $this, 'render_order_warehouse_field' ) );
 		add_action( 'woocommerce_admin_field_order_tags', array( $this, 'render_order_tags_field' ) );
 
-		add_filter( 'woocommerce_admin_settings_sanitize_option_' . self::ORDER_TAG_OPTION_NAME, array(
-			$this,
-			'sanitize_tags'
-		), 10, 3 );
+		add_filter(
+			'woocommerce_admin_settings_sanitize_option_' . self::ORDER_TAG_OPTION_NAME,
+			array(
+				$this,
+				'sanitize_tags',
+			),
+			10,
+			3
+		);
 	}
 
 	/**
@@ -75,46 +83,47 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	public function get_settings(): array {
 		return array(
-			'title' => array(
-				'title' => __( 'Order', WC_KLEDO_TEXT_DOMAIN ),
+			'title'               => array(
+				'title' => __( 'Order', 'wc-kledo' ),
 				'type'  => 'title',
 			),
 
 			'enable_create_order' => array(
 				'id'      => self::ENABLE_ORDER_OPTION_NAME,
-				'title'   => __( 'Enable Create Order', WC_KLEDO_TEXT_DOMAIN ),
+				'title'   => __( 'Enable Create Order', 'wc-kledo' ),
 				'type'    => 'checkbox',
 				'class'   => 'wc-kledo-field',
 				'default' => 'yes',
 				'desc'    => sprintf(
-					__( 'Create new order on Kledo when order status is %s.', WC_KLEDO_TEXT_DOMAIN ),
+					/* translators: %s: "Processing" order status label (may include <strong> markup). */
+					__( 'Create new order on Kledo when order status is %s.', 'wc-kledo' ),
 					'<strong>Processing</strong>'
 				),
 			),
 
-			'order_prefix' => array(
+			'order_prefix'        => array(
 				'id'      => self::ORDER_PREFIX_OPTION_NAME,
-				'title'   => __( 'Order Prefix', WC_KLEDO_TEXT_DOMAIN ),
+				'title'   => __( 'Order Prefix', 'wc-kledo' ),
 				'type'    => 'text',
 				'class'   => 'wc-kledo-field',
 				'default' => 'WC/SO/',
 			),
 
-			'warehouse' => array(
+			'warehouse'           => array(
 				'id'    => self::ORDER_WAREHOUSE_OPTION_NAME,
-				'title' => __( 'Warehouse', WC_KLEDO_TEXT_DOMAIN ),
+				'title' => __( 'Warehouse', 'wc-kledo' ),
 				'type'  => 'order_warehouse',
 				'class' => 'wc-kledo-field wc-kledo-warehouse-field',
 			),
 
-			'tags' => array(
-				'id'                => self::ORDER_TAG_OPTION_NAME,
-				'title'             => __( 'Tags', WC_KLEDO_TEXT_DOMAIN ),
-				'type'              => 'order_tags',
-				'class'             => 'wc-kledo-field wc-kledo-tags-field',
+			'tags'                => array(
+				'id'    => self::ORDER_TAG_OPTION_NAME,
+				'title' => __( 'Tags', 'wc-kledo' ),
+				'type'  => 'order_tags',
+				'class' => 'wc-kledo-field wc-kledo-tags-field',
 			),
 
-			'section_end' => array(
+			'section_end'         => array(
 				'type' => 'sectionend',
 			),
 		);
@@ -123,7 +132,7 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 	/**
 	 * Render the warehouse field.
 	 *
-	 * @param  array  $field  field data
+	 * @param  array $field  field data
 	 *
 	 * @return void
 	 * @since 1.3.0
@@ -137,7 +146,7 @@ class WC_Kledo_Order_Screen extends WC_Kledo_Settings_Screen {
 	/**
 	 * Render the tags field.
 	 *
-	 * @param  array  $field
+	 * @param  array $field
 	 *
 	 * @return void
 	 * @since 1.3.0

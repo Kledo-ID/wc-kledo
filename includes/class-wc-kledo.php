@@ -116,21 +116,21 @@ final class WC_Kledo {
 	 */
 	private function includes(): void {
 		// Function helpers.
-		require_once( WC_KLEDO_ABSPATH . 'includes/helpers.php' );
+		require_once WC_KLEDO_ABSPATH . 'includes/helpers.php';
 
 		// Abstract classes.
 		require_once WC_KLEDO_ABSPATH . 'includes/abstracts/class-wc-kledo-settings-screen.php';
 		require_once WC_KLEDO_ABSPATH . 'includes/abstracts/class-wc-kledo-request.php';
 
 		// Core classes.
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-translation.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-ajax.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-message-handler.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-notice-handler.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-woocommerce.php' );
+		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-translation.php';
+		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-ajax.php';
+		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-message-handler.php';
+		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-admin-notice-handler.php';
+		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-woocommerce.php';
 
 		// Exception handler.
-		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-exception.php' );
+		require_once WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-exception.php';
 	}
 
 	/**
@@ -226,11 +226,13 @@ final class WC_Kledo {
 			$context = 'admin';
 		}
 
-		wc_kledo_log_info( sprintf(
-			'Retry run started: %d item(s) in queue, context: %s.',
-			count( $queue ),
-			$context
-		) );
+		wc_kledo_log_info(
+			sprintf(
+				'Retry run started: %d item(s) in queue, context: %s.',
+				count( $queue ),
+				$context
+			)
+		);
 
 		$max_attempts        = 20;
 		$max_lifetime        = 2 * DAY_IN_SECONDS;
@@ -269,14 +271,14 @@ final class WC_Kledo {
 					$order->add_order_note(
 						sprintf(
 							/* translators: %s: transaction type (order/invoice) */
-							__( 'Kledo: automatic retry for %s has stopped: maximum queue lifetime reached. Manual retry is still available from the Transactions screen.', WC_KLEDO_TEXT_DOMAIN ),
+							__( 'Kledo: automatic retry for %s has stopped: maximum queue lifetime reached. Manual retry is still available from the Transactions screen.', 'wc-kledo' ),
 							$type
 						)
 					);
 				}
 
 				// Keep as terminal failure so it is visible in the Transactions screen.
-				$item['status']      = 'failed';
+				$item['status']        = 'failed';
 				$updated_queue[ $key ] = $item;
 				continue;
 			}
@@ -294,7 +296,7 @@ final class WC_Kledo {
 				$order->add_order_note(
 					sprintf(
 						/* translators: 1: transaction type (order/invoice), 2: attempts count */
-						__( 'Kledo: automatic retry for %1$s has stopped after %2$d failed attempts. Manual retry is still available from the Transactions screen.', WC_KLEDO_TEXT_DOMAIN ),
+						__( 'Kledo: automatic retry for %1$s has stopped after %2$d failed attempts. Manual retry is still available from the Transactions screen.', 'wc-kledo' ),
 						$type,
 						$attempts
 					)
@@ -306,14 +308,14 @@ final class WC_Kledo {
 				continue;
 			}
 
-			$attempts++;
+			++$attempts;
 
 			$result = $this->get_woocommerce_bridge()->deliver(
 				$order,
 				$type,
 				array(
 					'trigger'            => 'retry',
-					'enqueue_on_failure'  => false,
+					'enqueue_on_failure' => false,
 				)
 			);
 
@@ -321,7 +323,7 @@ final class WC_Kledo {
 				$order->add_order_note(
 					sprintf(
 						/* translators: 1: transaction type (order/invoice), 2: attempts count */
-						__( 'Kledo: successfully resent %1$s to Kledo after %2$d attempt(s).', WC_KLEDO_TEXT_DOMAIN ),
+						__( 'Kledo: successfully resent %1$s to Kledo after %2$d attempt(s).', 'wc-kledo' ),
 						$type,
 						$attempts
 					)
@@ -435,7 +437,7 @@ final class WC_Kledo {
 	 * Seconds to wait before the nth retry attempt. Delegates to the global
 	 * helper so the backoff table is defined in one place.
 	 *
-	 * @param  int  $attempt  1-based attempt index.
+	 * @param  int $attempt  1-based attempt index.
 	 *
 	 * @return int Delay in seconds.
 	 * @since 1.5.0
@@ -455,9 +457,10 @@ final class WC_Kledo {
 		if ( ! $this->is_plugin_settings() && ! $this->get_connection_handler()->is_configured() ) {
 			// Direct these users to the new plugin settings page.
 			$message = sprintf(
+				/* translators: 1,2: <strong> tags, 3-4: anchor to settings. */
 				esc_html__(
 					'%1$sWooCommerce Kledo is almost ready.%2$s To complete your configuration, %3$scomplete the setup steps%4$s.',
-					WC_KLEDO_TEXT_DOMAIN
+					'wc-kledo'
 				),
 				'<strong>',
 				'</strong>',
@@ -477,7 +480,8 @@ final class WC_Kledo {
 
 		if ( wc_kledo_is_enhanced_admin_available() ) {
 			$message = sprintf(
-				__( 'For your convenience, the Kledo for WooCommerce settings are located under %1$sWooCommerce > Kledo%2$s.', WC_KLEDO_TEXT_DOMAIN ),
+				/* translators: 1,2: anchor tags for WooCommerce > Kledo. */
+				__( 'For your convenience, the Kledo for WooCommerce settings are located under %1$sWooCommerce > Kledo%2$s.', 'wc-kledo' ),
 				'<a href="' . esc_url( $this->get_settings_url() ) . '">',
 				'</a>'
 			);

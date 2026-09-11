@@ -11,7 +11,6 @@ class WC_Kledo_WooCommerce {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		//
 	}
 
 	/**
@@ -36,8 +35,8 @@ class WC_Kledo_WooCommerce {
 	/**
 	 * Send invoice to kledo (automatic: order completed).
 	 *
-	 * @param  int  $order_id
-	 * @param  \WC_Order  $order
+	 * @param  int       $order_id
+	 * @param  \WC_Order $order
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -55,8 +54,8 @@ class WC_Kledo_WooCommerce {
 	/**
 	 * Send order to kledo (automatic: processing).
 	 *
-	 * @param  int  $order_id
-	 * @param  \WC_Order  $order
+	 * @param  int       $order_id
+	 * @param  \WC_Order $order
 	 *
 	 * @return void
 	 * @since 1.3.0
@@ -74,9 +73,9 @@ class WC_Kledo_WooCommerce {
 	/**
 	 * Shared delivery pipeline for Kledo sales order or invoice.
 	 *
-	 * @param  \WC_Order  $order
-	 * @param  string  $type  `order` or `invoice`.
-	 * @param  array  $context {
+	 * @param  \WC_Order $order
+	 * @param  string    $type  `order` or `invoice`.
+	 * @param  array     $context {
 	 *     @type string $trigger  `status_transition` | `retry` | `manual_admin`
 	 *     @type bool   $force_if_synced  When true, call the API even if the order is already marked synced (explicit admin intent; may duplicate in Kledo).
 	 *     @type bool   $enqueue_on_failure  When false, do not add/update the failed-transactions queue (retry handlers update the queue themselves).
@@ -94,9 +93,9 @@ class WC_Kledo_WooCommerce {
 	 */
 	public function deliver( WC_Order $order, string $type, array $context = array() ): array {
 		$defaults = array(
-			'trigger'             => 'status_transition',
-			'force_if_synced'     => false,
-			'enqueue_on_failure'  => null,
+			'trigger'            => 'status_transition',
+			'force_if_synced'    => false,
+			'enqueue_on_failure' => null,
 		);
 
 		$context = array_merge( $defaults, $context );
@@ -127,7 +126,7 @@ class WC_Kledo_WooCommerce {
 
 			if ( 'manual_admin' === $context['trigger'] ) {
 				$order->add_order_note(
-					__( 'Kledo: API connection is disabled in plugin settings; sync was not attempted.', WC_KLEDO_TEXT_DOMAIN )
+					__( 'Kledo: API connection is disabled in plugin settings; sync was not attempted.', 'wc-kledo' )
 				);
 			}
 
@@ -164,7 +163,7 @@ class WC_Kledo_WooCommerce {
 				$order->add_order_note(
 					sprintf(
 						/* translators: %s: transaction type (order/invoice) */
-						__( 'Kledo: %s was already synced; removed stale entry from failed queue.', WC_KLEDO_TEXT_DOMAIN ),
+						__( 'Kledo: %s was already synced; removed stale entry from failed queue.', 'wc-kledo' ),
 						$type
 					)
 				);
@@ -196,7 +195,7 @@ class WC_Kledo_WooCommerce {
 				$result  = $request->create_order( $order );
 			}
 
-			$response_code = method_exists( $request, 'get_response_code' ) ? (int) $request->get_response_code() : 0;
+			$response_code    = method_exists( $request, 'get_response_code' ) ? (int) $request->get_response_code() : 0;
 			$out['http_code'] = $response_code;
 
 			if ( false !== $result && 200 === $response_code ) {
@@ -210,7 +209,7 @@ class WC_Kledo_WooCommerce {
 						$order->add_order_note(
 							sprintf(
 								/* translators: %s: order or invoice */
-								__( 'Kledo: admin manually re-sent %s to Kledo (record was already marked synced; possible duplicate in Kledo).', WC_KLEDO_TEXT_DOMAIN ),
+								__( 'Kledo: admin manually re-sent %s to Kledo (record was already marked synced; possible duplicate in Kledo).', 'wc-kledo' ),
 								$type
 							)
 						);
@@ -218,7 +217,7 @@ class WC_Kledo_WooCommerce {
 						$order->add_order_note(
 							sprintf(
 								/* translators: %s: order or invoice */
-								__( 'Kledo: admin manually sent %s to Kledo (first manual push; automatic sync still uses order status transitions).', WC_KLEDO_TEXT_DOMAIN ),
+								__( 'Kledo: admin manually sent %s to Kledo (first manual push; automatic sync still uses order status transitions).', 'wc-kledo' ),
 								$type
 							)
 						);
@@ -247,7 +246,7 @@ class WC_Kledo_WooCommerce {
 
 			$error_message = sprintf(
 				/* translators: 1: HTTP status code */
-				__( 'Kledo: failed to send %1$s to Kledo (HTTP %2$d). Will retry automatically.', WC_KLEDO_TEXT_DOMAIN ),
+				__( 'Kledo: failed to send %1$s to Kledo (HTTP %2$d). Will retry automatically.', 'wc-kledo' ),
 				$type,
 				$response_code
 			);
@@ -255,7 +254,7 @@ class WC_Kledo_WooCommerce {
 			if ( 'manual_admin' === $context['trigger'] ) {
 				$error_message = sprintf(
 					/* translators: 1: type, 2: HTTP code */
-					__( 'Kledo: admin manual push failed for %1$s (HTTP %2$d).', WC_KLEDO_TEXT_DOMAIN ),
+					__( 'Kledo: admin manual push failed for %1$s (HTTP %2$d).', 'wc-kledo' ),
 					$type,
 					$response_code
 				);
@@ -283,12 +282,12 @@ class WC_Kledo_WooCommerce {
 				)
 			);
 		} catch ( Throwable $e ) {
-			$safe_detail = wc_kledo_sanitize_api_error_message( $e->getMessage() );
-			$out['error']  = $safe_detail;
+			$safe_detail  = wc_kledo_sanitize_api_error_message( $e->getMessage() );
+			$out['error'] = $safe_detail;
 
 			$error_message = sprintf(
 				/* translators: 1: type, 2: error detail */
-				__( 'Kledo: error when sending %1$s to Kledo: %2$s. Will retry automatically.', WC_KLEDO_TEXT_DOMAIN ),
+				__( 'Kledo: error when sending %1$s to Kledo: %2$s. Will retry automatically.', 'wc-kledo' ),
 				$type,
 				$safe_detail
 			);
@@ -296,7 +295,7 @@ class WC_Kledo_WooCommerce {
 			if ( 'manual_admin' === $context['trigger'] ) {
 				$error_message = sprintf(
 					/* translators: 1: type, 2: error */
-					__( 'Kledo: admin manual push error for %1$s: %2$s', WC_KLEDO_TEXT_DOMAIN ),
+					__( 'Kledo: admin manual push error for %1$s: %2$s', 'wc-kledo' ),
 					$type,
 					$safe_detail
 				);
