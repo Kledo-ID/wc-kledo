@@ -347,7 +347,7 @@ final class WC_Kledo {
 				);
 			}
 
-			// Kledo rejected the payload itself (e.g. HTTP 422 from schema validation). Repeating
+			// Kledo rejected the payload itself (HTTP 400 from schema validation). Repeating
 			// an identical request cannot change the answer, so stop now instead of burning the
 			// remaining 19 attempts, while keeping the row visible on the Transactions screen.
 			if ( ! empty( $result['permanent'] ) ) {

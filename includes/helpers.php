@@ -575,10 +575,13 @@ if ( ! function_exists( 'wc_kledo_is_permanent_api_failure' ) ) {
 	/**
 	 * Decide whether an API status code represents a failure that retrying cannot fix.
 	 *
-	 * Kledo validates the order/invoice payload server-side and answers HTTP 422 when the
-	 * payload does not match the expected schema. Resending the exact same payload will be
-	 * rejected exactly the same way, so such a transaction must never enter the retry queue:
-	 * it would produce up to 20 identical order notes over two days for no benefit.
+	 * Kledo validates the order/invoice payload server-side and answers HTTP 400 when the
+	 * payload does not match the expected schema — not 422. Its exception handler has no
+	 * validation branch at all, so a Laravel ValidationException falls through to the generic
+	 * `badRequest()` path and every validation failure across the whole Kledo API comes back as
+	 * 400 with `{ success: false, message: "<first error>" }`. Resending the exact same payload
+	 * will be rejected exactly the same way, so such a transaction must never enter the retry
+	 * queue: it would produce up to 20 identical order notes over two days for no benefit.
 	 *
 	 * Three families of 4xx are deliberately kept retryable:
 	 *
@@ -673,7 +676,7 @@ if ( ! function_exists( 'wc_kledo_log' ) ) {
 	/**
 	 * Write a line to the WooCommerce logger when available.
 	 *
-	 * @param  string $level  WC_Log_Levels level, e.g. info, warning, error.
+	 * @param  string $level  WC_Log_Levels level, e.g. info, warning, error.D
 	 * @param  string $message
 	 * @param  array  $context
 	 *
