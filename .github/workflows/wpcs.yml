@@ -77,28 +77,25 @@ jobs:
         with:
           files: '**.php'
 
-      - name: Run PHPCS on changed files
+      - name: Assert project PHPCS ruleset is present
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
-          PHPCS_STANDARD="WordPress"
-
-          # Use project-level config if it exists.
           if [ -f phpcs.xml ] || [ -f phpcs.xml.dist ] || [ -f .phpcs.xml ] || [ -f .phpcs.xml.dist ]; then
-            echo "📋 Using project-level PHPCS config."
-            vendor/bin/phpcs \
-              --report=checkstyle \
-              ${{ steps.changed-files.outputs.all_changed_files }} \
-            | cs2pr
-          else
-            echo "📋 No project-level PHPCS config found. Using default WordPress standard."
-            vendor/bin/phpcs \
-              --standard=$PHPCS_STANDARD \
-              --extensions=php \
-              --ignore=.github/*,.wordpress-org/*,languages/*,vendor/* \
-              --report=checkstyle \
-              ${{ steps.changed-files.outputs.all_changed_files }} \
-            | cs2pr
+            exit 0
           fi
+          echo '::error::Add a project ruleset (phpcs.xml or phpcs.xml.dist). Inline --standard=WordPress is not used; PHPCS is driven only by the ruleset in this repository.'
+          exit 1
+
+      - name: Run PHPCS (project ruleset, checkstyle, changed files)
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          set -euo pipefail
+          echo 'PHPCS loads ruleset from the repo (auto-discovery: phpcs.xml, phpcs.xml.dist, or hidden variants).'
+          # Do not pass --standard or --ignore here; they belong in the ruleset.
+          vendor/bin/phpcs \
+            --report=checkstyle \
+            ${{ steps.changed-files.outputs.all_changed_files }} \
+            | cs2pr
 
       - name: No PHP files changed
         if: steps.changed-files.outputs.any_changed != 'true'
