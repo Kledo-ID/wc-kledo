@@ -20,13 +20,13 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	public const SETTING_ENABLE_API_CONNECTION = 'wc_kledo_enable_api_connection';
 
-    /**
+	/**
 	 * The api key setting ID.
 	 *
 	 * @var string
 	 * @since 1.4.0
 	 */
-    public const SETTING_API_KEY = 'wc_kledo_api_key';
+	public const SETTING_API_KEY = 'wc_kledo_api_key';
 
 	/**
 	 * The API endpoint setting ID.
@@ -43,12 +43,15 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-        $this->id = self::ID;
+		$this->id = self::ID;
 
-        add_action('load-woocommerce_page_wc-kledo', function () {
-		    $this->label = __( 'Configure', WC_KLEDO_TEXT_DOMAIN );
-		    $this->title = __( 'Configure', WC_KLEDO_TEXT_DOMAIN );
-        });
+		add_action(
+			'load-woocommerce_page_wc-kledo',
+			function () {
+				$this->label = __( 'Configure', 'wc-kledo' );
+				$this->title = __( 'Configure', 'wc-kledo' );
+			}
+		);
 
 		$this->init_hooks();
 	}
@@ -61,12 +64,12 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	private function init_hooks(): void {
 		add_action( 'woocommerce_admin_field_wc_kledo_configure_title', array( $this, 'render_title' ) );
-    }
+	}
 
 	/**
 	 * Render configure admin settings title.
 	 *
-	 * @param  array  $field  field data
+	 * @param  array $field  field data
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -85,36 +88,36 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	 * Gets the screen settings.
 	 *
 	 * @return array
-     * @since 1.0.0
+	 * @since 1.0.0
 	 */
 	public function get_settings(): array {
 		return array(
-			'title' => array(
+			'title'              => array(
 				'type'  => 'wc_kledo_configure_title',
-				'title' => __( 'Configure', WC_KLEDO_TEXT_DOMAIN ),
+				'title' => __( 'Configure', 'wc-kledo' ),
 			),
 
 			'enable_integration' => array(
 				'id'      => self::SETTING_ENABLE_API_CONNECTION,
-				'title'   => __( 'Enable Integration', WC_KLEDO_TEXT_DOMAIN ),
+				'title'   => __( 'Enable Integration', 'wc-kledo' ),
 				'type'    => 'checkbox',
 				'label'   => ' ',
 				'default' => 'yes',
 			),
 
-			'api_key' => array(
-				'id'       => self::SETTING_API_KEY,
-				'title'    => __( 'API Key', WC_KLEDO_TEXT_DOMAIN ),
-				'type'     => 'text',
-			),
-
-			'api_endpoint' => array(
-				'id'    => self::SETTING_API_ENDPOINT,
-				'title' => __( 'API Endpoint', WC_KLEDO_TEXT_DOMAIN ),
+			'api_key'            => array(
+				'id'    => self::SETTING_API_KEY,
+				'title' => __( 'API Key', 'wc-kledo' ),
 				'type'  => 'text',
 			),
 
-			'section_end' => array(
+			'api_endpoint'       => array(
+				'id'    => self::SETTING_API_ENDPOINT,
+				'title' => __( 'API Endpoint', 'wc-kledo' ),
+				'type'  => 'text',
+			),
+
+			'section_end'        => array(
 				'type' => 'sectionend',
 			),
 		);

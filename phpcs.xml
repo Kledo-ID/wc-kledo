@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<ruleset name="WC-Kledo">
+	<description>
+		WordPress Coding Standards for WC Kledo (WooCommerce). Matches GitHub Action that runs
+		vendor bin phpcs with checkstyle to cs2pr on changed PHP files when this file exists.
+		CI Composer: phpcs 3.13, wpcs 3.3. Warnings and errors both fail the run unless you add
+		config ignore_warnings_on_exit. WooCommerce capabilities are whitelisted. See file comments
+		inside the ruleset for intentional sniff exclusions; tighten those before removing suppressions.
+	</description>
+
+	<!-- Full-project scan (CLI file args from the workflow override/merge for changed-file mode). -->
+	<file>.</file>
+
+	<!-- Match the no-config fallback in .github: ignore vendor, languages, packaging paths. -->
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/.github/*</exclude-pattern>
+	<exclude-pattern>*/.wordpress-org/*</exclude-pattern>
+	<exclude-pattern>*/languages/*</exclude-pattern>
+	<exclude-pattern>*/assets/build/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg name="parallel" value="8"/>
+	<arg name="cache" value=".phpcs.cache"/>
+
+	<config name="minimum_supported_wp_version" value="4.4"/>
+	<config name="testVersion" value="7.0-"/>
+
+	<rule ref="WordPress">
+		<!--
+			Documentation: enable incrementally; full Squiz/Generic doc sniffs are noisy for legacy
+			plugins. Prefer per-file or per-line phpcs:ignore for new code instead of blanket suppression.
+		-->
+		<exclude name="Squiz.Commenting.FileComment"/>
+		<exclude name="Squiz.Commenting.FunctionComment"/>
+		<exclude name="Squiz.Commenting.ClassComment"/>
+		<exclude name="Squiz.Commenting.InlineComment"/>
+		<exclude name="Generic.Commenting.DocComment"/>
+		<!--
+			Naming: WordPress globals and WooCommerce patterns often fail ValidVariableName; re-enable
+			after a focused cleanup if desired. Reserved param names (e.g. $class) are a known conflict.
+		-->
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames"/>
+		<exclude name="WordPress.NamingConventions.ValidVariableName"/>
+		<exclude name="Universal.Operators.DisallowShortTernary"/>
+		<exclude name="Universal.Files.SeparateFunctionsFromOO"/>
+		<exclude name="WordPress.DB.SlowDBQuery"/>
+		<exclude name="WordPress.PHP.NoSilencedErrors"/>
+		<exclude name="WordPress.WP.EnqueuedResourceParameters"/>
+		<!--
+			file-name vs class: Woo autoloader + `admin/screen` layout expects `class-wc-kledo-*.php`
+			for *Screen* classes, not the full *-screen* filename WPCS would suggest. Fix via rename +
+			autoloader update, or per-file phpcs:ignore, not a silent global disable if you can avoid it.
+		-->
+		<exclude name="WordPress.Files.FileName"/>
+		<exclude name="Squiz.PHP.DisallowMultipleAssignments"/>
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundInExtendedClassAfterLastUsed"/>
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundInExtendedClassBeforeLastUsed"/>
+	</rule>
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="manage_woocommerce"/>
+				<element value="edit_shop_orders"/>
+				<element value="edit_shop_order"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

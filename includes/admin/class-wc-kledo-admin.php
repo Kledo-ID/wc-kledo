@@ -39,11 +39,11 @@ class WC_Kledo_Admin {
 	 */
 	public function __construct() {
 		$this->screens = array(
-			WC_Kledo_Configure_Screen::ID           => new WC_Kledo_Configure_Screen,
-			WC_Kledo_Invoice_Screen::ID             => new WC_Kledo_Invoice_Screen,
-			WC_Kledo_Order_Screen::ID               => new WC_Kledo_Order_Screen,
-			WC_Kledo_Transactions_Screen::ID        => new WC_Kledo_Transactions_Screen,
-			WC_Kledo_Support_Screen::ID             => new WC_Kledo_Support_Screen,
+			WC_Kledo_Configure_Screen::ID    => new WC_Kledo_Configure_Screen(),
+			WC_Kledo_Invoice_Screen::ID      => new WC_Kledo_Invoice_Screen(),
+			WC_Kledo_Order_Screen::ID        => new WC_Kledo_Order_Screen(),
+			WC_Kledo_Transactions_Screen::ID => new WC_Kledo_Transactions_Screen(),
+			WC_Kledo_Support_Screen::ID      => new WC_Kledo_Support_Screen(),
 		);
 
 		$this->init_hooks();
@@ -95,8 +95,10 @@ class WC_Kledo_Admin {
 		$passthrough = array( 'wc_kledo_tx_status', 'wc_kledo_tx_orderby', 'wc_kledo_tx_order', 'paged' );
 
 		foreach ( $passthrough as $key ) {
+			// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.NonceVerification.Recommended,WordPress.Security.NonceVerification.Missing
 			if ( isset( $_GET[ $key ] ) ) {
-				$params[ $key ] = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
+				// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.NonceVerification.Recommended
+				$params[ $key ] = sanitize_text_field( wp_unslash( (string) $_GET[ $key ] ) );
 			}
 		}
 
@@ -161,7 +163,7 @@ class WC_Kledo_Admin {
 		}
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( __( 'You do not have permission to save these settings.', WC_KLEDO_TEXT_DOMAIN ) );
+			wp_die( esc_html__( 'You do not have permission to save these settings.', 'wc-kledo' ) );
 		}
 
 		check_admin_referer( 'wc_kledo_admin_save_' . $screen->get_id() . '_settings' );
@@ -170,12 +172,13 @@ class WC_Kledo_Admin {
 			$screen->save();
 
 			wc_kledo()->get_message_handler()->add_message(
-				__( 'Your settings have been saved.', WC_KLEDO_TEXT_DOMAIN )
+				__( 'Your settings have been saved.', 'wc-kledo' )
 			);
 		} catch ( WC_Kledo_Exception $exception ) {
 			wc_kledo()->get_message_handler()->add_error(
 				sprintf(
-					__( 'Your settings could not be saved. %s', WC_KLEDO_TEXT_DOMAIN ),
+					/* translators: %s: error message. */
+					__( 'Your settings could not be saved. %s', 'wc-kledo' ),
 					$exception->getMessage()
 				)
 			);
@@ -191,9 +194,10 @@ class WC_Kledo_Admin {
 	public function add_menu_item(): void {
 		add_submenu_page(
 			'woocommerce',
-			__( 'Kledo', WC_KLEDO_TEXT_DOMAIN ),
-			__( 'Kledo', WC_KLEDO_TEXT_DOMAIN ),
-			'manage_woocommerce', self::PAGE_ID,
+			__( 'Kledo', 'wc-kledo' ),
+			__( 'Kledo', 'wc-kledo' ),
+			'manage_woocommerce',
+			self::PAGE_ID,
 			array( $this, 'render' ),
 			5
 		);
@@ -218,7 +222,7 @@ class WC_Kledo_Admin {
 		// Ensure no bugs values are added via filter
 		return array_filter(
 			$screens,
-			static function( $value ) {
+			static function ( $value ) {
 				return $value instanceof WC_Kledo_Settings_Screen;
 			}
 		);
@@ -279,9 +283,12 @@ class WC_Kledo_Admin {
 	 * @since 1.0.0
 	 */
 	public function get_tabs(): array {
-		$tabs = array_map( static function ( $screen ) {
-			return $screen->get_label();
-		}, $this->get_screens() );
+		$tabs = array_map(
+			static function ( $screen ) {
+				return $screen->get_label();
+			},
+			$this->get_screens()
+		);
 
 		/**
 		 * Filters the admin settings tabs.
@@ -296,7 +303,7 @@ class WC_Kledo_Admin {
 	/**
 	 * Gets a settings screen object based on ID.
 	 *
-	 * @param  string  $screen_id  desired screen ID
+	 * @param  string $screen_id  desired screen ID
 	 *
 	 * @return \WC_Kledo_Settings_Screen|null
 	 * @since 1.0.0
@@ -332,14 +339,14 @@ class WC_Kledo_Admin {
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'security' => wp_create_nonce( 'wc_kledo_admin' ),
 				'i18n'     => array(
-					'payment_account_placeholder' => esc_html__( 'Select Account', WC_KLEDO_TEXT_DOMAIN ),
-					'warehouse_placeholder'       => esc_html__( 'Select Warehouse', WC_KLEDO_TEXT_DOMAIN ),
+					'payment_account_placeholder' => esc_html__( 'Select Account', 'wc-kledo' ),
+					'warehouse_placeholder'       => esc_html__( 'Select Warehouse', 'wc-kledo' ),
 
-					'error_loading' => esc_html__( 'The results could not be loaded.', WC_KLEDO_TEXT_DOMAIN ),
-					'loading_more'  => esc_html__( 'Loading more results...', WC_KLEDO_TEXT_DOMAIN ),
-					'no_result'     => esc_html__( 'No results found', WC_KLEDO_TEXT_DOMAIN ),
-					'searching'     => esc_html__( 'Loading...', WC_KLEDO_TEXT_DOMAIN ),
-					'search'        => esc_html__( 'Search', WC_KLEDO_TEXT_DOMAIN ),
+					'error_loading'               => esc_html__( 'The results could not be loaded.', 'wc-kledo' ),
+					'loading_more'                => esc_html__( 'Loading more results...', 'wc-kledo' ),
+					'no_result'                   => esc_html__( 'No results found', 'wc-kledo' ),
+					'searching'                   => esc_html__( 'Loading...', 'wc-kledo' ),
+					'search'                      => esc_html__( 'Search', 'wc-kledo' ),
 				),
 			)
 		);
@@ -348,12 +355,12 @@ class WC_Kledo_Admin {
 	/**
 	 * Determines whether the current screen is the same as identified by the tab.
 	 *
-	 * @param  string  ...$tabs
+	 * @param  string ...$tabs
 	 *
 	 * @return bool
 	 * @since 1.3.0
 	 */
-	protected function is_current_page_on(string ...$tabs): bool {
+	protected function is_current_page_on( string ...$tabs ): bool {
 		if ( self::PAGE_ID !== wc_kledo_get_requested_value( 'page' ) ) {
 			return false;
 		}

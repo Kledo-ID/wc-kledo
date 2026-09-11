@@ -21,10 +21,13 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 	public function __construct() {
 		$this->id = self::ID;
 
-		add_action( 'load-woocommerce_page_wc-kledo', function () {
-			$this->label = __( 'Support', WC_KLEDO_TEXT_DOMAIN );
-			$this->title = __( 'Support', WC_KLEDO_TEXT_DOMAIN );
-		});
+		add_action(
+			'load-woocommerce_page_wc-kledo',
+			function () {
+				$this->label = __( 'Support', 'wc-kledo' );
+				$this->title = __( 'Support', 'wc-kledo' );
+			}
+		);
 	}
 
 	/**
@@ -39,22 +42,22 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 		<div id="wc-kledo-admin">
 			<div class="wc-kledo-support">
 				<h3 style="padding-bottom: 10px;">
-					<?php _e( 'Need help?', WC_KLEDO_TEXT_DOMAIN ); ?>
+					<?php esc_html_e( 'Need help?', 'wc-kledo' ); ?>
 				</h3>
 
 				<p>
 					<span class="wc-kledo-support-title">
-						<i class="dashicons dashicons-whatsapp" aria-hidden="true"></i>&nbsp; <a href="https://api.whatsapp.com/send?phone=6282383334000" target="_blank"><?php _e( 'Request Support', WC_KLEDO_TEXT_DOMAIN ); ?></a>
+						<i class="dashicons dashicons-whatsapp" aria-hidden="true"></i>&nbsp; <a href="https://api.whatsapp.com/send?phone=6282383334000" target="_blank"><?php esc_html_e( 'Request Support', 'wc-kledo' ); ?></a>
 					</span>
 
-					<?php _e( 'Still need help? Submit a message and one of our support experts will get back to you as soon as possible.', WC_KLEDO_TEXT_DOMAIN ); ?>
+					<?php esc_html_e( 'Still need help? Submit a message and one of our support experts will get back to you as soon as possible.', 'wc-kledo' ); ?>
 				</p>
 
-                <p>
-                    <span class="wc-kledp-email">
-                        <i class="dashicons dashicons-email" aria-hidden="true"></i>&nbsp; <a href="mailto:hello@kledo.com">hello@kledo.com</a>
-                    </span>
-                </p>
+				<p>
+					<span class="wc-kledp-email">
+						<i class="dashicons dashicons-email" aria-hidden="true"></i>&nbsp; <a href="mailto:hello@kledo.com">hello@kledo.com</a>
+					</span>
+				</p>
 			</div>
 		</div>
 

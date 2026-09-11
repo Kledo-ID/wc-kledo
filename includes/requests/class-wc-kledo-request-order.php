@@ -20,7 +20,7 @@ class WC_Kledo_Request_Order extends WC_Kledo_Request {
 	/**
 	 * Create new order.
 	 *
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return bool|array
 	 * @throws \Exception

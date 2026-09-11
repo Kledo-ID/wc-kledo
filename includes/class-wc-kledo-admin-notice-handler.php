@@ -38,7 +38,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @var bool
 	 * @since 1.0.0
 	 */
-	static private bool $admin_notice_placeholder_rendered = false;
+	private static bool $admin_notice_placeholder_rendered = false;
 
 	/**
 	 * Static member to enforce a single rendering of the admin notice javascript.
@@ -46,12 +46,12 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @var bool
 	 * @since 1.0.0
 	 */
-	static private bool $admin_notice_js_rendered = false;
+	private static bool $admin_notice_js_rendered = false;
 
 	/**
 	 * The class constructor.
 	 *
-	 * @param  \WC_Kledo  $plugin
+	 * @param  \WC_Kledo $plugin
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -78,10 +78,10 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Adds the given $message as a dismissible notice identified by $message_id,
 	 * unless the notice has been dismissed, or we're on the plugin settings page.
 	 *
-	 * @param  string  $message  the notice message to display
-	 * @param  string  $message_id  the message id
-	 * @param  array|object  $params  {
-	 *      Optional parameters.
+	 * @param  string       $message  the notice message to display
+	 * @param  string       $message_id  the message id
+	 * @param  array|object $params  {
+	 *     Optional parameters.
 	 *
 	 *      @type bool $dismissible If the notice should be dismissible
 	 *      @type bool $always_show_on_settings If the notice should be forced to display on the
@@ -93,11 +93,14 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @since 1.0.0
 	 */
 	public function add_admin_notice( string $message, string $message_id, $params = array() ): void {
-		$params = wp_parse_args( $params, array(
-			'dismissible'             => true,
-			'always_show_on_settings' => true,
-			'notice_class'            => 'updated',
-		) );
+		$params = wp_parse_args(
+			$params,
+			array(
+				'dismissible'             => true,
+				'always_show_on_settings' => true,
+				'notice_class'            => 'updated',
+			)
+		);
 
 		if ( $this->should_display_notice( $message_id, $params ) ) {
 			$this->admin_notices[ $message_id ] = array(
@@ -112,9 +115,9 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Returns true if the identified notice hasn't been cleared, or we're on
 	 * the plugin settings page (where notices are always displayed).
 	 *
-	 * @param  string  $message_id  the message id
-	 * @param  array|object  $params  {
-	 *      Optional parameters.
+	 * @param  string       $message_id  the message id
+	 * @param  array|object $params  {
+	 *     Optional parameters.
 	 *
 	 *      @type bool $dismissible If the notice should be dismissible
 	 *      @type bool $always_show_on_settings If the notice should be forced to display on the
@@ -130,10 +133,13 @@ class WC_Kledo_Admin_Notice_Handler {
 			return false;
 		}
 
-		$params = wp_parse_args( $params, array(
-			'dismissible'             => true,
-			'always_show_on_settings' => true,
-		) );
+		$params = wp_parse_args(
+			$params,
+			array(
+				'dismissible'             => true,
+				'always_show_on_settings' => true,
+			)
+		);
 
 		// If the notice is always shown on the settings page, and we're on the settings page.
 		if ( $params['always_show_on_settings'] && $this->get_plugin()->is_plugin_settings() ) {
@@ -152,7 +158,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	/**
 	 * Render any admin notices, as well as the admin notice placeholder.
 	 *
-	 * @param  boolean  $is_visible  true if the notices should be immediately visible, false otherwise.
+	 * @param  boolean $is_visible  true if the notices should be immediately visible, false otherwise.
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -191,10 +197,10 @@ class WC_Kledo_Admin_Notice_Handler {
 	/**
 	 * Render a single admin notice
 	 *
-	 * @param  string  $message  the notice message to display
-	 * @param  string  $message_id  the message id
-	 * @param  array|object  $params  {
-	 *      Optional parameters.
+	 * @param  string       $message  the notice message to display
+	 * @param  string       $message_id  the message id
+	 * @param  array|object $params  {
+	 *     Optional parameters.
 	 *
 	 *      @type bool $dismissible If the notice should be dismissible
 	 *      @type bool $is_visible If the notice should be immediately visible
@@ -207,12 +213,15 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * @since 1.0.0
 	 */
 	public function render_admin_notice( string $message, string $message_id, $params = array() ): void {
-		$params = wp_parse_args( $params, array(
-			'dismissible'             => true,
-			'is_visible'              => true,
-			'always_show_on_settings' => true,
-			'notice_class'            => 'updated',
-		) );
+		$params = wp_parse_args(
+			$params,
+			array(
+				'dismissible'             => true,
+				'is_visible'              => true,
+				'always_show_on_settings' => true,
+				'notice_class'            => 'updated',
+			)
+		);
 
 		$classes = array(
 			'notice',
@@ -223,12 +232,12 @@ class WC_Kledo_Admin_Notice_Handler {
 		// Maybe make this notice dismissible
 		// uses a WP core class which handles the markup and styling.
 		if ( $params['dismissible']
-		     && ( ! $params['always_show_on_settings'] || ! $this->get_plugin()->is_plugin_settings() )
+			&& ( ! $params['always_show_on_settings'] || ! $this->get_plugin()->is_plugin_settings() )
 		) {
 			$classes[] = 'is-dismissible';
 		}
 
-		echo sprintf(
+		printf(
 			'<div class="%1$s" data-plugin-id="%2$s" data-message-id="%3$s" %4$s><p>%5$s</p></div>',
 			esc_attr( implode( ' ', $classes ) ),
 			esc_attr( $this->get_plugin()->get_id() ),
@@ -305,8 +314,8 @@ class WC_Kledo_Admin_Notice_Handler {
 	/**
 	 * Marks the identified admin notice as dismissed for the given user.
 	 *
-	 * @param  string  $message_id  the message identifier
-	 * @param  int|null  $user_id  optional user identifier, defaults to current user
+	 * @param  string   $message_id  the message identifier
+	 * @param  int|null $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -338,8 +347,8 @@ class WC_Kledo_Admin_Notice_Handler {
 	/**
 	 * Marks the identified admin notice as not dismissed for the identified user.
 	 *
-	 * @param  string  $message_id  the message identifier
-	 * @param  int|null  $user_id  optional user identifier, defaults to current user
+	 * @param  string   $message_id  the message identifier
+	 * @param  int|null $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -360,8 +369,8 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Returns true if the identified admin notice has been dismissed for the
 	 * given user.
 	 *
-	 * @param  string  $message_id  the message identifier
-	 * @param  int|null  $user_id  optional user identifier, defaults to current user
+	 * @param  string   $message_id  the message identifier
+	 * @param  int|null $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return boolean true if the message has been dismissed by the admin user
 	 * @since 1.0.0
@@ -376,7 +385,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 * Returns the full set of dismissed notices for the user identified by
 	 * $user_id, for this plugin.
 	 *
-	 * @param  int|null  $user_id  optional user identifier, defaults to current user
+	 * @param  int|null $user_id  optional user identifier, defaults to current user
 	 *
 	 * @return array of message id to dismissed status (true or false)
 	 * @since 1.0.0

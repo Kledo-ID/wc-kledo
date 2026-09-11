@@ -15,7 +15,7 @@ class WC_Kledo_Autoloader {
 	/**
 	 * The class constructor.
 	 *
-	 * @param  string  $path
+	 * @param  string $path
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -27,7 +27,7 @@ class WC_Kledo_Autoloader {
 	/**
 	 * Autoload kledo classes on demand to reduce memory consumption.
 	 *
-	 * @param  string  $class  Class name.
+	 * @param  string $class  Class name.
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -59,7 +59,7 @@ class WC_Kledo_Autoloader {
 	/**
 	 * Take a class name and turn it into a file name.
 	 *
-	 * @param  string  $class  Class name.
+	 * @param  string $class  Class name.
 	 *
 	 * @return string
 	 * @since 1.0.0
@@ -71,14 +71,14 @@ class WC_Kledo_Autoloader {
 	/**
 	 * Include a class file.
 	 *
-	 * @param  string  $path  File path.
+	 * @param  string $path  File path.
 	 *
 	 * @return bool Successful or not.
 	 * @since 1.0.0
 	 */
 	private function load_file( string $path ): bool {
 		if ( $path && is_readable( $path ) ) {
-			require_once( $path );
+			require_once $path;
 
 			return true;
 		}

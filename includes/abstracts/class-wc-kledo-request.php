@@ -65,10 +65,10 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Create new transaction.
 	 *
-	 * @param  \WC_Order  $order
-	 * @param  string  $ref_number_prefix
-	 * @param  string|null  $warehouse
-	 * @param  array  $tags
+	 * @param  \WC_Order   $order
+	 * @param  string      $ref_number_prefix
+	 * @param  string|null $warehouse
+	 * @param  array       $tags
 	 *
 	 * @return bool|array
 	 * @throws \JsonException
@@ -107,7 +107,8 @@ abstract class WC_Kledo_Request {
 		);
 
 		// Get shipping tracking data if exists.
-		if ( $shipping_data = $this->get_shipping_tracking( $order ) ) {
+		$shipping_data = $this->get_shipping_tracking( $order );
+		if ( $shipping_data ) {
 			$body['shipping_tracking'] = $shipping_data;
 		}
 
@@ -127,7 +128,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Get customer name.
 	 *
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return string
 	 * @since 1.0.0
@@ -139,7 +140,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Get transaction due date.
 	 *
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return string
 	 * @since 1.3.1
@@ -152,21 +153,21 @@ abstract class WC_Kledo_Request {
 		}
 
 		return $order->get_date_created()
-		             ->modify( '+1 month' )
-		             ->format( 'Y-m-d' );
+					->modify( '+1 month' )
+					->format( 'Y-m-d' );
 	}
 
 	/**
 	 * Get shipping tracking data.
 	 *
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return array
 	 * @since 1.3.0
 	 */
 	protected function get_shipping_tracking( WC_Order $order ): array {
 		if ( ! class_exists( 'WC_Shipment_Tracking' ) ) {
-			return [];
+			return array();
 		}
 
 		return $order->get_meta( '_wc_shipment_tracking_items' );
@@ -175,7 +176,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Get the product items from order.
 	 *
-	 * @param  \WC_Order  $order
+	 * @param  \WC_Order $order
 	 *
 	 * @return array
 	 * @throws \Exception
@@ -212,13 +213,13 @@ abstract class WC_Kledo_Request {
 	 * Do the request.
 	 *
 	 * @return bool
-	 * @throws \Exception
+	 * @throws \RuntimeException Configuration missing, connection failure, or unrecoverable API error.
 	 * @since 1.0.0
 	 */
 	public function do_request(): bool {
 		// Check if connected.
 		if ( ! wc_kledo()->get_connection_handler()->is_configured() ) {
-			throw new RuntimeException( __( "Can't do API request because the api key & endpoint url has not been configured.", WC_KLEDO_TEXT_DOMAIN ) );
+			throw new RuntimeException( esc_html( __( "Can't do API request because the api key & endpoint url has not been configured.", 'wc-kledo' ) ) );
 		}
 
 		// Do the request.
@@ -251,10 +252,10 @@ abstract class WC_Kledo_Request {
 			$this->clear_response();
 
 			if ( '' !== trim( $wp_error_msg ) ) {
-				throw new RuntimeException( sprintf( 'Connection error: %s', $wp_error_msg ) );
+				throw new RuntimeException( esc_html( sprintf( 'Connection error: %s', $wp_error_msg ) ) );
 			}
 
-			throw new RuntimeException( __( 'There was a problem when connecting to the API.', WC_KLEDO_TEXT_DOMAIN ) );
+			throw new RuntimeException( esc_html( __( 'There was a problem when connecting to the API.', 'wc-kledo' ) ) );
 		}
 
 		return true;
@@ -273,7 +274,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Set the endpoint.
 	 *
-	 * @param  string  $endpoint
+	 * @param  string $endpoint
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -295,7 +296,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Set the request method.
 	 *
-	 * @param  string  $method
+	 * @param  string $method
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -317,7 +318,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Set the request body.
 	 *
-	 * @param  array  $body
+	 * @param  array $body
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -339,7 +340,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Set the query.
 	 *
-	 * @param  array  $query
+	 * @param  array $query
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -368,7 +369,7 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Get the request header response.
 	 *
-	 * @param  string|null  $header
+	 * @param  string|null $header
 	 *
 	 * @return array|string
 	 * @since 1.0.0

@@ -105,6 +105,7 @@ class WC_Kledo_Admin_Table_Filter_Handler {
 	 * @return array<string, mixed> Normalized filter values.
 	 */
 	public function parse_from_globals(): array {
+		// phpcs:disable WordPress.Security.NonceVerification -- Merges read-only list filters; admin UIs that submit forms must add nonces, and `manage_woocommerce` gates tab screens.
 		// Merge GET first so POST can override on submit.
 		$merged = array();
 		if ( ! empty( $_GET ) && is_array( $_GET ) ) {
@@ -113,6 +114,7 @@ class WC_Kledo_Admin_Table_Filter_Handler {
 		if ( ! empty( $_POST ) && is_array( $_POST ) ) {
 			$merged = array_merge( $merged, wp_unslash( $_POST ) );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification
 
 		return $this->sanitize_filters( $merged, 'merged' );
 	}
@@ -191,7 +193,7 @@ class WC_Kledo_Admin_Table_Filter_Handler {
 				$filters['orderby'] = sanitize_key( (string) $raw[ self::PARAM_ORDERBY ] );
 			}
 			if ( isset( $raw[ self::PARAM_ORDER ] ) && '' !== $raw[ self::PARAM_ORDER ] ) {
-				$order_raw       = strtolower( sanitize_text_field( (string) $raw[ self::PARAM_ORDER ] ) );
+				$order_raw        = strtolower( sanitize_text_field( (string) $raw[ self::PARAM_ORDER ] ) );
 				$filters['order'] = in_array( $order_raw, array( 'asc', 'desc' ), true ) ? $order_raw : 'desc';
 			}
 

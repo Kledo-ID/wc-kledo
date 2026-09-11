@@ -63,9 +63,9 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Construct and initialize the admin message handler class.
 	 *
-	 * @param  string|null  $message_id  optional message id.  Best practice is to set
-	 *                              this to a unique identifier based on the client plugin,
-	 *                              such as __FILE__
+	 * @param  string|null $message_id  optional message id.  Best practice is to set
+	 *                             this to a unique identifier based on the client plugin,
+	 *                             such as __FILE__
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -112,8 +112,10 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @since 1.0.0
 	 */
 	public function load_messages(): void {
-		if ( isset( $_GET[ self::MESSAGE_ID_GET_NAME ] ) && $this->get_message_id() === $_GET[ self::MESSAGE_ID_GET_NAME ] ) {
-			$memo = get_transient( self::MESSAGE_TRANSIENT_PREFIX . $_GET[ self::MESSAGE_ID_GET_NAME ] );
+		$raw    = filter_input( INPUT_GET, self::MESSAGE_ID_GET_NAME, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$get_id = is_string( $raw ) && '' !== $raw ? sanitize_text_field( $raw ) : '';
+		if ( $get_id && $this->get_message_id() === $get_id ) {
+			$memo = get_transient( self::MESSAGE_TRANSIENT_PREFIX . $get_id );
 
 			if ( isset( $memo['errors'] ) ) {
 				$this->errors = $memo['errors'];
@@ -131,14 +133,14 @@ class WC_Kledo_Admin_Message_Handler {
 				$this->messages = $memo['messages'];
 			}
 
-			$this->clear_messages( $_GET[ self::MESSAGE_ID_GET_NAME ] );
+			$this->clear_messages( $get_id );
 		}
 	}
 
 	/**
 	 * Clear messages and errors.
 	 *
-	 * @param  string  $id  the messages identifier
+	 * @param  string $id  the messages identifier
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -150,7 +152,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Add an error message.
 	 *
-	 * @param  string  $error  error message
+	 * @param  string $error  error message
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -162,7 +164,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Adds a warning message.
 	 *
-	 * @param  string  $message  warning message to add
+	 * @param  string $message  warning message to add
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -174,7 +176,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Adds a info message.
 	 *
-	 * @param  string  $message  info message to add
+	 * @param  string $message  info message to add
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -186,7 +188,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Add a message.
 	 *
-	 * @param  string  $message  the message to add
+	 * @param  string $message  the message to add
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -248,7 +250,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Get an error message.
 	 *
-	 * @param  int  $index  the error index
+	 * @param  int $index  the error index
 	 *
 	 * @return string the error message
 	 * @since 1.0.0
@@ -270,7 +272,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Gets a specific warning message.
 	 *
-	 * @param  int  $index  warning message index
+	 * @param  int $index  warning message index
 	 *
 	 * @return string
 	 * @since 1.0.0
@@ -292,7 +294,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Gets a specific info message.
 	 *
-	 * @param  int  $index  info message index
+	 * @param  int $index  info message index
 	 *
 	 * @return string
 	 * @since 1.0.0
@@ -314,7 +316,7 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Get a message.
 	 *
-	 * @param  int  $index  the message index
+	 * @param  int $index  the message index
 	 *
 	 * @return string the message
 	 * @since 1.0.0
@@ -326,8 +328,8 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Render the errors and messages.
 	 *
-	 * @param  array|object  $params  {
-	 *      Optional parameters.
+	 * @param  array|object $params  {
+	 *     Optional parameters.
 	 *
 	 * @type array $capabilities Any user capabilities to check
 	 *                                if the user is allowed to view the messages,
@@ -338,11 +340,14 @@ class WC_Kledo_Admin_Message_Handler {
 	 * @since 1.0.0
 	 */
 	public function show_messages( $params = array() ): void {
-		$params = wp_parse_args( $params, array(
-			'capabilities' => array(
-				'manage_woocommerce',
-			),
-		) );
+		$params = wp_parse_args(
+			$params,
+			array(
+				'capabilities' => array(
+					'manage_woocommerce',
+				),
+			)
+		);
 
 		$check_user_capabilities = array();
 
@@ -380,13 +385,15 @@ class WC_Kledo_Admin_Message_Handler {
 	/**
 	 * Redirection hook which persists messages into session data.
 	 *
-	 * @param  string  $location  the URL to redirect to
-	 * @param  int  $status  the http status
-	 *
-	 * @return string the URL to redirect to
+	 * @param  string $location     The URL to redirect to.
+	 * @param  int    $http_status  Status code from `wp_redirect` (unused; kept for the filter signature).
+	 * @return string
 	 * @since 1.0.0
 	 */
-	public function redirect( string $location, int $status ): string {
+	public function redirect( string $location, int $http_status ): string {
+		if ( ! is_int( $http_status ) ) {
+			$http_status = (int) $http_status;
+		}
 		// Add the admin message id param.
 		if ( $this->set_messages() ) {
 			$location = add_query_arg( self::MESSAGE_ID_GET_NAME, $this->get_message_id(), $location );

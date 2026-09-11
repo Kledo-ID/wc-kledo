@@ -3,3 +3,9 @@ docs/
 
 # Misc
 *.zip
+.idea
+
+# Composer (local PHPCS / WPCS)
+/vendor/
+composer.lock
+.phpcs.cache

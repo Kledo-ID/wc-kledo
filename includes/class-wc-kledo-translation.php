@@ -27,8 +27,8 @@ class WC_Kledo_Translation {
 	/**
 	 * Loads the plugin text domain.
 	 *
-	 * @param  string  $text_domain
-	 * @param  string  $path
+	 * @param  string $text_domain
+	 * @param  string $path
 	 *
 	 * @return void
 	 * @since 1.0.0
