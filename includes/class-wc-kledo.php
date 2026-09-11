@@ -119,8 +119,8 @@ final class WC_Kledo {
 		require_once( WC_KLEDO_ABSPATH . 'includes/helpers.php' );
 
 		// Abstract classes.
-		require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-settings-screen.php' );
-		require_once( WC_KLEDO_ABSPATH . 'includes/abstracts/abstract-wc-kledo-request.php' );
+		require_once WC_KLEDO_ABSPATH . 'includes/abstracts/class-wc-kledo-settings-screen.php';
+		require_once WC_KLEDO_ABSPATH . 'includes/abstracts/class-wc-kledo-request.php';
 
 		// Core classes.
 		require_once( WC_KLEDO_ABSPATH . 'includes/class-wc-kledo-translation.php' );
