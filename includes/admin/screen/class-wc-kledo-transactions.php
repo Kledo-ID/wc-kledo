@@ -33,6 +33,14 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	private const RETRY_OUTCOME_FAILED = 'failed';
 
 	/**
+	 * Manual retry outcome: Kledo rejected the payload; retrying cannot help.
+	 *
+	 * @var string
+	 * @since 1.7.4
+	 */
+	private const RETRY_OUTCOME_REJECTED = 'rejected';
+
+	/**
 	 * Manual retry outcome: empty or malformed queue key.
 	 *
 	 * @var string
@@ -293,6 +301,10 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 				$notice_class = 'notice-error';
 				$notice_text  = __( 'Retry failed. The API returned an error. The transaction will be retried automatically by the next cron run.', 'wc-kledo' );
 				break;
+			case self::RETRY_OUTCOME_REJECTED:
+				$notice_class = 'notice-error';
+				$notice_text  = __( 'Retry rejected. Kledo refused the data itself, so retrying will keep failing until the order or invoice data is corrected. See the order notes for the exact validation message.', 'wc-kledo' );
+				break;
 			case self::RETRY_OUTCOME_INVALID_KEY:
 			case self::RETRY_OUTCOME_NOT_IN_QUEUE:
 			case self::RETRY_OUTCOME_BAD_ITEM:
@@ -440,7 +452,7 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 
 			if ( self::RETRY_OUTCOME_SUCCESS === $outcome || self::RETRY_OUTCOME_SKIPPED_SYNCED === $outcome || self::RETRY_OUTCOME_ORDER_MISSING === $outcome ) {
 				++$counts['ok'];
-			} elseif ( self::RETRY_OUTCOME_FAILED === $outcome ) {
+			} elseif ( self::RETRY_OUTCOME_FAILED === $outcome || self::RETRY_OUTCOME_REJECTED === $outcome ) {
 				++$counts['failed'];
 			} else {
 				++$counts['invalid'];
@@ -2209,6 +2221,19 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 					: __( 'There was a problem when connecting to the API.', 'wc-kledo' )
 			);
 		}
+		// Kledo rejected the payload rather than failing to process it, so there is nothing to
+		// schedule: the row stays terminal until an admin fixes the data and retries by hand.
+		if ( ! empty( $result['permanent'] ) ) {
+			$item['status'] = 'failed';
+
+			unset( $item['next_run_at'] );
+
+			$queue[ $key ] = $item;
+			update_option( $option_name, $queue, false );
+
+			return self::RETRY_OUTCOME_REJECTED;
+		}
+
 		$item['next_run_at'] = time() + HOUR_IN_SECONDS;
 
 		$queue[ $key ] = $item;

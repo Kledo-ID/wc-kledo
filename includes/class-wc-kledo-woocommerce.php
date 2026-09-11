@@ -87,7 +87,8 @@ class WC_Kledo_WooCommerce {
 	 *     skipped: bool,
 	 *     http_code: int,
 	 *     error: ?string,
-	 *     reason: ?string
+	 *     reason: ?string,
+	 *     permanent: bool
 	 * }
 	 * @since 1.6.0
 	 */
@@ -110,6 +111,7 @@ class WC_Kledo_WooCommerce {
 			'http_code' => 0,
 			'error'     => null,
 			'reason'    => null,
+			'permanent' => false,
 		);
 
 		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
@@ -244,40 +246,73 @@ class WC_Kledo_WooCommerce {
 				return $out;
 			}
 
-			$error_message = sprintf(
-				/* translators: 1: HTTP status code */
-				__( 'Kledo: failed to send %1$s to Kledo (HTTP %2$d). Will retry automatically.', 'wc-kledo' ),
-				$type,
-				$response_code
+			$out['error'] = wc_kledo_sanitize_api_error_message(
+				$request->get_api_error_label()
 			);
 
-			if ( 'manual_admin' === $context['trigger'] ) {
+			// A payload Kledo rejects on validation grounds will be rejected identically on every
+			// retry, so it is reported once and kept out of the retry queue entirely.
+			$is_permanent     = wc_kledo_is_permanent_api_failure( $response_code );
+			$out['permanent'] = $is_permanent;
+
+			if ( $is_permanent ) {
 				$error_message = sprintf(
-					/* translators: 1: type, 2: HTTP code */
-					__( 'Kledo: admin manual push failed for %1$s (HTTP %2$d).', 'wc-kledo' ),
+					/* translators: 1: transaction type (order/invoice), 2: HTTP status code, 3: API error message */
+					__( 'Kledo: %1$s was rejected by Kledo (HTTP %2$d): %3$s. This will not be retried automatically — correct the data, then resend it from WooCommerce > Kledo > Transactions.', 'wc-kledo' ),
+					$type,
+					$response_code,
+					$out['error']
+				);
+
+				if ( 'manual_admin' === $context['trigger'] ) {
+					$error_message = sprintf(
+						/* translators: 1: transaction type (order/invoice), 2: HTTP status code, 3: API error message */
+						__( 'Kledo: admin manual push for %1$s was rejected by Kledo (HTTP %2$d): %3$s. Retrying will not help until the data is corrected.', 'wc-kledo' ),
+						$type,
+						$response_code,
+						$out['error']
+					);
+				}
+			} else {
+				$error_message = sprintf(
+					/* translators: 1: transaction type (order/invoice), 2: HTTP status code */
+					__( 'Kledo: failed to send %1$s to Kledo (HTTP %2$d). Will retry automatically.', 'wc-kledo' ),
 					$type,
 					$response_code
 				);
+
+				if ( 'manual_admin' === $context['trigger'] ) {
+					$error_message = sprintf(
+						/* translators: 1: type, 2: HTTP code */
+						__( 'Kledo: admin manual push failed for %1$s (HTTP %2$d).', 'wc-kledo' ),
+						$type,
+						$response_code
+					);
+				}
 			}
 
 			if ( 'retry' !== $context['trigger'] ) {
 				$order->add_order_note( $error_message );
 			}
-			$out['error'] = wc_kledo_sanitize_api_error_message(
-				$request->get_api_error_label()
-			);
 
+			// When the caller is the retry loop it owns the queue row itself and reacts to
+			// $out['permanent']; writing from here would be overwritten a moment later.
 			if ( $context['enqueue_on_failure'] ) {
-				wc_kledo_add_failed_transaction_to_queue( $order->get_id(), $type, $out['error'] );
+				if ( $is_permanent ) {
+					wc_kledo_mark_transaction_permanently_failed( $order->get_id(), $type, $out['error'] );
+				} else {
+					wc_kledo_add_failed_transaction_to_queue( $order->get_id(), $type, $out['error'] );
+				}
 			}
 
 			wc_kledo_log_warning(
 				sprintf(
-					'Kledo delivery failed type=%s order_id=%d trigger=%s http=%d error=%s',
+					'Kledo delivery failed type=%s order_id=%d trigger=%s http=%d permanent=%s error=%s',
 					$type,
 					$order->get_id(),
 					$context['trigger'],
 					$response_code,
+					$is_permanent ? '1' : '0',
 					$out['error']
 				)
 			);

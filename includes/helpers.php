@@ -571,6 +571,104 @@ if ( ! function_exists( 'wc_kledo_add_failed_transaction_to_queue' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wc_kledo_is_permanent_api_failure' ) ) {
+	/**
+	 * Decide whether an API status code represents a failure that retrying cannot fix.
+	 *
+	 * Kledo validates the order/invoice payload server-side and answers HTTP 422 when the
+	 * payload does not match the expected schema. Resending the exact same payload will be
+	 * rejected exactly the same way, so such a transaction must never enter the retry queue:
+	 * it would produce up to 20 identical order notes over two days for no benefit.
+	 *
+	 * Three families of 4xx are deliberately kept retryable:
+	 *
+	 * - 401 / 403 — the API key is wrong or lacks access. An admin can fix that in the plugin
+	 *   settings without touching the order, after which the queued retry succeeds.
+	 * - 408 — the server itself reports a timeout, which is transient by definition.
+	 * - 429 — rate limiting; the server is explicitly asking for the request to be repeated later.
+	 *
+	 * Every other 4xx (400, 404, 409, 422, ...) is treated as permanent. 5xx and transport
+	 * failures are never permanent and keep using the normal retry path.
+	 *
+	 * @param  int $response_code  HTTP status code returned by the Kledo API.
+	 *
+	 * @return bool True when the transaction must not be retried automatically.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_is_permanent_api_failure( int $response_code ): bool {
+		if ( $response_code < 400 || $response_code > 499 ) {
+			return false;
+		}
+
+		$retryable_client_errors = array( 401, 403, 408, 429 );
+
+		return ! in_array( $response_code, $retryable_client_errors, true );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_mark_transaction_permanently_failed' ) ) {
+	/**
+	 * Record a transaction as a terminal failure without scheduling any automatic retry.
+	 *
+	 * The row is written into the same `wc_kledo_failed_transactions` option used by the retry
+	 * queue so the admin still sees it on the Transactions screen (and can still trigger a manual
+	 * retry after fixing the data), but with `status = failed`, which the cron loop skips.
+	 *
+	 * @param  int    $order_id
+	 * @param  string $type  Either "order" or "invoice".
+	 * @param  string $error_message
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	function wc_kledo_mark_transaction_permanently_failed( int $order_id, string $type, string $error_message = '' ): void {
+		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+			return;
+		}
+
+		$option_name = 'wc_kledo_failed_transactions';
+		$queue       = get_option( $option_name, array() );
+		$key         = $type . ':' . $order_id;
+
+		if ( ! is_array( $queue ) ) {
+			$queue = array();
+		}
+
+		$now           = time();
+		$error_message = wc_kledo_sanitize_api_error_message( $error_message );
+
+		if ( ! isset( $queue[ $key ] ) || ! is_array( $queue[ $key ] ) ) {
+			$queue[ $key ] = array(
+				'order_id'   => $order_id,
+				'type'       => $type,
+				'attempts'   => 0,
+				'created_at' => $now,
+			);
+		}
+
+		$queue[ $key ]['last_error'] = $error_message;
+		$queue[ $key ]['status']     = 'failed';
+
+		// No future run: the payload is rejected deterministically, so there is nothing to wait for.
+		unset( $queue[ $key ]['next_run_at'] );
+
+		if ( empty( $queue[ $key ]['created_at'] ) ) {
+			$queue[ $key ]['created_at'] = $now;
+		}
+
+		update_option( $option_name, $queue, false );
+
+		wc_kledo_log_warning(
+			sprintf(
+				'Kledo delivery rejected permanently: order %d (%s) recorded as failed without retry. Error: %s',
+				$order_id,
+				$type,
+				$error_message
+			)
+		);
+	}
+}
+
 if ( ! function_exists( 'wc_kledo_log' ) ) {
 	/**
 	 * Write a line to the WooCommerce logger when available.

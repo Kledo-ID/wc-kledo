@@ -347,6 +347,30 @@ final class WC_Kledo {
 				);
 			}
 
+			// Kledo rejected the payload itself (e.g. HTTP 422 from schema validation). Repeating
+			// an identical request cannot change the answer, so stop now instead of burning the
+			// remaining 19 attempts, while keeping the row visible on the Transactions screen.
+			if ( ! empty( $result['permanent'] ) ) {
+				$order->add_order_note(
+					sprintf(
+						/* translators: 1: transaction type (order/invoice), 2: API error message */
+						__( 'Kledo: automatic retry for %1$s has stopped because Kledo rejected the data: %2$s. Correct the data, then retry manually from the Transactions screen.', 'wc-kledo' ),
+						$type,
+						$last_error
+					)
+				);
+
+				$item['attempts']   = $attempts;
+				$item['last_error'] = $last_error;
+				$item['status']     = 'failed';
+
+				unset( $item['next_run_at'] );
+
+				$updated_queue[ $key ] = $item;
+
+				continue;
+			}
+
 			// $attempts was pre-incremented before deliver (0→1 for the first cron
 			// retry). Use ($attempts + 1) so each cron retry consumes the NEXT
 			// backoff step rather than repeating the delay used for initial enqueue.
