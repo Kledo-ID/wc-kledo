@@ -53,6 +53,38 @@ jQuery(document).ready(function ($) {
     }
 
     /**
+     * Keep "Close Sales Order When Invoiced" tied to "Link Invoice to Sales Order".
+     *
+     * Kledo closes a sales order by way of the invoice attached to it, so with linking off there
+     * is no attachment and nothing to close. Leaving the dependent box tickable lets a shop turn
+     * on a behaviour that cannot happen and then wait for a closure that never comes.
+     *
+     * The box is cleared as well as disabled so the form shows what will actually be saved: a
+     * disabled checkbox is not submitted, and WooCommerce stores any absent checkbox as "no".
+     * Showing it ticked-but-greyed would promise a value the save is about to discard.
+     */
+    let $linkOrder = $('input.wc-kledo-link-order-field');
+    let $closeOrder = $('input.wc-kledo-close-order-field');
+
+    if ($linkOrder.length && $closeOrder.length) {
+        let $closeOrderRow = $closeOrder.closest('tr');
+
+        $linkOrder.on('change', function () {
+            let linked = $(this).is(':checked');
+
+            if (linked) {
+                $closeOrder.prop('disabled', false);
+            } else {
+                $closeOrder.prop('checked', false).prop('disabled', true);
+            }
+
+            // Dim the whole row, label included, so the reason the box cannot be ticked reads as
+            // "this does not apply right now" rather than as a broken control.
+            $closeOrderRow.css('opacity', linked ? '1.0' : '0.5');
+        }).trigger('change');
+    }
+
+    /**
      * Select2 ajax call.
      *
      * @param {string} element The select field.
