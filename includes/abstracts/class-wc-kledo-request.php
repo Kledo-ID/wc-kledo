@@ -69,6 +69,11 @@ abstract class WC_Kledo_Request {
 	 * @param  string      $ref_number_prefix
 	 * @param  string|null $warehouse
 	 * @param  array       $tags
+	 * @param  array       $additional_body  Endpoint-specific fields merged over the shared body.
+	 *                                       Both transaction endpoints share this builder, so a
+	 *                                       field only one of them accepts belongs here rather
+	 *                                       than in the body above — Kledo does not read
+	 *                                       `link_order` on `woocommerce/order`.
 	 *
 	 * @return bool|array
 	 * @throws \JsonException
@@ -77,12 +82,14 @@ abstract class WC_Kledo_Request {
 	 * @since 1.1.0 Add `has_tax` field.
 	 * @since 1.3.0 Add `ref_number_prefix` parameter.
 	 * @since 1.3.0 Add `tags` parameter.
+	 * @since 1.7.4 Add `additional_body` parameter.
 	 */
 	protected function create_transaction(
 		WC_Order $order,
 		string $ref_number_prefix,
 		?string $warehouse,
-		array $tags
+		array $tags,
+		array $additional_body = array()
 	) {
 		$this->set_method( 'POST' );
 
@@ -110,6 +117,10 @@ abstract class WC_Kledo_Request {
 		$shipping_data = $this->get_shipping_tracking( $order );
 		if ( $shipping_data ) {
 			$body['shipping_tracking'] = $shipping_data;
+		}
+
+		if ( ! empty( $additional_body ) ) {
+			$body = array_merge( $body, $additional_body );
 		}
 
 		$this->set_body( $body );
@@ -258,7 +269,93 @@ abstract class WC_Kledo_Request {
 			throw new RuntimeException( esc_html( __( 'There was a problem when connecting to the API.', 'wc-kledo' ) ) );
 		}
 
+		$this->maybe_store_rotated_api_key();
+		$this->maybe_flag_rejected_api_key();
+
 		return true;
+	}
+
+	/**
+	 * Drop the cached connection status when Kledo refuses the key we are holding.
+	 *
+	 * Any endpoint answering 401 says the same thing: the stored key is dead. Acting on it here
+	 * rather than waiting for the cached status to expire means a shop whose key was revoked
+	 * overnight sees the warning on the next admin page load instead of up to six hours later —
+	 * and the first thing that notices is usually an order sync, not an admin visit.
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	private function maybe_flag_rejected_api_key(): void {
+		if ( WC_Kledo_Connection_Status::UNAUTHENTICATED_RESPONSE_CODE !== (int) $this->get_response_code() ) {
+			return;
+		}
+
+		delete_transient( WC_Kledo_Connection_Status::TRANSIENT_KEY );
+	}
+
+	/**
+	 * Persist a replacement API key when Kledo rotated the one we just used.
+	 *
+	 * Kledo refreshes a token that is within its renewal window by revoking it and returning the
+	 * replacement as `access_token` in the response body. That happens on any authenticated
+	 * endpoint, which is why this sits in the shared request path rather than in one caller.
+	 *
+	 * Deliberately independent of the response status: the rotation has already happened on
+	 * Kledo's side by the time the body reaches us, so skipping the save on a non-2xx response
+	 * would throw away the only copy of the key that still works.
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	private function maybe_store_rotated_api_key(): void {
+		try {
+			$body = $this->get_response();
+		} catch ( JsonException $exception ) {
+			// Not a JSON body (an HTML error page, a truncated response): nothing to read.
+			return;
+		}
+
+		if ( ! is_array( $body ) || empty( $body['access_token'] ) || ! is_string( $body['access_token'] ) ) {
+			return;
+		}
+
+		$connection   = wc_kledo()->get_connection_handler();
+		$previous_key = $connection->get_api_key();
+
+		if ( ! $connection->update_api_key( $body['access_token'] ) ) {
+			return;
+		}
+
+		// Everything cached about the key describes the one that was just replaced — including
+		// the masked form shown on the settings screen and the expiry, which belong to a
+		// different credential now.
+		wc_kledo()->get_connection_status()->invalidate();
+
+		// Never log the key itself — WooCommerce logs are readable from the admin and are
+		// routinely pasted into support threads. The shape is safe to name and is worth naming:
+		// a managed `kledo_pat_` key being replaced by a raw token means the key the shop manages
+		// in Kledo is no longer the key this store is using, which is not visible anywhere else.
+		$was_managed = 0 === strpos( $previous_key, 'kledo_pat_' );
+		$is_managed  = 0 === strpos( $body['access_token'], 'kledo_pat_' );
+
+		// Recorded after invalidate() above, which clears it: rotation sets it again, a key
+		// pasted by hand leaves it cleared. The settings screen reads this to explain why the key
+		// Kledo lists is no longer the key this store sends.
+		if ( $was_managed && ! $is_managed ) {
+			update_option( wc_kledo_get_api_key_detached_option_name(), 'yes', false );
+		}
+
+		wc_kledo_log_info(
+			sprintf(
+				'Kledo issued a replacement API key while calling %s; the new key has been saved.%s',
+				$this->get_endpoint(),
+				( $was_managed && ! $is_managed )
+					? ' Note: the replacement is not a managed kledo_pat_ key, so it will no longer'
+						. ' match the token listed in Kledo.'
+					: ''
+			)
+		);
 	}
 
 	/**
