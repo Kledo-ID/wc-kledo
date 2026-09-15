@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 4.4
 Tested up to: 6.9
-Stable tag: 1.5.0
+Stable tag: 1.7.4
 Requires PHP: 7.0.0 or greater
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -72,6 +72,28 @@ Integrates WooCommerce with Kledo accounting software: sales orders and invoices
 5. Manual sync controls on order screens and order actions
 
 == Changelog ==
+
+= 1.7.4 =
+Upgrading from 1.5.0 goes straight to this release. Versions 1.6.0 through 1.7.3 were never published — the source carried @since tags for them while the released version stayed at 1.5.0, so everything built under those numbers is listed here.
+
+* fix: keep the API key alive. Kledo replaces a key that is close to expiring and returns the replacement with the response; the plugin ignored it and carried on with the key Kledo had just revoked, which made every sync fail at once and looked like the key had expired without warning. The replacement is now saved as soon as it arrives.
+* feat: new "Link Invoice to Sales Order" setting deciding whether each invoice is linked to its Kledo sales order, and with it whether Kledo closes that sales order once every quantity has been invoiced (on by default, matching how Kledo already behaved)
+* feat: new "Close Sales Order When Invoiced" setting to keep the sales order open at the moment of invoicing while still linking the invoice to it (on by default). Note that Kledo recalculates the sales order when the invoice or the order changes later, and closes it then
+* feat: "API Key Status" on the Configure tab showing what Kledo knows about the saved key — its name, when it was created, when it was last used and when it expires, each in the store's own timezone — plus admin warnings 30 and 7 days before it runs out
+* feat: say so on the Configure tab when Kledo's automatic renewal has replaced the saved key with one that no longer matches the key listed in Kledo, so managing it from Kledo stops quietly having no effect
+* feat: hide the saved API key on the Configure tab, showing only the part that names the company and the last four characters, so the page no longer prints a working credential in full
+* feat: say so plainly when Kledo refuses the stored API key, instead of leaving the shop to work out why nothing is syncing any more — and tell a key that has stopped working apart from an account that has lost access to the company, since only one of the two is fixed by pasting a new key
+* feat: new "Kledo" column on the order list showing whether Kledo closed the sales order, is still working on it, needs a look, or was asked not to link the invoice at all
+* feat: record a note on the order when Kledo reports its sales order closed, without changing the WooCommerce order status
+* feat: order action "Check Kledo status now" to confirm the Kledo closure on demand
+* feat: "Settings" link on the Plugins screen that opens WooCommerce > Kledo directly
+* feat: each settings tab can be reached from the WordPress command palette (Ctrl+K / Cmd+K) by typing "kledo", on WordPress 6.9 and later where that palette works outside the editors
+* fix: treat a payload Kledo rejects (HTTP 400) as a permanent failure instead of retrying it for two days
+* fix: harden input sanitization across the admin screens, AJAX handlers and helpers
+* refactor: move the plugin bootstrap out of kledo.php into a dedicated loader class
+* chore: drive PHPCS from a Composer-managed project ruleset, and align the plugin with the WordPress Coding Standards
+* chore: ship a wc-kledo.pot template and bring both translation catalogs back in sync with the source
+* fix: correct the plugin version, which still read 1.5.0 while the code had already moved to 1.7.x
 
 = 1.5.0 =
 * feat: failed transaction retry queue with WP-Cron and admin fallback
