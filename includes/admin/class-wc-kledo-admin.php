@@ -51,6 +51,9 @@ class WC_Kledo_Admin {
 		$order_sync_admin = new WC_Kledo_Admin_Order_Sync();
 		$order_sync_admin->init();
 
+		$order_column_admin = new WC_Kledo_Admin_Order_Column();
+		$order_column_admin->init();
+
 		$this->use_woo_nav = class_exists( WooAdminFeatures::class ) && class_exists( WooAdminMenu::class ) && WooAdminFeatures::is_enabled( 'navigation' );
 	}
 
@@ -63,9 +66,15 @@ class WC_Kledo_Admin {
 	private function init_hooks(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_js' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_command_palette' ) );
 		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
 		add_action( 'admin_init', array( $this, 'maybe_redirect_legacy_transactions_tab' ) );
 		add_action( 'wp_loaded', array( $this, 'save' ) );
+
+		add_filter(
+			'plugin_action_links_' . WC_KLEDO_PLUGIN_BASENAME,
+			array( $this, 'add_plugin_action_links' )
+		);
 	}
 
 	/**
@@ -134,7 +143,7 @@ class WC_Kledo_Admin {
 				'wc_kledo_admin_style',
 				wc_kledo()->asset_dir_url() . '/css/style.css',
 				array( 'dashicons', 'list-tables' ),
-				$version
+				wc_kledo_asset_version( 'assets/css/style.css' )
 			);
 		}
 	}
@@ -201,6 +210,39 @@ class WC_Kledo_Admin {
 			array( $this, 'render' ),
 			5
 		);
+	}
+
+	/**
+	 * Adds a "Settings" link to the plugin row on the Plugins screen.
+	 *
+	 * The settings live under WooCommerce > Kledo rather than under the Settings
+	 * menu, which is not where someone looks after activating a plugin. This puts
+	 * a direct link where they do look.
+	 *
+	 * The link is only added for users who can actually open that page. The
+	 * Plugins screen needs `activate_plugins`, while the Kledo screen is
+	 * registered with `manage_woocommerce` — without this guard a user holding
+	 * only the former would be handed a link straight into a permission error.
+	 *
+	 * @param  string[] $links  Action links already registered for this plugin.
+	 *
+	 * @return string[]
+	 * @since 1.7.4
+	 */
+	public function add_plugin_action_links( array $links ): array {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return $links;
+		}
+
+		$settings_link = sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_url( admin_url( 'admin.php?page=' . self::PAGE_ID ) ),
+			esc_html__( 'Settings', 'wc-kledo' )
+		);
+
+		array_unshift( $links, $settings_link );
+
+		return $links;
 	}
 
 	/**
@@ -320,6 +362,92 @@ class WC_Kledo_Admin {
 	 * @return void
 	 * @since 1.0.0
 	 */
+	/**
+	 * Minimum WordPress version whose command palette reaches ordinary admin screens.
+	 *
+	 * Before this, the palette existed only inside the block and site editors, so a command
+	 * pointing at a classic settings page could be registered but never found.
+	 *
+	 * @var string
+	 * @since 1.7.4
+	 */
+	private const COMMAND_PALETTE_MINIMUM_WP_VERSION = '6.9';
+
+	/**
+	 * Register the plugin's screens with the WordPress command palette.
+	 *
+	 * Loaded on every admin screen rather than only the plugin's own: a command that can only be
+	 * found from the page it opens is not worth registering.
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	public function enqueue_command_palette(): void {
+		// The palette leads to a page guarded by `manage_woocommerce`. Offering it to someone who
+		// cannot open it would just be a shortcut to a permission error.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( version_compare( get_bloginfo( 'version' ), self::COMMAND_PALETTE_MINIMUM_WP_VERSION, '<' ) ) {
+			return;
+		}
+
+		// Belt and braces against a build where the palette scripts were removed or renamed: the
+		// script would otherwise be queued with a dependency WordPress cannot satisfy, which
+		// silently drops it and everything after it in the queue.
+		if ( ! wp_script_is( 'wp-commands', 'registered' ) || ! wp_script_is( 'wp-data', 'registered' ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'wc-kledo-command-palette',
+			wc_kledo()->asset_dir_url() . '/js/command-palette.js',
+			array( 'wp-data', 'wp-commands' ),
+			wc_kledo_asset_version( 'assets/js/command-palette.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'wc-kledo-command-palette',
+			'wcKledoCommands',
+			array(
+				'commands' => $this->get_palette_commands(),
+			)
+		);
+	}
+
+	/**
+	 * The commands the palette should offer, one per settings screen.
+	 *
+	 * Every label is prefixed with the plugin name so that typing "kledo" surfaces all of them at
+	 * once, which is how someone looks for a plugin they cannot find in the menu.
+	 *
+	 * @return array<int, array<string, string>>
+	 * @since 1.7.4
+	 */
+	private function get_palette_commands(): array {
+		$screens = array(
+			WC_Kledo_Configure_Screen::ID    => __( 'Kledo: Configure', 'wc-kledo' ),
+			WC_Kledo_Invoice_Screen::ID      => __( 'Kledo: Invoice settings', 'wc-kledo' ),
+			WC_Kledo_Order_Screen::ID        => __( 'Kledo: Order settings', 'wc-kledo' ),
+			WC_Kledo_Transactions_Screen::ID => __( 'Kledo: Transactions', 'wc-kledo' ),
+			WC_Kledo_Support_Screen::ID      => __( 'Kledo: Support', 'wc-kledo' ),
+		);
+
+		$commands = array();
+
+		foreach ( $screens as $screen_id => $label ) {
+			$commands[] = array(
+				'name'  => 'wc-kledo/' . $screen_id,
+				'label' => $label,
+				'url'   => admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . rawurlencode( (string) $screen_id ) ),
+			);
+		}
+
+		return $commands;
+	}
+
 	public function enqueue_js(): void {
 		if ( ! $this->is_current_page_on( 'invoice', 'order' ) ) {
 			return;
@@ -329,7 +457,7 @@ class WC_Kledo_Admin {
 			'wc-kledo',
 			wc_kledo()->asset_dir_url() . '/js/kledo.js',
 			array( 'jquery', 'selectWoo' ),
-			WC_KLEDO_VERSION
+			wc_kledo_asset_version( 'assets/js/kledo.js' )
 		);
 
 		wp_localize_script(
