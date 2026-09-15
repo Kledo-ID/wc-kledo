@@ -15,6 +15,18 @@ final class WC_Kledo {
 	public const PLUGIN_ID = WC_Kledo_Loader::PLUGIN_ID;
 
 	/**
+	 * How many times an invoice may be told its sales order is not in Kledo yet before giving up.
+	 *
+	 * Spaced by the retry backoff table rather than a flat interval, so this is a wait of hours,
+	 * not of minutes — long enough to outlast a slow Kledo queue, short enough that an invoice
+	 * which is never going to link stops polling and starts being visible.
+	 *
+	 * @var int
+	 * @since 1.7.4
+	 */
+	private const MAX_SALES_ORDER_WAITS = 12;
+
+	/**
 	 * The single instance of this class.
 	 *
 	 * @var null|self
@@ -61,6 +73,22 @@ final class WC_Kledo {
 	 * @since 1.6.0
 	 */
 	private WC_Kledo_WooCommerce $woocommerce_bridge;
+
+	/**
+	 * Kledo order closure confirmation loop.
+	 *
+	 * @var \WC_Kledo_Order_Closure
+	 * @since 1.7.4
+	 */
+	private WC_Kledo_Order_Closure $order_closure;
+
+	/**
+	 * Kledo API key expiry tracker.
+	 *
+	 * @var \WC_Kledo_Connection_Status
+	 * @since 1.7.4
+	 */
+	private WC_Kledo_Connection_Status $connection_status;
 
 	/**
 	 * Gets the main class instance.
@@ -157,6 +185,34 @@ final class WC_Kledo {
 		// Setup WooCommerce.
 		$this->woocommerce_bridge = new WC_Kledo_WooCommerce();
 		$this->woocommerce_bridge->setup_hooks();
+
+		// Confirmation loop that asks Kledo whether the order has been closed yet.
+		$this->order_closure = new WC_Kledo_Order_Closure();
+		$this->order_closure->init();
+
+		// API key expiry tracking and its admin warnings.
+		$this->connection_status = new WC_Kledo_Connection_Status();
+		$this->connection_status->init();
+	}
+
+	/**
+	 * The API key expiry tracker.
+	 *
+	 * @return \WC_Kledo_Connection_Status
+	 * @since 1.7.4
+	 */
+	public function get_connection_status(): WC_Kledo_Connection_Status {
+		return $this->connection_status;
+	}
+
+	/**
+	 * The Kledo order closure confirmation handler.
+	 *
+	 * @return \WC_Kledo_Order_Closure
+	 * @since 1.7.4
+	 */
+	public function get_order_closure(): WC_Kledo_Order_Closure {
+		return $this->order_closure;
 	}
 
 	/**
@@ -336,6 +392,43 @@ final class WC_Kledo {
 				continue;
 			}
 
+			// The invoice is waiting on its own sales order — either still queued ahead of it, or
+			// accepted by Kledo and not yet processed. That is a dependency, not a failed attempt:
+			// charging it to the 20-attempt budget would retire the invoice for a reason that was
+			// never its own, while the sales order still had attempts left. So the attempt
+			// increment above is deliberately not persisted, and a separate counter bounds the
+			// wait instead.
+			if ( ! empty( $result['skipped'] ) && 'awaiting_sales_order' === ( $result['reason'] ?? '' ) ) {
+				$waits = isset( $item['waiting_checks'] ) ? (int) $item['waiting_checks'] + 1 : 1;
+
+				if ( $waits >= self::MAX_SALES_ORDER_WAITS ) {
+					// Waiting has stopped being a plausible explanation. Hand the row back to the
+					// ordinary failure path so it stops polling and becomes visible on the
+					// Transactions screen instead of quietly retrying until its lifetime expires.
+					$order->add_order_note(
+						sprintf(
+							/* translators: %d: number of checks made */
+							__( 'Kledo: stopped waiting for the sales order after %d checks. The invoice has not been sent, because linking it now is no longer possible. Check the order in Kledo, then resend from WooCommerce > Kledo > Transactions.', 'wc-kledo' ),
+							$waits
+						)
+					);
+
+					$item['status']        = 'failed';
+					$item['last_error']    = __( 'The Kledo sales order never appeared, so the invoice was not sent.', 'wc-kledo' );
+					$updated_queue[ $key ] = $item;
+
+					continue;
+				}
+
+				// Same backoff table as a retry, so a queue that is merely slow is not hammered.
+				$item['waiting_checks'] = $waits;
+				$item['next_run_at']    = $now + wc_kledo_get_retry_delay( $waits );
+				$updated_queue[ $key ]  = $item;
+				$next_retry_required    = true;
+
+				continue;
+			}
+
 			if ( ! empty( $result['error'] ) ) {
 				$last_error = $result['error'];
 			} else {
@@ -477,30 +570,7 @@ final class WC_Kledo {
 	 * @since 1.0.0
 	 */
 	public function add_admin_notices(): void {
-		// Inform users who are not connected to Kledo
-		if ( ! $this->is_plugin_settings() && ! $this->get_connection_handler()->is_configured() ) {
-			// Direct these users to the new plugin settings page.
-			$message = sprintf(
-				/* translators: 1,2: <strong> tags, 3-4: anchor to settings. */
-				esc_html__(
-					'%1$sWooCommerce Kledo is almost ready.%2$s To complete your configuration, %3$scomplete the setup steps%4$s.',
-					'wc-kledo'
-				),
-				'<strong>',
-				'</strong>',
-				'<a href="' . esc_url( $this->get_settings_url() ) . '">',
-				'</a>'
-			);
-
-			$this->get_admin_notice_handler()->add_admin_notice(
-				$message,
-				$this->get_id() . '_get_started',
-				array(
-					'dismissible'  => true,
-					'notice_class' => 'notice-info',
-				)
-			);
-		}
+		$this->maybe_add_setup_notice();
 
 		if ( wc_kledo_is_enhanced_admin_available() ) {
 			$message = sprintf(
@@ -520,6 +590,92 @@ final class WC_Kledo {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Warn that the store cannot talk to Kledo until both credentials are saved.
+	 *
+	 * Nothing syncs without an API key and an API endpoint URL, so this is a blocker rather than
+	 * a tip, and it is deliberately not dismissible: a dismissal is stored per user and survives
+	 * deactivation, reactivation and plugin updates, which is how a store that is still entirely
+	 * unconfigured ends up with no warning anywhere in WP Admin. Making it non-dismissible also
+	 * brings it back for everyone who silenced the previous version of this notice, without
+	 * having to reach into user meta to undo that.
+	 *
+	 * It names which of the two is missing, because "complete the setup steps" does not tell
+	 * someone who filled in one field and not the other what is still wrong.
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	private function maybe_add_setup_notice(): void {
+		if ( $this->get_connection_handler()->is_configured() ) {
+			return;
+		}
+
+		// A store that has turned the integration off is not waiting to be connected, and a
+		// notice it cannot dismiss would follow it around every admin page for nothing.
+		if ( ! wc_string_to_bool( get_option( WC_Kledo_Configure_Screen::SETTING_ENABLE_API_CONNECTION, 'yes' ) ) ) {
+			return;
+		}
+
+		// Suppressed only on the Configure tab itself, where both fields are already on screen.
+		// Every other tab of the plugin still gets it, since none of them work either.
+		if ( $this->is_configure_screen() ) {
+			return;
+		}
+
+		$has_api_key      = '' !== $this->get_connection_handler()->get_api_key();
+		$has_api_endpoint = '' !== $this->get_connection_handler()->get_api_endpoint();
+
+		if ( ! $has_api_key && ! $has_api_endpoint ) {
+			$missing = esc_html__( 'API Key and API Endpoint URL', 'wc-kledo' );
+		} elseif ( ! $has_api_key ) {
+			$missing = esc_html__( 'API Key', 'wc-kledo' );
+		} else {
+			$missing = esc_html__( 'API Endpoint URL', 'wc-kledo' );
+		}
+
+		$settings_link = sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_url( $this->get_settings_url() ),
+			esc_html__( 'WooCommerce > Kledo > Configure', 'wc-kledo' )
+		);
+
+		$message = sprintf(
+			/* translators: 1,2: <strong> tags, 3: the setting names that are still empty, 4: anchor to the Configure screen. */
+			esc_html__(
+				'%1$sWooCommerce Kledo is not connected yet.%2$s No order or invoice will be sent to Kledo until the %3$s is saved in %4$s.',
+				'wc-kledo'
+			),
+			'<strong>',
+			'</strong>',
+			$missing,
+			$settings_link
+		);
+
+		$this->get_admin_notice_handler()->add_admin_notice(
+			$message,
+			$this->get_id() . '_get_started',
+			array(
+				'dismissible'  => false,
+				'notice_class' => 'notice-warning',
+			)
+		);
+	}
+
+	/**
+	 * Whether the current request is the plugin's Configure tab.
+	 *
+	 * The plugin's menu link carries no `tab` query arg, so an unqualified plugin page URL is
+	 * the Configure tab — the same default `WC_Kledo_Admin::is_current_page_on()` assumes.
+	 *
+	 * @return bool
+	 * @since 1.7.4
+	 */
+	private function is_configure_screen(): bool {
+		return $this->is_plugin_settings()
+			&& WC_Kledo_Configure_Screen::ID === wc_kledo_get_requested_value( 'tab', WC_Kledo_Configure_Screen::ID );
 	}
 
 	/**
