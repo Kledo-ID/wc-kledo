@@ -49,6 +49,14 @@ class WC_Kledo_Admin_Notice_Handler {
 	private static bool $admin_notice_js_rendered = false;
 
 	/**
+	 * Static member to enforce a single rendering of the dismissible-notice spacing rule.
+	 *
+	 * @var bool
+	 * @since 1.7.4
+	 */
+	private static bool $admin_notice_css_rendered = false;
+
+	/**
 	 * The class constructor.
 	 *
 	 * @param  \WC_Kledo $plugin
@@ -158,13 +166,22 @@ class WC_Kledo_Admin_Notice_Handler {
 	/**
 	 * Render any admin notices, as well as the admin notice placeholder.
 	 *
+	 * Deliberately left untyped. This runs as an `admin_notices` callback, and `do_action()` with
+	 * no arguments does not call the callback with none — it pads the argument list with an empty
+	 * string (`wp-includes/plugin.php`: `if ( empty( $arg ) ) { $arg[] = ''; }`), which `WP_Hook`
+	 * then passes through because the hook was registered with the default `$accepted_args` of 1.
+	 * A `bool` parameter coerces that `''` to `false`, so every notice would render hidden and the
+	 * placeholder below would never print — leaving the un-hiding script nothing to move them
+	 * after. The `is_bool()` guard is what handles it, and a type declaration makes that guard
+	 * unreachable rather than redundant.
+	 *
 	 * @param  boolean $is_visible  true if the notices should be immediately visible, false otherwise.
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_admin_notices( bool $is_visible = true ): void {
-		// Default for actions.
+	public function render_admin_notices( $is_visible = true ): void {
+		// Default for actions: see the note above about WordPress padding the argument list.
 		if ( ! is_bool( $is_visible ) ) {
 			$is_visible = true;
 		}
@@ -237,6 +254,10 @@ class WC_Kledo_Admin_Notice_Handler {
 			$classes[] = 'is-dismissible';
 		}
 
+		if ( in_array( 'is-dismissible', $classes, true ) ) {
+			$this->render_dismissible_notice_css();
+		}
+
 		printf(
 			'<div class="%1$s" data-plugin-id="%2$s" data-message-id="%3$s" %4$s><p>%5$s</p></div>',
 			esc_attr( implode( ' ', $classes ) ),
@@ -245,6 +266,36 @@ class WC_Kledo_Admin_Notice_Handler {
 			( ! $params['is_visible'] ) ? 'style="display:none;"' : '',
 			wp_kses_post( $message )
 		);
+	}
+
+	/**
+	 * Reserve room for the dismiss button that WordPress positions over the notice.
+	 *
+	 * Core already does this with `.wp-core-ui .notice.is-dismissible { padding-right: 48px }`, but
+	 * on a WooCommerce "embed" screen — the Orders list among them — WooCommerce's own
+	 * `.wc-wp-version-gte-70.woocommerce-embed-page .notice { padding-right: 12px }` ties that on
+	 * specificity and wins on source order, because `admin.css` is enqueued after the core styles.
+	 * The button then sits on top of the first line of the message.
+	 *
+	 * Emitted inline, next to the notice itself, rather than enqueued: the plugin's stylesheet only
+	 * loads on its own settings screens, and a notice that can appear on any admin page cannot
+	 * depend on it. Being inline also puts the rule last in the document, so it needs no
+	 * `!important` to win.
+	 *
+	 * `padding-inline-end` rather than `padding-right` so the rule follows the dismiss button to
+	 * the other side under an RTL locale, the way core's own RTL stylesheet does.
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	private function render_dismissible_notice_css(): void {
+		if ( self::$admin_notice_css_rendered ) {
+			return;
+		}
+
+		self::$admin_notice_css_rendered = true;
+
+		echo '<style>.wp-core-ui .notice.js-wc-kledo-admin-notice.is-dismissible{padding-inline-end:48px;}</style>';
 	}
 
 	/**
