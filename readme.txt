@@ -1,13 +1,15 @@
 === Kledo ===
 Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
-Requires at least: 4.4
+Requires at least: 5.3
 Tested up to: 6.9
 Stable tag: 1.7.4
-Requires PHP: 7.0.0 or greater
+Requires PHP: 7.4
 Text Domain: wc-kledo
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Sync WooCommerce orders to Kledo accounting: automatic sales orders and invoices, retries, a Transactions screen, and API key monitoring.
 
 == Description ==
 
@@ -41,6 +43,23 @@ Integrates WooCommerce with Kledo accounting software: sales orders and invoices
 
 = Manual sync on the order screen =
 * A Kledo meta box and WooCommerce order actions can send or re-send the sales order or invoice according to the same rules as automatic sync (processing/completed and feature toggles). Re-sending after a successful sync may create duplicates in Kledo—confirm when prompted.
+* The "Kledo: Check Kledo status now" order action re-checks whether Kledo has closed the linked sales order and records the outcome as an order note, without changing the WooCommerce order status.
+
+= Invoice-to-sales-order linking (Invoice tab) =
+* "Link Invoice to Sales Order" controls whether each invoice sent to Kledo is linked to its Kledo sales order, which is what lets Kledo close that sales order once every quantity has been invoiced. On by default, matching how Kledo already behaved.
+* "Close Sales Order When Invoiced" controls whether invoicing also asks Kledo to close the linked sales order immediately. On by default. Turning it off keeps the sales order open at the moment of invoicing; Kledo still recalculates and closes it later if the invoice or the order changes again.
+
+= Kledo column on the order list =
+* A "Kledo" column on the WooCommerce order list (HPOS and legacy) shows the outcome of the settings above per order: Closed, Waiting, Check Kledo (the automatic check gave up — open the order to see why), Not linked, or Left open.
+
+= API Key Status (Configure tab) =
+* Shows what Kledo knows about the saved API key — its name, when it was created, when it was last used, and when it expires, in the store's own timezone — with admin warnings 30 and 7 days before it runs out.
+* Says plainly when Kledo has rejected the stored key, or when Kledo's own automatic renewal already replaced it with a key that no longer matches the one shown in Kledo.
+* The API key field is masked once a key is saved, showing only the company name and the key's last four characters instead of the full key.
+
+= Quick access =
+* A "Settings" link on the Plugins screen opens WooCommerce > Kledo directly.
+* On WordPress 6.9 and later, each settings tab can be opened from the WordPress command palette (Ctrl+K / Cmd+K) by typing "kledo".
 
 = Logging and troubleshooting =
 * Delivery and retry activity is written to the WooCommerce logger with source `wc-kledo` (WooCommerce > Status > Logs). Order notes also record important Kledo outcomes.
@@ -62,6 +81,26 @@ Integrates WooCommerce with Kledo accounting software: sales orders and invoices
 4. Configure your invoices in 'Invoice' tab.
 
 <object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/0AmD4Aja88c&hl=en&fs=1&"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/0AmD4Aja88c&hl=en&fs=1&" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
+
+== Frequently Asked Questions ==
+
+= What does "Link Invoice to Sales Order" do, and should I turn it off? =
+When on (the default), every invoice sent to Kledo is linked to its Kledo sales order, so the sales order's invoiced quantities and closure follow that invoice. Turn it off only if you manage sales order closure separately in Kledo and do not want invoices from this store to affect it — an unlinked invoice never counts toward the sales order.
+
+= What does "Close Sales Order When Invoiced" do? =
+When on (the default), invoicing also asks Kledo to close the linked sales order immediately. Turning it off keeps the sales order open at the moment of invoicing, but Kledo still recalculates and closes it later if anything else changes the invoice or the order — this setting only affects the immediate close, not the eventual one.
+
+= Where do I see whether Kledo actually closed the sales order? =
+On the "Kledo" column on the WooCommerce order list, or by running the "Kledo: Check Kledo status now" order action on an individual order, which records the result as an order note.
+
+= Why is my saved API key shown as a company name and a few characters instead of the full key? =
+The Configure tab masks a saved key for display, showing only the company it belongs to and the key's last four characters. The masked value is never treated as a new key — save a real key to replace it.
+
+= What do the API Key Status warnings on the Configure tab mean? =
+The Configure tab reads how much life the saved key has left and warns 30 and 7 days before it expires. If Kledo has already rejected the key, or if Kledo's own automatic renewal replaced it with a different key, the tab says so directly instead of letting syncs fail silently.
+
+= I don't see a "kledo" command in the WordPress command palette =
+The command palette integration needs WordPress 6.9 or later — earlier versions only expose the palette inside the block and site editors — and the `manage_woocommerce` capability. Confirm both your WordPress version and your user role.
 
 == Screenshots ==
 
@@ -143,3 +182,8 @@ Upgrading from 1.5.0 goes straight to this release. Versions 1.6.0 through 1.7.3
 
 = 1.0.0 =
 * Launched the Kledo plugin!
+
+== Upgrade Notice ==
+
+= 1.7.4 =
+Fixes API keys silently failing after Kledo's automatic renewal; adds invoice-to-sales-order linking controls, API key expiry warnings, and an order-list Kledo status column.
