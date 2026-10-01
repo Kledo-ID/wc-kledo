@@ -12,12 +12,23 @@ Di dalam area Admin WordPress, klik menu <kbd>Plugins</kbd> » <kbd>Add New</kbd
 
 - Secara Manual
 
-Unduh [rilis terbaru](https://github.com/Kledo-ID/wc-kledo/releases/latest), kemudian pada area Admin WordPress klik menu <kbd>Plugins</kbd> » <kbd>Add New</kbd> » <kbd>Upload Plugin</kbd> » <kbd>Pilih File ZIP Plugin</kbd> » <kbd>Install Now</kbd>
+Unduh [`kledo.zip` rilis terbaru](https://github.com/Kledo-ID/wc-kledo/releases/latest/download/kledo.zip), kemudian pada area Admin WordPress klik menu <kbd>Plugins</kbd> » <kbd>Add New</kbd> » <kbd>Upload Plugin</kbd> » <kbd>Pilih File ZIP Plugin</kbd> » <kbd>Install Now</kbd> » <kbd>Activate Plugin</kbd>
+
+Versi sebelumnya bisa diunduh di halaman [Releases](https://github.com/Kledo-ID/wc-kledo/releases), file `kledo.zip` ada di bagian **Assets**.
+
+> [!IMPORTANT]
+> Gunakan `kledo.zip`, bukan **Source code (zip)** / **Source code (tar.gz)**. File source code berisi folder `wc-kledo-<versi>`, jadi WordPress akan menganggapnya plugin yang berbeda dan plugin tidak akan mendapat update dari wordpress.org.
+
+Untuk update manual, unggah `kledo.zip` versi terbaru lalu pilih <kbd>Replace current with uploaded</kbd> (WordPress 5.5 ke atas). Pengaturan yang sudah disimpan tetap aman.
 
 ## Konfigurasi
 
 - Klik Menu <kbd>WooCommerce</kbd> » <kbd>Kledo</kbd>
-- Pada tab `Configure`, isi semua kolom yang dibutuhkan kemudian klik tombol `Save changes` setelah itu lakukan request token dengan klik tombol `Request Token`
-- Setelah melakukan request token, kemudian atur pengaturan tagihan pada tab `Invoice`, jangan lupa untuk klik tombol `Save changes` ketika melakukan perubahan.
+- Pada tab `Configure`, isi API Key dan endpoint Kledo, kemudian klik tombol `Save changes`. Setelah tersimpan, bagian `Status API Key` menampilkan nama key, kapan terakhir dipakai, dan kapan kedaluwarsa.
+- Atur pengaturan tagihan pada tab `Invoice`, jangan lupa untuk klik tombol `Save changes` ketika melakukan perubahan.
+
+## Changelog
+
+Lihat [CHANGELOG.md](CHANGELOG.md).
 
 
