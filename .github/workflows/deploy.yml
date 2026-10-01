@@ -23,6 +23,49 @@ jobs:
       with:
         ref: ${{ inputs.tag || github.ref }}
 
+    # Runs before the deploy on purpose: a tag without its CHANGELOG.md section
+    # stops here, before anything is committed to WordPress.org.
+    - name: Build release notes
+      env:
+        TAG: ${{ inputs.tag || github.ref_name }}
+      run: |
+        version="${TAG#v}"
+        notes="${RUNNER_TEMP}/release-notes.md"
+
+        # Read CHANGELOG.md from the commit the workflow runs on, not the
+        # checked-out tag: on a tag push they are the same commit, while a
+        # manual run must see the current changelog even for an older tag.
+        git fetch --quiet --depth=1 origin "$GITHUB_SHA"
+        git show "${GITHUB_SHA}:CHANGELOG.md" | awk -v version="$version" '
+          { sub(/\r$/, "") }
+          /^## / {
+            if (in_version) exit
+            split($0, heading, " ")
+            if (heading[2] == version) { in_version = 1; next }
+          }
+          in_version { print }
+        ' > "${notes}.changes"
+
+        if ! grep -q '[^[:space:]]' "${notes}.changes"; then
+          echo "::error file=CHANGELOG.md::No '## ${version}' section found in CHANGELOG.md"
+          exit 1
+        fi
+
+        # GitHub always lists its own "Source code" archives under Assets and
+        # they cannot be removed, so the plugin zip is linked first instead.
+        {
+          echo "**⬇️ Unduh plugin: [kledo.zip](https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/kledo.zip)**"
+          echo
+          echo "## Perubahan"
+          cat "${notes}.changes"
+          echo
+          echo "## Cara install"
+          echo
+          echo "Unduh **kledo.zip** dari link di atas atau di bagian **Assets**. File *Source code (zip)* dan *Source code (tar.gz)* dibuat otomatis oleh GitHub dan bukan paket plugin yang siap install. Setelah itu upload lewat **Plugins » Add New » Upload Plugin** di admin WordPress. Panduan lengkap ada di [README](https://github.com/${GITHUB_REPOSITORY}/blob/HEAD/README.md#instalasi)."
+        } > "$notes"
+
+        echo "RELEASE_NOTES_PATH=${notes}" >> "$GITHUB_ENV"
+
     - name: Install SVN ( Subversion )
       run: |
         sudo apt-get update
@@ -49,6 +92,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ inputs.tag || github.ref_name }}
+        body_path: ${{ env.RELEASE_NOTES_PATH }}
         files: ${{ steps.deploy.outputs.zip-path }}
         fail_on_unmatched_files: true
       env:
