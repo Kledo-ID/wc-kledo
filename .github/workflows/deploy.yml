@@ -3,13 +3,25 @@ on:
   push:
     tags:
       - "*"
+  # Re-attaches the plugin zip to the release of an existing tag without
+  # committing anything to the WordPress.org SVN repository.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to attach the plugin zip to (e.g. 1.7.4)"
+        required: true
+        type: string
+permissions:
+  contents: write
 jobs:
   tag:
     name: New release
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.tag || github.ref }}
 
     - name: Install SVN ( Subversion )
       run: |
@@ -21,14 +33,23 @@ jobs:
       uses: 10up/action-wordpress-plugin-deploy@stable
       with:
         generate-zip: true
+        # A manual run only rebuilds the zip; SVN is never committed to.
+        dry-run: ${{ github.event_name == 'workflow_dispatch' }}
       env:
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         SLUG: kledo
+        # Empty on a tag push, where the action reads the version from the tag
+        # ref. A manual run is on a branch ref, so the tag must be passed in.
+        VERSION: ${{ inputs.tag }}
 
+    # The deploy action names the zip after SLUG (kledo.zip), not the repository
+    # (wc-kledo), so take its path from the step output instead of rebuilding it.
     - name: Create GitHub release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        files: ${{github.workspace}}/${{ github.event.repository.name }}.zip
+        tag_name: ${{ inputs.tag || github.ref_name }}
+        files: ${{ steps.deploy.outputs.zip-path }}
+        fail_on_unmatched_files: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
