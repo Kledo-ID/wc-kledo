@@ -119,3 +119,57 @@
 .wp-list-table.wc-kledo-transactions-table thead th.sorted .wc-kledo-tx-sort-icon {
     opacity: 1;
 }
+
+/* Settings fields: one width, shared by the inputs and by the checkbox descriptions.
+   Both are read from a single custom property on purpose. The whole point of these rules is that
+   the description text stops on the same edge as the inputs above it, and two numbers that are
+   meant to be equal drift apart the moment one of them is touched. */
+.wc-kledo-settings {
+    --wc-kledo-field-width: 400px;
+}
+
+.wc-kledo-settings td.forminp input[type="text"],
+.wc-kledo-settings td.forminp select {
+    width: var(--wc-kledo-field-width);
+    max-width: 100%;
+}
+
+/* A checkbox description is not a <p class="description">. WooCommerce renders it as bare text
+   inside the same <label> that holds the input, so this needs its own selector — the one above
+   will never reach it.
+   display:inline-block is doing real work here: max-width has no effect on a non-replaced inline
+   element, and omitting it leaves the text exactly as wide as before, which reads like the
+   stylesheet never loaded. */
+.wc-kledo-settings td.forminp-checkbox label,
+.wc-kledo-settings td.forminp fieldset label {
+    display: inline-block;
+    max-width: var(--wc-kledo-field-width);
+}
+
+/* The plugin's own custom fields (API key, API key status) wrap on the same edge. */
+.wc-kledo-settings td.forminp p.description,
+.wc-kledo-settings td.forminp > ul {
+    max-width: var(--wc-kledo-field-width);
+}
+
+/* API Key Status cell: line the first row of the list up with its own label.
+   A cell whose content starts with a block element sits lower than the label beside it, because
+   the th carries more top padding than the td. Matching it fixes every state this cell can be in
+   — the list, and each of the plain paragraphs it shows instead.
+
+   25px is measured from a rendered WooCommerce settings page, not taken from WordPress core:
+   core's .form-table th is 20px, but WooCommerce restyles it inside .wrap.woocommerce, which is
+   where this screen lives. Reading the core value is what made the first attempt 5px short. If
+   WooCommerce ever restyles it again, this needs re-measuring rather than reasoning about. */
+.wc-kledo-settings td.wc-kledo-api-key-status {
+    padding-top: 25px;
+}
+
+.wc-kledo-settings td.wc-kledo-api-key-status > ul,
+.wc-kledo-settings td.wc-kledo-api-key-status > p:first-child {
+    margin-top: 0;
+}
+
+.wc-kledo-settings td.wc-kledo-api-key-status > ul {
+    margin-bottom: 0;
+}

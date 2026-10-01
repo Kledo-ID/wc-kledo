@@ -61,6 +61,30 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	public const INVOICE_TAG_OPTION_NAME = 'wc_kledo_tags';
 
 	/**
+	 * The link invoice to sales order option name.
+	 *
+	 * Sent to Kledo as the `link_order` field on `POST /woocommerce/invoice`. Kledo treats an
+	 * absent field as `yes`, so the default here matches that rather than introducing a second
+	 * meaning for "not configured yet".
+	 *
+	 * @var string
+	 * @since 1.7.4
+	 */
+	public const LINK_ORDER_OPTION_NAME = 'wc_kledo_link_order';
+
+	/**
+	 * The close sales order option name.
+	 *
+	 * Sent to Kledo as the `close_order` field on `POST /woocommerce/invoice`, and only
+	 * meaningful while `link_order` is on. Kledo treats an absent field as `yes`, so the default
+	 * here matches that.
+	 *
+	 * @var string
+	 * @since 1.7.4
+	 */
+	public const CLOSE_ORDER_OPTION_NAME = 'wc_kledo_close_order';
+
+	/**
 	 * The class constructor.
 	 *
 	 * @return void
@@ -191,6 +215,43 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 			),
 
 			'section_end'           => array(
+				'type' => 'sectionend',
+			),
+
+			// Split into a section of its own because these two are not independent: the second
+			// only does anything while the first is on. Sitting in the same undifferentiated list
+			// as Prefix and Warehouse, that dependency was invisible until you read the small
+			// print — which is how a shop ends up with "Close Sales Order When Invoiced" ticked,
+			// linking off, and no idea why nothing ever closes.
+			'link_title'            => array(
+				'title' => __( 'Sales Order Link', 'wc-kledo' ),
+				'type'  => 'title',
+				'desc'  => __( 'How an invoice relates back to the Kledo sales order the same WooCommerce order already created. Both settings below are inert unless linking is on — closing is something Kledo does to a sales order the invoice is attached to, so there is nothing to close without the attachment.', 'wc-kledo' ),
+			),
+
+			'link_order'            => array(
+				'id'      => self::LINK_ORDER_OPTION_NAME,
+				'title'   => __( 'Link Invoice to Sales Order', 'wc-kledo' ),
+				'type'    => 'checkbox',
+				'class'   => 'wc-kledo-field wc-kledo-link-order-field',
+				'default' => 'yes',
+				'desc'    => __( 'Record each invoice against the Kledo sales order it came from, so the sales order counts those quantities as billed. Turn it off and the invoice stands alone, leaving the sales order untouched — and the setting below stops applying.', 'wc-kledo' ),
+			),
+
+			'close_order'           => array(
+				'id'      => self::CLOSE_ORDER_OPTION_NAME,
+				'title'   => __( 'Close Sales Order When Invoiced', 'wc-kledo' ),
+				'type'    => 'checkbox',
+				'class'   => 'wc-kledo-field wc-kledo-close-order-field',
+				'default' => 'yes',
+				'desc'    => sprintf(
+					/* translators: %s: the name of the setting this one depends on, wrapped in <strong>. */
+					__( 'Requires %s above to be on; without it this setting does nothing. Kledo closes a sales order once every quantity is billed — the same as invoicing from the sales order in Kledo. Turn this off to close it yourself, though Kledo closes it anyway the next time it recalculates that order.', 'wc-kledo' ),
+					'<strong>' . esc_html__( 'Link Invoice to Sales Order', 'wc-kledo' ) . '</strong>'
+				),
+			),
+
+			'link_section_end'      => array(
 				'type' => 'sectionend',
 			),
 		);

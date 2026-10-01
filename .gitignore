@@ -9,3 +9,6 @@ docs/
 /vendor/
 composer.lock
 .phpcs.cache
+
+# Playwright MCP QA artifacts (snapshots, screenshots, console logs)
+.playwright-mcp/

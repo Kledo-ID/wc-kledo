@@ -170,6 +170,322 @@ if ( ! function_exists( 'wc_kledo_paid_status' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wc_kledo_parse_kledo_datetime' ) ) {
+	/**
+	 * Turn a Kledo timestamp into a Unix timestamp, reading it in Kledo's own timezone.
+	 *
+	 * Kledo answers in its own zone and says which one, so the raw string must be parsed with
+	 * that zone rather than assumed to be the store's. A store in another timezone would
+	 * otherwise be shown a date off by hours, and near midnight off by a day, with nothing on
+	 * screen to hint at it.
+	 *
+	 * @param  string $raw        A `Y-m-d H:i:s` timestamp as Kledo returned it.
+	 * @param  string $timezone   The timezone Kledo reported, e.g. `Asia/Jakarta`.
+	 *
+	 * @return int|null The Unix timestamp, or null when it cannot be read with confidence.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_parse_kledo_datetime( string $raw, string $timezone ): ?int {
+		$raw = trim( $raw );
+
+		// Without the source zone there is no correct conversion, only a plausible-looking wrong
+		// one. The callers show the raw value instead.
+		if ( '' === $raw || '' === trim( $timezone ) ) {
+			return null;
+		}
+
+		try {
+			$date = new DateTimeImmutable( $raw, new DateTimeZone( $timezone ) );
+		} catch ( Exception $exception ) {
+			return null;
+		}
+
+		$timestamp = $date->getTimestamp();
+
+		// A zero date parses without throwing and formats as "30 November -0001", which reads as
+		// a rendering bug rather than as missing data. Anything before the epoch is not a real
+		// value from Kledo, so the caller shows the raw string instead.
+		if ( $timestamp < 0 ) {
+			return null;
+		}
+
+		return $timestamp;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_format_kledo_datetime' ) ) {
+	/**
+	 * A Kledo timestamp rendered in the store's own timezone and language.
+	 *
+	 * `wp_date()` rather than `date()` or `date_i18n()`: it renders in the site timezone and
+	 * translates month names, which matters on a store running the plugin in Indonesian, where an
+	 * English month in the middle of the screen looks like something only half finished.
+	 *
+	 * The store's timezone is the right one to show. The reader is a shop admin looking at their
+	 * own WP Admin, where every other date — orders, posts — is already in site time; one row in
+	 * a different zone would be the only inconsistent thing on the page.
+	 *
+	 * @param  string $raw       A `Y-m-d H:i:s` timestamp as Kledo returned it.
+	 * @param  string $timezone  The timezone Kledo reported.
+	 *
+	 * @return string The formatted date, or the raw value when it cannot be converted.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_format_kledo_datetime( string $raw, string $timezone ): string {
+		$timestamp = wc_kledo_parse_kledo_datetime( $raw, $timezone );
+
+		if ( null === $timestamp ) {
+			return trim( $raw );
+		}
+
+		$format = get_option( 'date_format', 'F j, Y' ) . ' ' . get_option( 'time_format', 'H:i' );
+
+		return (string) wp_date( $format, $timestamp );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_format_kledo_datetime_relative' ) ) {
+	/**
+	 * How far a Kledo timestamp is from now, in words.
+	 *
+	 * @param  string $raw       A `Y-m-d H:i:s` timestamp as Kledo returned it.
+	 * @param  string $timezone  The timezone Kledo reported.
+	 *
+	 * @return string Something like "26 days from now" or "2 hours ago", empty when unreadable.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_format_kledo_datetime_relative( string $raw, string $timezone ): string {
+		$timestamp = wc_kledo_parse_kledo_datetime( $raw, $timezone );
+
+		if ( null === $timestamp ) {
+			return '';
+		}
+
+		$now = time();
+
+		if ( $timestamp >= $now ) {
+			return sprintf(
+				/* translators: %s: a length of time, e.g. "26 days" */
+				__( '%s from now', 'wc-kledo' ),
+				human_time_diff( $now, $timestamp )
+			);
+		}
+
+		return sprintf(
+			/* translators: %s: a length of time, e.g. "2 hours" */
+			__( '%s ago', 'wc-kledo' ),
+			human_time_diff( $timestamp, $now )
+		);
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_asset_version' ) ) {
+	/**
+	 * Cache-busting version for a bundled asset.
+	 *
+	 * The plugin version is the right answer for a released site: it changes exactly when the
+	 * assets do. It is the wrong answer while developing, because it does not change at all — so
+	 * an edited stylesheet keeps serving from the browser cache and the edit looks like it did
+	 * nothing. That cost a real debugging session: a server-side fix and a CSS fix shipped
+	 * together, only the server-side one appeared, and the CSS was suspected for it.
+	 *
+	 * @param  string $relative_path  Path under the plugin directory, e.g. `assets/css/style.css`.
+	 *
+	 * @return string
+	 * @since 1.7.4
+	 */
+	function wc_kledo_asset_version( string $relative_path ): string {
+		if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
+			return WC_KLEDO_VERSION;
+		}
+
+		$full_path = WC_KLEDO_ABSPATH . ltrim( $relative_path, '/' );
+
+		if ( ! is_readable( $full_path ) ) {
+			return WC_KLEDO_VERSION;
+		}
+
+		$modified_at = filemtime( $full_path );
+
+		return false !== $modified_at ? (string) $modified_at : WC_KLEDO_VERSION;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_mask_api_key' ) ) {
+	/**
+	 * The display form of a stored API key: enough to recognise it, not enough to use it.
+	 *
+	 * Only a fallback. Kledo returns its own masked form of the key as `short_token_masked`, and
+	 * that is what should be shown whenever it is available — see
+	 * `wc_kledo_get_displayed_api_key_mask()`. Computing Kledo's exact shape here would mean
+	 * hardcoding a checksum length that lives in Kledo's config, and the day that changed the two
+	 * screens would disagree about the same key.
+	 *
+	 * This form is deliberately more conservative than Kledo's: the leading
+	 * `kledo_pat_<tenant>_` names the company rather than granting anything, and the last four
+	 * characters tell two keys apart. Everything that authenticates is replaced, with a run of a
+	 * fixed width so the rendered value does not disclose the key's length either.
+	 *
+	 * Deliberately NOT the scheme used for masking keys in logs: that one is longer and
+	 * reversible on purpose, so support can decode it, which is exactly wrong for a page.
+	 *
+	 * @param  string $api_key  The stored key.
+	 *
+	 * @return string The masked key, or an empty string when there is nothing stored.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_mask_api_key( string $api_key ): string {
+		$api_key = trim( $api_key );
+
+		if ( '' === $api_key ) {
+			return '';
+		}
+
+		$hidden = str_repeat( WC_Kledo_Configure_Screen::API_KEY_MASK_CHARACTER, 20 );
+
+		// Too short to reveal any of: whatever this is, it is not a key whose shape we know.
+		if ( strlen( $api_key ) <= 8 ) {
+			return $hidden;
+		}
+
+		$prefix = '';
+
+		if ( preg_match( '/^kledo_pat_[A-Za-z0-9]{6}_/', $api_key, $matches ) ) {
+			$prefix = $matches[0];
+		}
+
+		// Showing both ends would leave almost nothing hidden on an unusually short key.
+		if ( ( strlen( $prefix ) + 4 ) >= strlen( $api_key ) ) {
+			return $hidden;
+		}
+
+		return $prefix . $hidden . substr( $api_key, -4 );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_api_key_mask_option_name' ) ) {
+	/**
+	 * Option holding the masked key exactly as Kledo last reported it.
+	 *
+	 * Kept outside the status transient on purpose: the transient is short-lived and is replaced
+	 * by a failure marker when Kledo cannot be reached, while the settings screen still has to
+	 * render the field. This survives that.
+	 *
+	 * @return string
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_api_key_mask_option_name(): string {
+		return 'wc_kledo_api_key_masked';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_api_key_detached_option_name' ) ) {
+	/**
+	 * Option marking that Kledo's renewal replaced a managed key with an unmanaged one.
+	 *
+	 * Needed as its own flag rather than inferred from the absence of the canonical fields:
+	 * rotating the key clears everything cached about the old one, including the stored mask, so
+	 * by the time the next status arrives there is nothing left to compare against. A store that
+	 * has only ever used a raw token must not be told its key was detached, which is why this is
+	 * only ever written at the moment the shape actually changes.
+	 *
+	 * @return string
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_api_key_detached_option_name(): string {
+		return 'wc_kledo_api_key_detached';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_is_api_key_detached' ) ) {
+	/**
+	 * Whether the key in use has drifted away from the one listed in Kledo.
+	 *
+	 * @return bool
+	 * @since 1.7.4
+	 */
+	function wc_kledo_is_api_key_detached(): bool {
+		return 'yes' === get_option( wc_kledo_get_api_key_detached_option_name(), 'no' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_displayed_api_key_mask' ) ) {
+	/**
+	 * The masked key to print on the settings screen.
+	 *
+	 * Kledo's own mask wins whenever one has been received. Showing a different mask from the one
+	 * Kledo shows for the same key would have someone comparing two screens conclude they are
+	 * holding two different keys.
+	 *
+	 * @return string The mask, or an empty string when no key is stored.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_displayed_api_key_mask(): string {
+		$api_key = (string) get_option( WC_Kledo_Configure_Screen::SETTING_API_KEY, '' );
+
+		if ( '' === trim( $api_key ) ) {
+			return '';
+		}
+
+		$reported = (string) get_option( wc_kledo_get_api_key_mask_option_name(), '' );
+
+		if ( '' !== $reported ) {
+			return $reported;
+		}
+
+		return wc_kledo_mask_api_key( $api_key );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_link_invoice_to_order' ) ) {
+	/**
+	 * Whether the invoice should be linked to its Kledo sales order, as the API expects it.
+	 *
+	 * Returned as the literal `yes`/`no` the `link_order` field takes, matching how
+	 * `wc_kledo_paid_status()` and `wc_kledo_include_tax_or_not()` already shape their values.
+	 *
+	 * Linking is what makes Kledo close the sales order once every quantity has been invoiced —
+	 * the two are one operation on Kledo's side, not two independent switches.
+	 *
+	 * @return string Either `yes` or `no`.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_link_invoice_to_order(): string {
+		$value = get_option( WC_Kledo_Invoice_Screen::LINK_ORDER_OPTION_NAME, 'yes' );
+
+		return wc_string_to_bool( $value ) ? 'yes' : 'no';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_close_order_on_invoice' ) ) {
+	/**
+	 * Whether Kledo should close the sales order when the invoice is created.
+	 *
+	 * Only meaningful while linking is on, and only covers the moment of invoicing: the billed
+	 * quantities are unchanged, so a later recalculation on Kledo's side closes the sales order
+	 * regardless of this setting.
+	 *
+	 * Reports `no` whenever linking is off, rather than whatever happens to be stored. An invoice
+	 * that is not recorded against a sales order bills nothing on it, so there is no sales order
+	 * for this setting to close — a stored `yes` underneath an off `link_order` describes an
+	 * outcome that cannot occur. Answering it here means the dependency holds for every caller,
+	 * including a shop whose stored pair went out of step before this dependency existed, and one
+	 * driving the options past the settings screen through `update_option()`.
+	 *
+	 * @return string Either `yes` or `no`.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_close_order_on_invoice(): string {
+		if ( 'yes' !== wc_kledo_link_invoice_to_order() ) {
+			return 'no';
+		}
+
+		$value = get_option( WC_Kledo_Invoice_Screen::CLOSE_ORDER_OPTION_NAME, 'yes' );
+
+		return wc_string_to_bool( $value ) ? 'yes' : 'no';
+	}
+}
+
 if ( ! function_exists( 'wc_kledo_get_payment_account' ) ) {
 	/**
 	 * Get the payment account.
@@ -669,6 +985,283 @@ if ( ! function_exists( 'wc_kledo_mark_transaction_permanently_failed' ) ) {
 				$error_message
 			)
 		);
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_closure_queue_option_name' ) ) {
+	/**
+	 * Option holding the pending Kledo closure confirmations.
+	 *
+	 * Deliberately separate from `wc_kledo_failed_transactions`. That queue means "this delivery
+	 * FAILED, try again"; this one means "this delivery SUCCEEDED, wait for Kledo to finish
+	 * processing it". Merging them would make the Transactions screen show healthy orders as
+	 * `retrying`.
+	 *
+	 * @return string
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_closure_queue_option_name(): string {
+		return 'wc_kledo_pending_closure_checks';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_order_closed_meta_key' ) ) {
+	/**
+	 * Order meta key marking that Kledo reported its own order as closed.
+	 *
+	 * @return string
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_order_closed_meta_key(): string {
+		return '_wc_kledo_order_closed';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_is_order_closed_in_kledo' ) ) {
+	/**
+	 * Whether Kledo has already reported this order as closed.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return bool
+	 * @since 1.7.4
+	 */
+	function wc_kledo_is_order_closed_in_kledo( WC_Order $order ): bool {
+		return 'yes' === $order->get_meta( wc_kledo_get_order_closed_meta_key() );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_mark_order_closed_in_kledo' ) ) {
+	/**
+	 * Persist that Kledo closed its order for this WooCommerce order.
+	 *
+	 * Written regardless of the auto-close opt-in setting: the meta records what Kledo reported,
+	 * while the setting only governs whether the WooCommerce status is moved as a result.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	function wc_kledo_mark_order_closed_in_kledo( WC_Order $order ): void {
+		$order->update_meta_data( wc_kledo_get_order_closed_meta_key(), 'yes' );
+		$order->save();
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_invoice_link_mode_meta_key' ) ) {
+	/**
+	 * Order meta key recording whether the invoice was sent asking Kledo to link it.
+	 *
+	 * The setting behind it can be changed at any time, so reading the option later says nothing
+	 * about an invoice that already left. This records the decision that was actually sent, which
+	 * is what the order list column and any support question need.
+	 *
+	 * @return string
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_invoice_link_mode_meta_key(): string {
+		return '_wc_kledo_invoice_link_order';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_invoice_close_mode_meta_key' ) ) {
+	/**
+	 * Order meta key recording the `close_order` value sent with this order's invoice.
+	 *
+	 * @return string
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_invoice_close_mode_meta_key(): string {
+		return '_wc_kledo_invoice_close_order';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_record_invoice_link_settings' ) ) {
+	/**
+	 * Persist the `link_order` and `close_order` values sent with this order's invoice.
+	 *
+	 * Both are written in one save: they describe a single decision taken at one moment, and
+	 * reading one without the other cannot tell "not linked" apart from "linked but left open".
+	 *
+	 * @param  \WC_Order $order
+	 * @param  string    $link_mode   Either `yes` or `no`.
+	 * @param  string    $close_mode  Either `yes` or `no`.
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	function wc_kledo_record_invoice_link_settings( WC_Order $order, string $link_mode, string $close_mode ): void {
+		$order->update_meta_data( wc_kledo_get_invoice_link_mode_meta_key(), 'no' === $link_mode ? 'no' : 'yes' );
+		$order->update_meta_data( wc_kledo_get_invoice_close_mode_meta_key(), 'no' === $close_mode ? 'no' : 'yes' );
+		$order->save();
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_invoice_link_mode' ) ) {
+	/**
+	 * The `link_order` value recorded for this order, if an invoice has been sent at all.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return string Either `yes`, `no`, or an empty string when nothing was recorded.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_invoice_link_mode( WC_Order $order ): string {
+		$mode = (string) $order->get_meta( wc_kledo_get_invoice_link_mode_meta_key() );
+
+		return in_array( $mode, array( 'yes', 'no' ), true ) ? $mode : '';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_invoice_close_mode' ) ) {
+	/**
+	 * The `close_order` value recorded for this order, if an invoice has been sent at all.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return string Either `yes`, `no`, or an empty string when nothing was recorded.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_invoice_close_mode( WC_Order $order ): string {
+		$mode = (string) $order->get_meta( wc_kledo_get_invoice_close_mode_meta_key() );
+
+		return in_array( $mode, array( 'yes', 'no' ), true ) ? $mode : '';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_enqueue_closure_check' ) ) {
+	/**
+	 * Queue a closure confirmation for an order and make sure the cron event exists.
+	 *
+	 * @param  int $order_id
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	function wc_kledo_enqueue_closure_check( int $order_id ): void {
+		if ( $order_id <= 0 ) {
+			return;
+		}
+
+		$option_name = wc_kledo_get_closure_queue_option_name();
+		$queue       = get_option( $option_name, array() );
+		$key         = (string) $order_id;
+
+		if ( ! is_array( $queue ) ) {
+			$queue = array();
+		}
+
+		$now = time();
+
+		// The confirmation backoff reuses the retry schedule rather than defining a second one.
+		$first_delay = wc_kledo_get_retry_delay( 1 );
+
+		if ( ! isset( $queue[ $key ] ) || ! is_array( $queue[ $key ] ) ) {
+			$queue[ $key ] = array(
+				'order_id'    => $order_id,
+				'attempts'    => 0,
+				'created_at'  => $now,
+				'next_run_at' => $now + $first_delay,
+				'status'      => 'pending',
+			);
+		} elseif ( 'pending' !== ( $queue[ $key ]['status'] ?? '' ) ) {
+			// An order re-delivered after giving up deserves a fresh budget.
+			$queue[ $key ]['status']      = 'pending';
+			$queue[ $key ]['attempts']    = 0;
+			$queue[ $key ]['created_at']  = $now;
+			$queue[ $key ]['next_run_at'] = $now + $first_delay;
+		} elseif ( empty( $queue[ $key ]['next_run_at'] ) ) {
+			$queue[ $key ]['next_run_at'] = $now + $first_delay;
+		}
+
+		update_option( $option_name, $queue, false );
+
+		if ( ! wp_next_scheduled( 'wc_kledo_check_order_closure' ) ) {
+			$scheduled = wp_schedule_single_event( $now + $first_delay, 'wc_kledo_check_order_closure' );
+
+			if ( false === $scheduled ) {
+				wc_kledo_log_warning(
+					sprintf(
+						'wp_schedule_single_event returned false for closure check on order %d. '
+						. 'The cron event was NOT registered; the admin-page fallback will still run it.',
+						$order_id
+					)
+				);
+			} else {
+				wc_kledo_log_info(
+					sprintf(
+						'Closure check queued for order %d, first run at %s (in %d s).',
+						$order_id,
+						gmdate( 'Y-m-d H:i:s', $now + $first_delay ),
+						$first_delay
+					)
+				);
+			}
+		} else {
+			wc_kledo_log_info(
+				sprintf( 'Closure check queued for order %d; cron already scheduled.', $order_id )
+			);
+		}
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_closure_check_state' ) ) {
+	/**
+	 * The state of an order's closure confirmation row, if it still has one.
+	 *
+	 * Rows leave the queue as soon as the closure is confirmed, so an empty string here means
+	 * either "never queued" or "already done" — the closed meta is what separates those two.
+	 *
+	 * @param  int $order_id
+	 *
+	 * @return string Either `pending`, `gave_up`, or an empty string when there is no row.
+	 * @since 1.7.4
+	 */
+	function wc_kledo_get_closure_check_state( int $order_id ): string {
+		$queue = get_option( wc_kledo_get_closure_queue_option_name(), array() );
+
+		if ( ! is_array( $queue ) ) {
+			return '';
+		}
+
+		$key = (string) $order_id;
+
+		if ( ! isset( $queue[ $key ] ) || ! is_array( $queue[ $key ] ) ) {
+			return '';
+		}
+
+		$status = isset( $queue[ $key ]['status'] ) ? (string) $queue[ $key ]['status'] : '';
+
+		return in_array( $status, array( 'pending', 'gave_up' ), true ) ? $status : '';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_remove_closure_check' ) ) {
+	/**
+	 * Drop an order's closure confirmation row.
+	 *
+	 * @param  int $order_id
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	function wc_kledo_remove_closure_check( int $order_id ): void {
+		$option_name = wc_kledo_get_closure_queue_option_name();
+		$queue       = get_option( $option_name, array() );
+
+		if ( ! is_array( $queue ) ) {
+			return;
+		}
+
+		$key = (string) $order_id;
+
+		if ( ! isset( $queue[ $key ] ) ) {
+			return;
+		}
+
+		unset( $queue[ $key ] );
+		update_option( $option_name, $queue, false );
 	}
 }
 

@@ -55,6 +55,13 @@ class WC_Kledo_Admin_Order_Sync {
 				'order_action_manual_resend_invoice',
 			)
 		);
+		add_action(
+			'woocommerce_order_action_wc_kledo_check_closure',
+			array(
+				$this,
+				'order_action_check_closure',
+			)
+		);
 	}
 
 	/**
@@ -246,6 +253,12 @@ class WC_Kledo_Admin_Order_Sync {
 			}
 		}
 
+		// Only worth offering once the invoice is on its way to Kledo and the closure has not
+		// already been confirmed — there is nothing to poll for otherwise.
+		if ( wc_kledo_is_delivery_synced( $order, 'invoice' ) && ! wc_kledo_is_order_closed_in_kledo( $order ) ) {
+			$actions['wc_kledo_check_closure'] = __( 'Kledo: Check Kledo status now', 'wc-kledo' );
+		}
+
 		return $actions;
 	}
 
@@ -280,6 +293,65 @@ class WC_Kledo_Admin_Order_Sync {
 		if ( $order instanceof WC_Order ) {
 			$this->run_manual_deliver( $order, 'invoice', false );
 		}
+	}
+
+	/**
+	 * Order action: ask Kledo right now whether its sales order has been closed.
+	 *
+	 * Runs the same confirmation the cron loop runs, for this one order, so an admin does not have
+	 * to wait out the backoff schedule.
+	 *
+	 * @param  mixed $order
+	 *
+	 * @return void
+	 * @since 1.7.4
+	 */
+	public function order_action_check_closure( $order ): void {
+		if ( ! $order instanceof WC_Order ) {
+			return;
+		}
+
+		if ( ! $this->current_user_can_sync_order( $order->get_id() ) ) {
+			return;
+		}
+
+		try {
+			$outcome = wc_kledo()->get_order_closure()->check_single_order( $order );
+		} catch ( Throwable $exception ) {
+			wc_kledo_log_warning(
+				sprintf(
+					'Kledo manual closure check error for order %d: %s',
+					$order->get_id(),
+					wc_kledo_sanitize_api_error_message( $exception->getMessage() )
+				)
+			);
+
+			$this->set_flash_notice(
+				__( 'Kledo: could not read the order status from Kledo. Check the WooCommerce logs for details.', 'wc-kledo' )
+			);
+
+			return;
+		}
+
+		if ( 'closed' === $outcome['result'] ) {
+			$this->set_flash_notice(
+				__( 'Kledo: the Kledo sales order is closed. The order has been updated.', 'wc-kledo' )
+			);
+
+			return;
+		}
+
+		if ( 'gave_up' === $outcome['result'] ) {
+			$this->set_flash_notice(
+				__( 'Kledo: this order will not be closed automatically. See the order notes for the reason.', 'wc-kledo' )
+			);
+
+			return;
+		}
+
+		$this->set_flash_notice(
+			__( 'Kledo: the Kledo sales order is not closed yet. The automatic check will keep trying.', 'wc-kledo' )
+		);
 	}
 
 	/**
