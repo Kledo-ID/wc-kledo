@@ -47,6 +47,22 @@ class WC_Kledo_Support_Screen extends WC_Kledo_Settings_Screen {
 
 				<p>
 					<span class="wc-kledo-support-title">
+						<i class="dashicons dashicons-book" aria-hidden="true"></i>&nbsp; <a href="<?php echo esc_url( WC_Kledo_Help_Screen::get_url() ); ?>"><?php esc_html_e( 'How do I use the plugin?', 'wc-kledo' ); ?></a>
+					</span>
+
+					<?php esc_html_e( 'The Guide & FAQ tab explains everything step by step, from creating the API key to sending old orders and finding a missing one.', 'wc-kledo' ); ?>
+				</p>
+
+				<p>
+					<span class="wc-kledo-support-title">
+						<i class="dashicons dashicons-search" aria-hidden="true"></i>&nbsp; <a href="<?php echo esc_url( admin_url( 'admin.php?page=' . WC_Kledo_Admin::PAGE_ID . '&tab=' . WC_Kledo_Diagnostics_Screen::ID ) ); ?>"><?php esc_html_e( 'An order did not reach Kledo?', 'wc-kledo' ); ?></a>
+					</span>
+
+					<?php esc_html_e( 'Run a diagnosis first, in the Diagnostics tab. It tells you the most likely cause, and gives you a report to send us so we can help faster.', 'wc-kledo' ); ?>
+				</p>
+
+				<p>
+					<span class="wc-kledo-support-title">
 						<i class="dashicons dashicons-whatsapp" aria-hidden="true"></i>&nbsp; <a href="https://api.whatsapp.com/send?phone=6282383334000" target="_blank"><?php esc_html_e( 'Request Support', 'wc-kledo' ); ?></a>
 					</span>
 
