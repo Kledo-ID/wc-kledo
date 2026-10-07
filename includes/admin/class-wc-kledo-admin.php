@@ -43,6 +43,9 @@ class WC_Kledo_Admin {
 			WC_Kledo_Invoice_Screen::ID      => new WC_Kledo_Invoice_Screen(),
 			WC_Kledo_Order_Screen::ID        => new WC_Kledo_Order_Screen(),
 			WC_Kledo_Transactions_Screen::ID => new WC_Kledo_Transactions_Screen(),
+			WC_Kledo_Sync_Screen::ID         => new WC_Kledo_Sync_Screen(),
+			WC_Kledo_Diagnostics_Screen::ID  => new WC_Kledo_Diagnostics_Screen(),
+			WC_Kledo_Help_Screen::ID         => new WC_Kledo_Help_Screen(),
 			WC_Kledo_Support_Screen::ID      => new WC_Kledo_Support_Screen(),
 		);
 
@@ -53,6 +56,12 @@ class WC_Kledo_Admin {
 
 		$order_column_admin = new WC_Kledo_Admin_Order_Column();
 		$order_column_admin->init();
+
+		$order_filter_admin = new WC_Kledo_Admin_Order_Filter();
+		$order_filter_admin->init();
+
+		$order_bulk_actions_admin = new WC_Kledo_Admin_Order_Bulk_Actions();
+		$order_bulk_actions_admin->init();
 
 		$this->use_woo_nav = class_exists( WooAdminFeatures::class ) && class_exists( WooAdminMenu::class ) && WooAdminFeatures::is_enabled( 'navigation' );
 	}
@@ -146,6 +155,31 @@ class WC_Kledo_Admin {
 				wc_kledo_asset_version( 'assets/css/style.css' )
 			);
 		}
+
+		$this->enqueue_menu_bubble_style();
+	}
+
+	/**
+	 * Keeps the menu bubble's circle visible on every admin color scheme.
+	 *
+	 * Admin color schemes other than Default paint every bubble under a hovered or open menu in
+	 * the submenu's own background color (Modern: #0c0c0c on #0c0c0c), so only the bare number
+	 * is left — `#adminmenu li:hover a .awaiting-mod` fires as soon as the pointer is anywhere
+	 * over WooCommerce. The bubble therefore keeps one color in every state: the scheme's accent
+	 * color, or WordPress's red on Default. The selector outranks the scheme's hover and current
+	 * rules (two IDs). Printed on every admin page, since the menu shows on every page.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function enqueue_menu_bubble_style(): void {
+		wp_register_style( 'wc-kledo-menu', false, array(), WC_KLEDO_VERSION );
+		wp_enqueue_style( 'wc-kledo-menu' );
+		wp_add_inline_style(
+			'wc-kledo-menu',
+			'#adminmenu #toplevel_page_woocommerce .wc-kledo-menu-count{background:var(--wp-admin-theme-color,#d63638);color:#fff}'
+			. 'body.admin-color-fresh #adminmenu #toplevel_page_woocommerce .wc-kledo-menu-count{background:#d63638}'
+		);
 	}
 
 	/**
@@ -204,11 +238,110 @@ class WC_Kledo_Admin {
 		add_submenu_page(
 			'woocommerce',
 			__( 'Kledo', 'wc-kledo' ),
-			__( 'Kledo', 'wc-kledo' ),
+			__( 'Kledo', 'wc-kledo' ) . $this->get_menu_bubble(),
 			'manage_woocommerce',
 			self::PAGE_ID,
 			array( $this, 'render' ),
 			5
+		);
+	}
+
+	/**
+	 * The count bubble next to "Kledo" in the WooCommerce menu.
+	 *
+	 * Same markup as WooCommerce's own Orders bubble, so it looks like part of the menu. Shows
+	 * how many orders need checking in Kledo, "99+" beyond 99, and nothing at zero or while the
+	 * plugin is switched off or not connected — there is nothing to act on then.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function get_menu_bubble(): string {
+		if ( ! $this->shows_attention_counts() ) {
+			return '';
+		}
+
+		$count = wc_kledo_get_attention_count();
+
+		if ( $count <= 0 ) {
+			return '';
+		}
+
+		$label = sprintf(
+			/* translators: %d: number of orders */
+			_n( '%d order needs checking in Kledo', '%d orders need checking in Kledo', $count, 'wc-kledo' ),
+			$count
+		);
+
+		return $this->format_bubble( 'awaiting-mod update-plugins wc-kledo-menu-count count-' . min( $count, 100 ), $count, $label );
+	}
+
+	/**
+	 * The count bubble on a settings tab, telling which tab the menu number comes from.
+	 *
+	 * The menu bubble adds up two kinds of order, each handled in its own tab: orders never sent
+	 * (Sync tab) and orders whose transaction failed in Kledo (Transactions tab). Other tabs get
+	 * nothing.
+	 *
+	 * @param  string  $tab_id  The tab ID.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function get_tab_bubble( string $tab_id ): string {
+		$labels = array(
+			/* translators: %d: number of orders */
+			WC_Kledo_Sync_Screen::ID         => array( 'not_sent', _n_noop( '%d order not sent to Kledo yet', '%d orders not sent to Kledo yet', 'wc-kledo' ) ),
+			/* translators: %d: number of orders */
+			WC_Kledo_Transactions_Screen::ID => array( 'failed', _n_noop( '%d order failed in Kledo', '%d orders failed in Kledo', 'wc-kledo' ) ),
+		);
+
+		if ( ! isset( $labels[ $tab_id ] ) || ! $this->shows_attention_counts() ) {
+			return '';
+		}
+
+		list( $key, $noop ) = $labels[ $tab_id ];
+
+		$count = wc_kledo_get_attention_counts()[ $key ];
+
+		if ( $count <= 0 ) {
+			return '';
+		}
+
+		return $this->format_bubble( 'wc-kledo-tab-count', $count, sprintf( translate_nooped_plural( $noop, $count, 'wc-kledo' ), $count ) );
+	}
+
+	/**
+	 * Whether the "needs checking" counts are shown at all.
+	 *
+	 * Not while the plugin is switched off or not connected: nothing is sent then, so every order
+	 * would look unsent and there is nothing the user can act on.
+	 *
+	 * @return bool
+	 * @since 1.8.0
+	 */
+	private function shows_attention_counts(): bool {
+		return current_user_can( 'manage_woocommerce' )
+			&& wc_string_to_bool( get_option( WC_Kledo_Configure_Screen::SETTING_ENABLE_API_CONNECTION, 'yes' ) )
+			&& wc_kledo()->get_connection_handler()->is_configured();
+	}
+
+	/**
+	 * Count bubble markup: "99+" beyond 99, with the full sentence as tooltip and for screen readers.
+	 *
+	 * @param  string  $classes  Classes of the outer span.
+	 * @param  int     $count    The number.
+	 * @param  string  $label    Sentence describing the number.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function format_bubble( string $classes, int $count, string $label ): string {
+		return sprintf(
+			' <span class="%1$s" title="%2$s"><span class="processing-count" aria-hidden="true">%3$s</span><span class="screen-reader-text">%2$s</span></span>',
+			esc_attr( $classes ),
+			esc_attr( $label ),
+			esc_html( $count > 99 ? '99+' : (string) $count )
 		);
 	}
 
@@ -293,7 +426,7 @@ class WC_Kledo_Admin {
 				<nav class="nav-tab-wrapper woo-nav-tab-wrapper">
 					<?php foreach ( $tabs as $id => $label ) : ?>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . rawurlencode( (string) $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>">
-							<?php echo esc_html( $label ); ?>
+							<?php echo esc_html( $label ); ?><?php echo $this->get_tab_bubble( (string) $id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in format_bubble(). ?>
 						</a>
 					<?php endforeach; ?>
 				</nav>
@@ -310,12 +443,43 @@ class WC_Kledo_Admin {
 					<?php echo wp_kses_post( $screen->get_description() ); ?>
 				</p>
 
+				<?php $this->render_guide_link( $current_tab ); ?>
+
 				<?php $screen->render(); ?>
 
 			<?php endif; ?>
 		</div>
 
 		<?php
+	}
+
+	/**
+	 * A link from a settings tab to the part of the Guide & FAQ tab about it.
+	 *
+	 * @param  string $tab
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_guide_link( string $tab ): void {
+		$anchors = array(
+			WC_Kledo_Configure_Screen::ID    => 'guide-api-key',
+			WC_Kledo_Invoice_Screen::ID      => 'guide-invoice',
+			WC_Kledo_Order_Screen::ID        => 'guide-sales-order',
+			WC_Kledo_Transactions_Screen::ID => 'guide-transactions',
+			WC_Kledo_Sync_Screen::ID         => 'guide-sync',
+			WC_Kledo_Diagnostics_Screen::ID  => 'guide-diagnostics',
+		);
+
+		if ( ! isset( $anchors[ $tab ] ) ) {
+			return;
+		}
+
+		printf(
+			'<p class="wc-kledo-guide-link"><span class="dashicons dashicons-book" aria-hidden="true"></span> <a href="%1$s">%2$s</a></p>',
+			esc_url( WC_Kledo_Help_Screen::get_url( $anchors[ $tab ] ) ),
+			esc_html__( 'Guide for this tab', 'wc-kledo' )
+		);
 	}
 
 	/**
@@ -431,7 +595,10 @@ class WC_Kledo_Admin {
 			WC_Kledo_Configure_Screen::ID    => __( 'Kledo: Configure', 'wc-kledo' ),
 			WC_Kledo_Invoice_Screen::ID      => __( 'Kledo: Invoice settings', 'wc-kledo' ),
 			WC_Kledo_Order_Screen::ID        => __( 'Kledo: Order settings', 'wc-kledo' ),
-			WC_Kledo_Transactions_Screen::ID => __( 'Kledo: Transactions', 'wc-kledo' ),
+			WC_Kledo_Transactions_Screen::ID => __( 'Kledo: Kledo Status', 'wc-kledo' ),
+			WC_Kledo_Sync_Screen::ID         => __( 'Kledo: Sync', 'wc-kledo' ),
+			WC_Kledo_Diagnostics_Screen::ID  => __( 'Kledo: Diagnostics', 'wc-kledo' ),
+			WC_Kledo_Help_Screen::ID         => __( 'Kledo: Guide & FAQ', 'wc-kledo' ),
 			WC_Kledo_Support_Screen::ID      => __( 'Kledo: Support', 'wc-kledo' ),
 		);
 
@@ -449,6 +616,14 @@ class WC_Kledo_Admin {
 	}
 
 	public function enqueue_js(): void {
+		$this->enqueue_transactions_js();
+		$this->enqueue_sync_js();
+		$this->enqueue_diagnostics_js();
+
+		if ( $this->is_current_page_on( WC_Kledo_Help_Screen::ID ) ) {
+			wp_enqueue_script( 'wc-kledo-help', wc_kledo()->asset_dir_url() . '/js/help.js', array(), wc_kledo_asset_version( 'assets/js/help.js' ), true );
+		}
+
 		if ( ! $this->is_current_page_on( 'invoice', 'order' ) ) {
 			return;
 		}
@@ -476,6 +651,123 @@ class WC_Kledo_Admin {
 					'searching'                   => esc_html__( 'Loading...', 'wc-kledo' ),
 					'search'                      => esc_html__( 'Search', 'wc-kledo' ),
 				),
+			)
+		);
+	}
+
+	/**
+	 * Enqueue the row actions of the Transactions tab.
+	 *
+	 * Plain JavaScript with no dependency: the tab only needs to post a form and swap some HTML.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function enqueue_transactions_js(): void {
+		if ( ! $this->is_current_page_on( WC_Kledo_Transactions_Screen::ID ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'wc-kledo-transactions',
+			wc_kledo()->asset_dir_url() . '/js/transactions.js',
+			array(),
+			wc_kledo_asset_version( 'assets/js/transactions.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'wc-kledo-transactions',
+			'wc_kledo_transactions',
+			array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'security' => wp_create_nonce( WC_Kledo_Transactions_Screen::AJAX_NONCE_ACTION ),
+				'i18n'     => array(
+					'check'   => __( 'Checking…', 'wc-kledo' ),
+					'resend'  => __( 'Resending…', 'wc-kledo' ),
+					'failed'  => __( 'Could not reach the server. Try again.', 'wc-kledo' ),
+					'updated' => __( 'Updated.', 'wc-kledo' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Enqueue the Diagnostics tab's step runner.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function enqueue_diagnostics_js(): void {
+		if ( ! $this->is_current_page_on( WC_Kledo_Diagnostics_Screen::ID ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'wc-kledo-diagnostics',
+			wc_kledo()->asset_dir_url() . '/js/diagnostics.js',
+			array( 'jquery', 'selectWoo' ),
+			wc_kledo_asset_version( 'assets/js/diagnostics.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'wc-kledo-diagnostics',
+			'wc_kledo_diagnostics',
+			array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'security' => wp_create_nonce( WC_Kledo_Diagnostics_Screen::NONCE ),
+				'steps'    => WC_Kledo_Diagnostics::get_steps(),
+				'i18n'     => array(
+					'running'       => __( 'Checking…', 'wc-kledo' ),
+					/* translators: 1: attempt number, 2: number of attempts */
+					'waiting'       => __( 'Waiting 20 seconds, then asking Kledo (%1$d of %2$d)…', 'wc-kledo' ),
+					'details'       => __( 'Details', 'wc-kledo' ),
+					'failed'        => __( 'Could not reach the server. Try again.', 'wc-kledo' ),
+					'likely'        => __( 'Likely cause', 'wc-kledo' ),
+					'todo'          => __( 'What to do:', 'wc-kledo' ),
+					/* translators: %s: report code */
+					'code'          => __( 'Report code: %s — mention it when you contact Kledo.', 'wc-kledo' ),
+					'download_text' => __( 'Download report', 'wc-kledo' ),
+					'download_json' => __( 'Download for developers (JSON)', 'wc-kledo' ),
+					'pick_order'    => __( 'Choose an order or type its number…', 'wc-kledo' ),
+					/* translators: %s: what the user typed */
+					'typed_order'   => __( 'Use order number %s', 'wc-kledo' ),
+					'no_order'      => __( 'Choose an order first.', 'wc-kledo' ),
+					'searching'     => __( 'Searching…', 'wc-kledo' ),
+					'no_results'    => __( 'No order found. Type the order number to use it anyway.', 'wc-kledo' ),
+					'load_failed'   => __( 'The list could not be loaded. Type the order number instead.', 'wc-kledo' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Enqueue the Sync tab's progress poll and confirmations.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function enqueue_sync_js(): void {
+		if ( ! $this->is_current_page_on( WC_Kledo_Sync_Screen::ID ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'wc-kledo-sync',
+			wc_kledo()->asset_dir_url() . '/js/sync.js',
+			array(),
+			wc_kledo_asset_version( 'assets/js/sync.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'wc-kledo-sync',
+			'wc_kledo_sync',
+			array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'security' => wp_create_nonce( WC_Kledo_Sync_Screen::POLL_NONCE ),
+				'interval' => 10000,
 			)
 		);
 	}

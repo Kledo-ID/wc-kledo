@@ -85,6 +85,17 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	public const CLOSE_ORDER_OPTION_NAME = 'wc_kledo_close_order';
 
 	/**
+	 * The create-sales-order-first option name, for orders that skip Processing.
+	 *
+	 * Read through `wc_kledo_create_order_on_completed()`, which defaults it to `yes` so updating
+	 * shops keep the 1.7.4 behaviour without a migration.
+	 *
+	 * @var string
+	 * @since 1.8.0
+	 */
+	public const CREATE_ORDER_ON_COMPLETED_OPTION_NAME = 'wc_kledo_create_order_on_completed';
+
+	/**
 	 * The class constructor.
 	 *
 	 * @return void
@@ -155,12 +166,12 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 	 */
 	public function get_settings(): array {
 		return array(
-			'title'                 => array(
+			'title'                     => array(
 				'title' => __( 'Invoice', 'wc-kledo' ),
 				'type'  => 'title',
 			),
 
-			'enable_create_invoice' => array(
+			'enable_create_invoice'     => array(
 				'id'      => self::ENABLE_INVOICE_OPTION_NAME,
 				'title'   => __( 'Enable Create Invoice', 'wc-kledo' ),
 				'type'    => 'checkbox',
@@ -173,7 +184,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				),
 			),
 
-			'invoice_prefix'        => array(
+			'invoice_prefix'            => array(
 				'id'      => self::INVOICE_PREFIX_OPTION_NAME,
 				'title'   => __( 'Invoice Prefix', 'wc-kledo' ),
 				'type'    => 'text',
@@ -181,7 +192,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'default' => 'WC/INV/',
 			),
 
-			'invoice_status'        => array(
+			'invoice_status'            => array(
 				'id'      => self::INVOICE_STATUS_OPTION_NAME,
 				'title'   => __( 'Invoice Status on Created', 'wc-kledo' ),
 				'type'    => 'select',
@@ -193,28 +204,28 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				),
 			),
 
-			'payment_account'       => array(
+			'payment_account'           => array(
 				'id'    => self::INVOICE_PAYMENT_ACCOUNT_OPTION_NAME,
 				'title' => __( 'Payment Account', 'wc-kledo' ),
 				'type'  => 'payment_account',
 				'class' => 'wc-kledo-field wc-kledo-payment-account-field',
 			),
 
-			'warehouse'             => array(
+			'warehouse'                 => array(
 				'id'    => self::INVOICE_WAREHOUSE_OPTION_NAME,
 				'title' => __( 'Warehouse', 'wc-kledo' ),
 				'type'  => 'invoice_warehouse',
 				'class' => 'wc-kledo-field wc-kledo-warehouse-field',
 			),
 
-			'tags'                  => array(
+			'tags'                      => array(
 				'id'    => self::INVOICE_TAG_OPTION_NAME,
 				'title' => __( 'Tags', 'wc-kledo' ),
 				'type'  => 'invoice_tags',
 				'class' => 'wc-kledo-field wc-kledo-tags-field',
 			),
 
-			'section_end'           => array(
+			'section_end'               => array(
 				'type' => 'sectionend',
 			),
 
@@ -223,13 +234,13 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 			// as Prefix and Warehouse, that dependency was invisible until you read the small
 			// print — which is how a shop ends up with "Close Sales Order When Invoiced" ticked,
 			// linking off, and no idea why nothing ever closes.
-			'link_title'            => array(
+			'link_title'                => array(
 				'title' => __( 'Sales Order Link', 'wc-kledo' ),
 				'type'  => 'title',
 				'desc'  => __( 'How an invoice relates back to the Kledo sales order the same WooCommerce order already created. Both settings below are inert unless linking is on — closing is something Kledo does to a sales order the invoice is attached to, so there is nothing to close without the attachment.', 'wc-kledo' ),
 			),
 
-			'link_order'            => array(
+			'link_order'                => array(
 				'id'      => self::LINK_ORDER_OPTION_NAME,
 				'title'   => __( 'Link Invoice to Sales Order', 'wc-kledo' ),
 				'type'    => 'checkbox',
@@ -238,7 +249,7 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				'desc'    => __( 'Record each invoice against the Kledo sales order it came from, so the sales order counts those quantities as billed. Turn it off and the invoice stands alone, leaving the sales order untouched — and the setting below stops applying.', 'wc-kledo' ),
 			),
 
-			'close_order'           => array(
+			'close_order'               => array(
 				'id'      => self::CLOSE_ORDER_OPTION_NAME,
 				'title'   => __( 'Close Sales Order When Invoiced', 'wc-kledo' ),
 				'type'    => 'checkbox',
@@ -251,7 +262,20 @@ class WC_Kledo_Invoice_Screen extends WC_Kledo_Settings_Screen {
 				),
 			),
 
-			'link_section_end'      => array(
+			'create_order_on_completed' => array(
+				'id'      => self::CREATE_ORDER_ON_COMPLETED_OPTION_NAME,
+				'title'   => __( 'Create Sales Order First When an Order Skips Processing', 'wc-kledo' ),
+				'type'    => 'checkbox',
+				'class'   => 'wc-kledo-field wc-kledo-create-order-on-completed-field',
+				'default' => 'yes',
+				'desc'    => sprintf(
+					/* translators: %s: the name of the Order tab setting this one depends on, wrapped in <strong>. */
+					__( 'When an order is changed straight to Completed without going through Processing, create its sales order in Kledo first, then send the invoice once that sales order exists. Only applies while %s on the Order tab is on. Turn this off if those orders should get an invoice only — it is then sent without a link to a sales order.', 'wc-kledo' ),
+					'<strong>' . esc_html__( 'Enable Create Order', 'wc-kledo' ) . '</strong>'
+				),
+			),
+
+			'link_section_end'          => array(
 				'type' => 'sectionend',
 			),
 		);

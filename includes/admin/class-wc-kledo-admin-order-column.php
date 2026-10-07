@@ -41,6 +41,33 @@ class WC_Kledo_Admin_Order_Column {
 		// Legacy `shop_order` post list table.
 		add_filter( 'manage_edit-shop_order_columns', array( $this, 'add_column' ) );
 		add_action( 'manage_shop_order_posts_custom_column', array( $this, 'render_column' ), 10, 2 );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'add_inline_styles' ), 20 );
+	}
+
+	/**
+	 * Lay out the two state lines of the cell.
+	 *
+	 * Attached to WooCommerce's admin stylesheet rather than the plugin's own, which is only
+	 * enqueued on the plugin's settings page; WooCommerce's is already present on the order list.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	public function add_inline_styles(): void {
+		if ( ! wp_style_is( 'woocommerce_admin_styles', 'enqueued' ) ) {
+			return;
+		}
+
+		wp_add_inline_style(
+			'woocommerce_admin_styles',
+			'.column-' . self::COLUMN_KEY . ' { width: 13em; }'
+			. '.wc-kledo-state-line { display: flex; align-items: center; gap: 4px; margin: 0 0 4px; white-space: nowrap; }'
+			. '.wc-kledo-state-type { min-width: 6.5em; color: #50575e; }'
+			. '.wc-kledo-state-line .order-status { margin: 0; }'
+			. '.wc-kledo-state-closure { color: #50575e; font-style: italic; }'
+			. '.wc-kledo-date-range { display: inline-flex; align-items: center; gap: 4px; margin: 0 6px 0 0; }'
+		);
 	}
 
 	/**
@@ -104,25 +131,29 @@ class WC_Kledo_Admin_Order_Column {
 			return;
 		}
 
-		$state = $this->get_state( $order );
+		foreach ( array( 'order', 'invoice' ) as $type ) {
+			$state = wc_kledo_get_remote_state( $order, $type );
 
-		if ( null === $state ) {
-			echo '<span aria-hidden="true">&ndash;</span>';
-			echo '<span class="screen-reader-text">' . esc_html__( 'Not sent to Kledo', 'wc-kledo' ) . '</span>';
-
-			return;
+			printf(
+				'<div class="wc-kledo-state-line"><span class="wc-kledo-state-type">%1$s:</span> %2$s</div>',
+				esc_html( WC_Kledo_Status_Badge::type_label( $type ) ),
+				WC_Kledo_Status_Badge::render( $state, $type, wc_kledo_get_remote_ref( $order, $type ) ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside render().
+			);
 		}
 
-		printf(
-			'<mark class="order-status %1$s" title="%2$s"><span>%3$s</span></mark>',
-			esc_attr( $state['class'] ),
-			esc_attr( $state['description'] ),
-			esc_html( $state['label'] )
-		);
+		$closure = $this->get_state( $order );
+
+		if ( null !== $closure ) {
+			printf(
+				'<div class="wc-kledo-state-line wc-kledo-state-closure" title="%1$s">%2$s</div>',
+				esc_attr( $closure['description'] ),
+				esc_html( $closure['label'] )
+			);
+		}
 	}
 
 	/**
-	 * Resolve what to show for one order.
+	 * Resolve the sales order closure note shown under the two state lines.
 	 *
 	 * Order matters: the closed meta is checked first because a confirmed closure removes the
 	 * queue row, and a pruned queue row must not read as "never sent".
@@ -140,7 +171,7 @@ class WC_Kledo_Admin_Order_Column {
 	private function get_state( WC_Order $order ): ?array {
 		if ( wc_kledo_is_order_closed_in_kledo( $order ) ) {
 			return array(
-				'label'       => __( 'Closed', 'wc-kledo' ),
+				'label'       => __( 'Sales order closed', 'wc-kledo' ),
 				'description' => __( 'Kledo has closed its sales order for this order; every quantity has been invoiced.', 'wc-kledo' ),
 				'class'       => 'status-completed',
 			);
@@ -150,7 +181,7 @@ class WC_Kledo_Admin_Order_Column {
 
 		if ( 'pending' === $queue_state ) {
 			return array(
-				'label'       => __( 'Waiting', 'wc-kledo' ),
+				'label'       => __( 'Waiting for closure', 'wc-kledo' ),
 				'description' => __( 'The invoice reached Kledo and the plugin is waiting for Kledo to finish processing it and close the sales order.', 'wc-kledo' ),
 				'class'       => 'status-processing',
 			);
@@ -158,7 +189,7 @@ class WC_Kledo_Admin_Order_Column {
 
 		if ( 'gave_up' === $queue_state ) {
 			return array(
-				'label'       => __( 'Check Kledo', 'wc-kledo' ),
+				'label'       => __( 'Closure: check Kledo', 'wc-kledo' ),
 				'description' => __( 'The plugin stopped waiting for Kledo to close the sales order. Open the order to read why, then check it in Kledo.', 'wc-kledo' ),
 				'class'       => 'status-failed',
 			);
@@ -176,14 +207,6 @@ class WC_Kledo_Admin_Order_Column {
 			return array(
 				'label'       => __( 'Left open', 'wc-kledo' ),
 				'description' => __( 'The invoice is linked to the sales order and its quantities count as billed, but Kledo was asked not to close the sales order at the time. Kledo closes it anyway once anything makes it recalculate that sales order.', 'wc-kledo' ),
-				'class'       => 'status-on-hold',
-			);
-		}
-
-		if ( wc_kledo_is_delivery_synced( $order, 'invoice' ) ) {
-			return array(
-				'label'       => __( 'Sent', 'wc-kledo' ),
-				'description' => __( 'The invoice was sent to Kledo. There is no confirmation on record that the sales order was closed.', 'wc-kledo' ),
 				'class'       => 'status-on-hold',
 			);
 		}

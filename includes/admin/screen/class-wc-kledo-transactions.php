@@ -4,11 +4,19 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Admin screen listing Kledo order/invoice delivery outcomes (failed queue + synced orders).
+ * Admin screen listing every sales order and invoice the plugin has sent to Kledo, with where each
+ * one stands in Kledo.
  *
- * Successful deliveries are inferred from order meta ({@see wc_kledo_is_delivery_synced}); failed/retrying
- * rows come from the `wc_kledo_failed_transactions` option. A bounded scan of recent orders is used for
- * success rows so the screen stays performant on large catalogs (see {@see self::get_max_orders_for_success_scan()}).
+ * Rows and counts come from {@see WC_Kledo_Admin_Transactions_Query}, which reads the remote-state
+ * order meta, so the list is paginated by the database and covers every order. The failed-delivery
+ * queue (`wc_kledo_failed_transactions`) is still where retry details — attempts, next run, last
+ * error — are read from.
+ *
+ * Shown to users as the "Kledo Status" tab. The code keeps the `transactions` name — tab ID,
+ * options, user meta, AJAX action and assets — so saved URLs and per-user preferences keep working.
+ *
+ * @since 1.5.0
+ * @since 1.8.0 Rebuilt around the Kledo-side state of each transaction, and renamed "Kledo Status" in the UI.
  */
 class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	/**
@@ -19,26 +27,33 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	private const RETRY_OUTCOME_SUCCESS = 'success';
 
 	/**
-	 * Manual retry outcome: already synced; stale queue row removed by deliver().
+	 * Manual retry outcome: skipped because the record was already synced.
 	 *
 	 * @var string
 	 */
 	private const RETRY_OUTCOME_SKIPPED_SYNCED = 'skipped_synced';
 
 	/**
-	 * Manual retry outcome: API or transport failure; queue row updated.
+	 * Manual retry outcome: delivery failed (non-200 / API error).
 	 *
 	 * @var string
 	 */
 	private const RETRY_OUTCOME_FAILED = 'failed';
 
 	/**
-	 * Manual retry outcome: Kledo rejected the payload; retrying cannot help.
+	 * Manual retry outcome: Kledo rejected the payload itself (HTTP 400 validation), so a retry
+	 * cannot succeed until the data is corrected.
 	 *
 	 * @var string
-	 * @since 1.7.4
 	 */
 	private const RETRY_OUTCOME_REJECTED = 'rejected';
+
+	/**
+	 * Manual retry outcome: an invoice held back until its sales order exists in Kledo.
+	 *
+	 * @var string
+	 */
+	private const RETRY_OUTCOME_WAITING = 'waiting_sales_order';
 
 	/**
 	 * Manual retry outcome: empty or malformed queue key.
@@ -48,111 +63,95 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	private const RETRY_OUTCOME_INVALID_KEY = 'invalid_key';
 
 	/**
-	 * Manual retry outcome: key not present in current queue.
+	 * Manual retry outcome: key not present in the queue option.
 	 *
 	 * @var string
 	 */
 	private const RETRY_OUTCOME_NOT_IN_QUEUE = 'not_in_queue';
 
 	/**
-	 * Manual retry outcome: row missing order_id or invalid type.
+	 * Manual retry outcome: queue item missing order_id or valid type.
 	 *
 	 * @var string
 	 */
 	private const RETRY_OUTCOME_BAD_ITEM = 'bad_item';
 
 	/**
-	 * Manual retry outcome: WooCommerce order missing; queue row removed.
+	 * Manual retry outcome: WooCommerce order no longer exists.
 	 *
 	 * @var string
 	 */
 	private const RETRY_OUTCOME_ORDER_MISSING = 'order_missing';
 
 	/**
-	 * Query param: status filter.
+	 * Query arg: tab (Kledo state group).
 	 *
 	 * @var string
 	 */
 	private const QUERY_STATUS = 'wc_kledo_tx_status';
 
 	/**
-	 * Query param: list ordering field.
+	 * Query arg: sort column.
 	 *
 	 * @var string
 	 */
 	private const QUERY_ORDERBY = 'wc_kledo_tx_orderby';
 
 	/**
-	 * Query param: list order direction.
+	 * Query arg: sort direction.
 	 *
 	 * @var string
 	 */
 	private const QUERY_ORDER = 'wc_kledo_tx_order';
 
 	/**
-	 * Query param: current page (pagination).
+	 * Query arg: current page (1-based).
 	 *
 	 * @var string
 	 */
 	private const QUERY_PAGED = 'paged';
 
 	/**
-	 * Status filter: success + failed (default).
-	 *
-	 * @var string
-	 */
-	private const STATUS_ALL = 'all';
-
-	/**
-	 * Status filter: synced deliveries only.
-	 *
-	 * @var string
-	 */
-	private const STATUS_SUCCESS = 'success';
-
-	/**
-	 * Status filter: failed queue rows.
-	 *
-	 * @var string
-	 */
-	private const STATUS_FAILED = 'failed';
-
-	/**
-	 * Status filter: queue rows waiting for next cron/manual retry.
-	 *
-	 * @var string
-	 */
-	private const STATUS_RETRYING = 'retrying';
-
-	/**
-	 * Default rows per page — used as the Screen Options 'per_page' default and as the
-	 * first-load fallback before a user saves their own preference.
+	 * Default orders per page when the user has not saved a Screen Options preference.
 	 *
 	 * @var int
 	 */
 	private const PER_PAGE_DEFAULT = 25;
 
 	/**
-	 * The screen id (tab slug). Kept as `transactions`; legacy `failed_transactions` tab redirects in admin.
+	 * The screen id.
 	 *
 	 * @var string
-	 * @since 1.5.0
 	 */
 	public const ID = 'transactions';
 
 	/**
-	 * Transient key prefix for one-shot admin feedback after single-row retry (PRG).
+	 * Transient prefix for the one-shot result notice of any row or bulk action (PRG pattern).
 	 *
 	 * @var string
 	 */
-	private const RETRY_NOTICE_TRANSIENT_PREFIX = 'wc_kledo_retry_notice_';
+	private const NOTICE_TRANSIENT_PREFIX = 'wc_kledo_retry_notice_';
 
 	/**
-	 * Transient key prefix for one-shot admin feedback after bulk retry (PRG).
+	 * Nonce action of the AJAX row actions.
 	 *
 	 * @var string
 	 */
-	private const BULK_RETRY_NOTICE_TRANSIENT_PREFIX = 'wc_kledo_bulk_retry_notice_';
+	public const AJAX_NONCE_ACTION = 'wc_kledo_tx_row_action';
+
+	/**
+	 * Nonce action shared by every POST on this screen.
+	 *
+	 * @var string
+	 */
+	private const NONCE_ACTION = 'wc_kledo_retry_failed_transaction';
+
+	/**
+	 * States a transaction can be resent from by hand.
+	 *
+	 * @var string[]
+	 */
+	private const RESENDABLE_STATES = array( 'retrying', 'failed', 'rejected', 'missing' );
 
 	/**
 	 * The class constructor.
@@ -164,7 +163,7 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 		$this->id = self::ID;
 
 		// Per-page persistence: register the save-validation filter immediately — no hook
-		// wrapper.  WordPress's set_screen_options() applies this filter to decide whether
+		// wrapper. WordPress's set_screen_options() applies this filter to decide whether
 		// to persist the submitted per-page value; it can run as early as admin_init at
 		// priority 0 (depending on WP version), so registering here (class instantiation,
 		// during plugins_loaded) guarantees the filter is always present in time.
@@ -180,371 +179,92 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 		add_action(
 			'load-woocommerce_page_wc-kledo',
 			function () {
-				$this->label = __( 'Transactions', 'wc-kledo' );
-				$this->title = __( 'Transactions', 'wc-kledo' );
+				$this->label = __( 'Kledo Status', 'wc-kledo' );
+				$this->title = __( 'Kledo Status', 'wc-kledo' );
 				$this->register_screen_columns();
 			}
 		);
 
-		// Handle single-row retry before headers are sent so we can redirect (PRG pattern).
-		add_action( 'admin_init', array( $this, 'maybe_handle_single_retry' ) );
-
-		// Handle bulk retry before headers are sent so we can redirect (PRG pattern).
-		add_action( 'admin_init', array( $this, 'maybe_handle_bulk_retry' ) );
+		// Every POST on this tab is handled before headers are sent so it can redirect (PRG).
+		add_action( 'admin_init', array( $this, 'maybe_handle_post' ) );
 
 		// Column visibility persistence: WordPress's native wp_ajax_hidden_columns() requires
-		// get_current_screen() to return a non-null WP_Screen.  In admin-ajax.php the screen
-		// object is never initialized automatically (admin-ajax.php does NOT go through
-		// wp-admin/admin.php which calls set_current_screen()), so the native handler
-		// unreliably calls wp_die(0) — silently discarding the user's column preference.
-		//
-		// Fix: intercept the 'hidden-columns' AJAX action at priority 1 (WP core registers
-		// its handler at the default priority 10).  We save directly to user_meta using the
-		// same key that get_hidden_columns($screen) reads, then wp_die(1) so the request
-		// terminates before the broken core handler runs.  For every other admin page we
-		// return early so core's handler is unaffected.
+		// get_current_screen() to return a non-null WP_Screen. In admin-ajax.php the screen
+		// object is never initialized automatically, so the native handler unreliably calls
+		// wp_die(0) — silently discarding the user's column preference. Intercept at priority 1.
 		add_action( 'wp_ajax_hidden-columns', array( $this, 'ajax_save_hidden_columns' ), 1 );
+
+		// "Check status" and "Resend" on a row, without reloading the page. The same buttons
+		// still submit the form when JavaScript is unavailable.
+		add_action( 'wp_ajax_wc_kledo_tx_row_action', array( $this, 'ajax_row_action' ) );
 	}
 
 	/**
-	 * Process a single-row Retry Now form submission early (admin_init, before headers).
+	 * Run a row action and send back the refreshed rows and summary.
 	 *
-	 * Uses Post/Redirect/Get: validates, executes retry, stores result in a
-	 * short-lived transient, then redirects back to the Transactions screen.
-	 * The result notice is picked up in render() on the next GET request.
+	 * Both rows of the order are sent back, not just the clicked one: one read from Kledo answers
+	 * for the sales order and the invoice, and resending a sales order can release a held
+	 * invoice. The page replaces whichever of them it is showing.
+	 *
+	 * The page's own query parameters arrive with the request, so the summary counts are taken
+	 * under the same filters the page shows and a row can be labelled when it has left the tab.
 	 *
 	 * @return void
-	 * @since 1.7.0
+	 * @since 1.8.0
 	 */
-	public function maybe_handle_single_retry(): void {
-		if ( ! is_admin() ) {
-			return;
-		}
-
-		// Only act on our admin page / tab.
-		if ( wc_kledo_get_requested_value( 'page' ) !== WC_Kledo_Admin::PAGE_ID ) {
-			return;
-		}
-
-		if ( wc_kledo_get_requested_value( 'tab' ) !== self::ID ) {
-			return;
-		}
-
-		$request_method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_key( (string) wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : 'get';
-		if ( 'post' !== $request_method ) {
-			return;
-		}
+	public function ajax_row_action(): void {
+		check_ajax_referer( self::AJAX_NONCE_ACTION, 'security' );
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'You do not have permission to perform this action.', 'wc-kledo' ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wc-kledo' ) ), 403 );
 		}
 
-		check_admin_referer( 'wc_kledo_retry_failed_transaction' );
+		$key        = sanitize_text_field( wp_unslash( (string) ( $_POST['key'] ?? '' ) ) );
+		$row_action = sanitize_key( wp_unslash( (string) ( $_POST['row_action'] ?? '' ) ) );
+		$order_ids  = $this->get_order_ids_from_keys( array( $key ) );
 
-		// Single-row retry: wc_kledo_failed_key present but bulk action button NOT submitted.
-		if ( ! isset( $_POST['wc_kledo_failed_key'] ) || isset( $_POST['wc_kledo_bulk_retry_failed'] ) ) {
-			return;
+		if ( empty( $order_ids ) || ! in_array( $row_action, array( 'check', 'resend' ), true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Not checked: the selected row is invalid.', 'wc-kledo' ) ), 400 );
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput
-		$raw_key   = wp_unslash( (string) $_POST['wc_kledo_failed_key'] );
-		$queue_key = is_string( $raw_key ) ? sanitize_text_field( $raw_key ) : '';
+		$notice = 'resend' === $row_action ? $this->handle_single_resend( $key ) : $this->handle_single_check( $key );
+		$order  = wc_get_order( $order_ids[0] );
 
-		wc_kledo_log_info(
-			sprintf(
-				'Kledo Transactions single manual retry start: user_id=%d key=%s',
-				get_current_user_id(),
-				$queue_key
-			)
-		);
-
-		$outcome = self::RETRY_OUTCOME_INVALID_KEY;
-
-		try {
-			if ( '' !== $queue_key ) {
-				$outcome = $this->execute_manual_retry_for_key( $queue_key );
-			}
-		} catch ( Throwable $e ) {
-			$outcome = 'exception';
-
-			wc_kledo_log_warning(
-				sprintf(
-					'Kledo Transactions single retry exception: key=%s message=%s',
-					$queue_key,
-					$e->getMessage()
-				)
-			);
+		if ( ! $order instanceof WC_Order ) {
+			wp_send_json_error( array( 'message' => __( 'Not resent: the WooCommerce order no longer exists. The queue row has been removed.', 'wc-kledo' ) ), 404 );
 		}
 
-		wc_kledo_log_info(
-			sprintf(
-				'Kledo Transactions single manual retry end: key=%s outcome=%s',
-				$queue_key,
-				$outcome
-			)
-		);
+		$request = $this->get_transaction_request_args();
+		$queue   = get_option( 'wc_kledo_failed_transactions', array() );
+		$queue   = is_array( $queue ) ? $queue : array();
+		$hidden  = $this->get_hidden_column_keys();
+		$rows    = array();
 
-		switch ( $outcome ) {
-			case self::RETRY_OUTCOME_SUCCESS:
-				$notice_class = 'notice-success';
-				$notice_text  = __( 'Retry succeeded. The transaction was sent to Kledo successfully.', 'wc-kledo' );
-				break;
-			case self::RETRY_OUTCOME_SKIPPED_SYNCED:
-				$notice_class = 'notice-success';
-				$notice_text  = __( 'Retry skipped: the transaction was already synced. The stale queue row has been removed.', 'wc-kledo' );
-				break;
-			case self::RETRY_OUTCOME_ORDER_MISSING:
-				$notice_class = 'notice-warning';
-				$notice_text  = __( 'Retry skipped: the associated WooCommerce order no longer exists. The queue row has been removed.', 'wc-kledo' );
-				break;
-			case self::RETRY_OUTCOME_FAILED:
-				$notice_class = 'notice-error';
-				$notice_text  = __( 'Retry failed. The API returned an error. The transaction will be retried automatically by the next cron run.', 'wc-kledo' );
-				break;
-			case self::RETRY_OUTCOME_REJECTED:
-				$notice_class = 'notice-error';
-				$notice_text  = __( 'Retry rejected. Kledo refused the data itself, so retrying will keep failing until the order or invoice data is corrected. See the order notes for the exact validation message.', 'wc-kledo' );
-				break;
-			case self::RETRY_OUTCOME_INVALID_KEY:
-			case self::RETRY_OUTCOME_NOT_IN_QUEUE:
-			case self::RETRY_OUTCOME_BAD_ITEM:
-				$notice_class = 'notice-warning';
-				$notice_text  = __( 'Retry skipped: the selected transaction row is no longer in the queue or has an invalid format.', 'wc-kledo' );
-				break;
-			default:
-				$notice_class = 'notice-error';
-				$notice_text  = __( 'An unexpected error occurred during retry. Please check the WooCommerce logs for details.', 'wc-kledo' );
+		foreach ( array( 'order', 'invoice' ) as $type ) {
+			$row                 = WC_Kledo_Admin_Transactions_Query::build_row( $order, $type, $queue );
+			$rows[ $row['key'] ] = $this->get_row_html( $row, $request['status'], $hidden );
 		}
 
-		// Store notice in a short-lived transient for display after redirect.
-		set_transient(
-			self::RETRY_NOTICE_TRANSIENT_PREFIX . get_current_user_id(),
+		$query = new WC_Kledo_Admin_Transactions_Query();
+
+		ob_start();
+		$this->render_summary( $query, $this->get_query_args( $request ), $request );
+		$summary = (string) ob_get_clean();
+
+		wp_send_json_success(
 			array(
-				'class' => $notice_class,
-				'text'  => $notice_text,
-			),
-			2 * MINUTE_IN_SECONDS
-		);
-
-		$redirect_url = $this->get_transactions_screen_url( $this->get_redirect_args_from_post() );
-
-		wc_kledo_log_info(
-			sprintf( 'Kledo Transactions single retry redirect: %s', $redirect_url )
-		);
-
-		wp_safe_redirect( $redirect_url );
-		exit;
-	}
-
-	/**
-	 * Process a bulk Retry Selected form submission early (admin_init, before headers).
-	 *
-	 * Uses Post/Redirect/Get: validates, executes retry for each selected key, stores
-	 * a summary notice in a short-lived transient, then redirects back to the Transactions
-	 * screen. The result notice is picked up in render() on the next GET request.
-	 *
-	 * @return void
-	 * @since 1.7.0
-	 */
-	public function maybe_handle_bulk_retry(): void {
-		if ( ! is_admin() ) {
-			return;
-		}
-
-		// Only act on our admin page / tab.
-		if ( wc_kledo_get_requested_value( 'page' ) !== WC_Kledo_Admin::PAGE_ID ) {
-			return;
-		}
-
-		if ( wc_kledo_get_requested_value( 'tab' ) !== self::ID ) {
-			return;
-		}
-
-		// Bulk retry: Apply button submitted with wc_kledo_bulk_retry_failed=1.
-		if ( empty( $_POST['wc_kledo_bulk_retry_failed'] ) ) {
-			return;
-		}
-
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'You do not have permission to perform this action.', 'wc-kledo' ) );
-		}
-
-		check_admin_referer( 'wc_kledo_retry_failed_transaction' );
-
-		$bulk_action = isset( $_POST['wc_kledo_failed_bulk_action'] )
-			? sanitize_text_field( wp_unslash( $_POST['wc_kledo_failed_bulk_action'] ) )
-			: '';
-
-		// Wrong action selected: redirect with warning, do not process.
-		if ( 'retry_selected' !== $bulk_action ) {
-			set_transient(
-				self::BULK_RETRY_NOTICE_TRANSIENT_PREFIX . get_current_user_id(),
-				array(
-					'class' => 'notice-warning',
-					'text'  => __( 'Choose the bulk action "Retry selected" before applying.', 'wc-kledo' ),
-				),
-				2 * MINUTE_IN_SECONDS
-			);
-
-			wp_safe_redirect( $this->get_transactions_screen_url( $this->get_redirect_args_from_post() ) );
-			exit;
-		}
-
-		$posted_keys = array();
-
-		if ( isset( $_POST['wc_kledo_failed_keys'] ) && is_array( $_POST['wc_kledo_failed_keys'] ) ) {
-			$posted_keys = array_map( 'sanitize_text_field', wp_unslash( $_POST['wc_kledo_failed_keys'] ) );
-		}
-
-		$posted_keys = array_values( array_unique( array_filter( $posted_keys, 'strlen' ) ) );
-
-		// Nothing selected: redirect with warning.
-		if ( empty( $posted_keys ) ) {
-			wc_kledo_log_info(
-				sprintf(
-					'Kledo Transactions bulk manual retry: no rows selected user_id=%d',
-					get_current_user_id()
-				)
-			);
-
-			set_transient(
-				self::BULK_RETRY_NOTICE_TRANSIENT_PREFIX . get_current_user_id(),
-				array(
-					'class' => 'notice-warning',
-					'text'  => __( 'No failed transactions were selected. Choose one or more rows and try again.', 'wc-kledo' ),
-				),
-				2 * MINUTE_IN_SECONDS
-			);
-
-			wp_safe_redirect( $this->get_transactions_screen_url( $this->get_redirect_args_from_post() ) );
-			exit;
-		}
-
-		wc_kledo_log_info(
-			sprintf(
-				'Kledo Transactions bulk manual retry start: user_id=%d count=%d',
-				get_current_user_id(),
-				count( $posted_keys )
+				'rows'    => $rows,
+				'summary' => $summary,
+				'message' => $notice['text'],
+				'level'   => str_replace( 'notice-', '', $notice['class'] ),
 			)
 		);
-
-		$counts = array(
-			'selected' => count( $posted_keys ),
-			'ok'       => 0,
-			'failed'   => 0,
-			'invalid'  => 0,
-		);
-
-		foreach ( $posted_keys as $queue_key ) {
-			try {
-				$outcome = $this->execute_manual_retry_for_key( $queue_key );
-			} catch ( Throwable $e ) {
-				wc_kledo_log_warning(
-					sprintf(
-						'Kledo Transactions bulk retry exception: key=%s message=%s',
-						$queue_key,
-						$e->getMessage()
-					)
-				);
-
-				$outcome = 'exception';
-			}
-
-			if ( self::RETRY_OUTCOME_SUCCESS === $outcome || self::RETRY_OUTCOME_SKIPPED_SYNCED === $outcome || self::RETRY_OUTCOME_ORDER_MISSING === $outcome ) {
-				++$counts['ok'];
-			} elseif ( self::RETRY_OUTCOME_FAILED === $outcome || self::RETRY_OUTCOME_REJECTED === $outcome ) {
-				++$counts['failed'];
-			} else {
-				++$counts['invalid'];
-			}
-		}
-
-		wc_kledo_log_info(
-			sprintf(
-				'Kledo Transactions bulk manual retry end: user_id=%d selected=%d ok=%d failed=%d invalid_or_skipped=%d',
-				get_current_user_id(),
-				$counts['selected'],
-				$counts['ok'],
-				$counts['failed'],
-				$counts['invalid']
-			)
-		);
-
-		$notice_class = ( $counts['failed'] > 0 || $counts['invalid'] > 0 ) ? 'notice-warning' : 'notice-success';
-		$notice_text  = sprintf(
-		/* translators: 1: selected count, 2: succeeded count, 3: failed count, 4: invalid/skipped count */
-			__( 'Bulk retry finished. Selected: %1$d. Succeeded: %2$d. Failed: %3$d. Not processed (invalid or missing row): %4$d.', 'wc-kledo' ),
-			$counts['selected'],
-			$counts['ok'],
-			$counts['failed'],
-			$counts['invalid']
-		);
-
-		set_transient(
-			self::BULK_RETRY_NOTICE_TRANSIENT_PREFIX . get_current_user_id(),
-			array(
-				'class' => $notice_class,
-				'text'  => $notice_text,
-			),
-			2 * MINUTE_IN_SECONDS
-		);
-
-		$redirect_url = $this->get_transactions_screen_url( $this->get_redirect_args_from_post() );
-
-		wc_kledo_log_info(
-			sprintf( 'Kledo Transactions bulk retry redirect: %s', $redirect_url )
-		);
-
-		wp_safe_redirect( $redirect_url );
-		exit;
-	}
-
-	/**
-	 * Build redirect query args from the current POST state (filter/sort/page).
-	 *
-	 * Used by both single and bulk retry handlers to preserve the admin's view state
-	 * across the PRG redirect.
-	 *
-	 * @return array<string, scalar>
-	 * @since 1.7.0
-	 */
-	private function get_redirect_args_from_post(): array {
-		// phpcs:disable WordPress.Security.NonceVerification -- `check_admin_referer()` in retry handlers; POST is only for redirect state preservation.
-		$out = array(
-			self::QUERY_STATUS  => sanitize_key( (string) wp_unslash( $_POST[ self::QUERY_STATUS ] ?? self::STATUS_ALL ) ),
-			self::QUERY_ORDERBY => sanitize_key( (string) wp_unslash( $_POST[ self::QUERY_ORDERBY ] ?? 'created' ) ),
-			self::QUERY_ORDER   => sanitize_key( (string) wp_unslash( $_POST[ self::QUERY_ORDER ] ?? 'desc' ) ),
-			self::QUERY_PAGED   => max( 1, absint( wp_unslash( $_POST[ self::QUERY_PAGED ] ?? '1' ) ) ),
-		);
-
-		$adv_param_keys = array(
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_ATTEMPTS,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_CREATED_DATE,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_NEXT_RETRY_DATE,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_LAST_ERROR,
-		);
-
-		foreach ( $adv_param_keys as $pk ) {
-			if ( ! isset( $_POST[ $pk ] ) || '' === $_POST[ $pk ] ) {
-				continue;
-			}
-			if ( WC_Kledo_Admin_Table_Filter_Handler::PARAM_ATTEMPTS === $pk ) {
-				$out[ $pk ] = (string) max( 0, absint( (string) wp_unslash( $_POST[ $pk ] ) ) );
-				continue;
-			}
-			$out[ $pk ] = sanitize_text_field( (string) wp_unslash( $_POST[ $pk ] ) );
-		}
-		// phpcs:enable WordPress.Security.NonceVerification
-
-		return $out;
 	}
 
 	/**
 	 * Gets the screen settings.
 	 *
 	 * This screen does not use the standard WooCommerce settings API fields.
-	 * We only render a custom table in render().
 	 *
 	 * @return array
 	 * @since 1.5.0
@@ -554,10 +274,301 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Render the transactions table.
+	 * Route a POST on this tab to the matching action, then redirect back.
+	 *
+	 * One form carries every action: a row's "Resend" button (`wc_kledo_failed_key`), a row's
+	 * "Check status" button (`wc_kledo_check_key`), and the bulk Apply button
+	 * (`wc_kledo_bulk_retry_failed`) with its selected rows.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	public function maybe_handle_post(): void {
+		if ( ! is_admin() || ! $this->is_this_tab() ) {
+			return;
+		}
+
+		$request_method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_key( (string) wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : 'get';
+
+		if ( 'post' !== $request_method ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified by check_admin_referer() below before anything is acted on.
+		$is_bulk   = ! empty( $_POST['wc_kledo_bulk_retry_failed'] );
+		$is_resend = isset( $_POST['wc_kledo_failed_key'] );
+		$is_check  = isset( $_POST['wc_kledo_check_key'] );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( ! $is_bulk && ! $is_resend && ! $is_check ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'wc-kledo' ) );
+		}
+
+		check_admin_referer( self::NONCE_ACTION );
+
+		if ( $is_bulk ) {
+			$notice = $this->handle_bulk_action();
+		} elseif ( $is_resend ) {
+			$notice = $this->handle_single_resend( sanitize_text_field( wp_unslash( (string) $_POST['wc_kledo_failed_key'] ) ) );
+		} else {
+			$notice = $this->handle_single_check( sanitize_text_field( wp_unslash( (string) $_POST['wc_kledo_check_key'] ) ) );
+		}
+
+		set_transient( self::NOTICE_TRANSIENT_PREFIX . get_current_user_id(), $notice, 2 * MINUTE_IN_SECONDS );
+
+		wp_safe_redirect( $this->get_transactions_screen_url( $this->get_redirect_args_from_post() ) );
+		exit;
+	}
+
+	/**
+	 * Resend one transaction from its row.
+	 *
+	 * @param  string $queue_key  `type:order_id`.
+	 *
+	 * @return array{class: string, text: string}
+	 * @since 1.8.0
+	 */
+	private function handle_single_resend( string $queue_key ): array {
+		wc_kledo_log_info(
+			sprintf( 'Kledo Transactions single manual retry start: user_id=%d key=%s', get_current_user_id(), $queue_key )
+		);
+
+		try {
+			$outcome = $this->execute_manual_retry_for_key( $queue_key );
+		} catch ( Throwable $exception ) {
+			$outcome = 'exception';
+
+			wc_kledo_log_warning(
+				sprintf( 'Kledo Transactions single retry exception: key=%s message=%s', $queue_key, $exception->getMessage() )
+			);
+		}
+
+		wc_kledo_log_info( sprintf( 'Kledo Transactions single manual retry end: key=%s outcome=%s', $queue_key, $outcome ) );
+
+		switch ( $outcome ) {
+			case self::RETRY_OUTCOME_SUCCESS:
+				return $this->notice( 'notice-success', __( 'Resent. Kledo accepted the transaction; the plugin now checks that it appears in Kledo.', 'wc-kledo' ) );
+			case self::RETRY_OUTCOME_SKIPPED_SYNCED:
+				return $this->notice( 'notice-success', __( 'Nothing to resend: the transaction was already sent. The stale queue row has been removed.', 'wc-kledo' ) );
+			case self::RETRY_OUTCOME_ORDER_MISSING:
+				return $this->notice( 'notice-warning', __( 'Not resent: the WooCommerce order no longer exists. The queue row has been removed.', 'wc-kledo' ) );
+			case self::RETRY_OUTCOME_WAITING:
+				return $this->notice( 'notice-info', __( 'The invoice is waiting for its sales order to exist in Kledo, and will be sent automatically once it does.', 'wc-kledo' ) );
+			case self::RETRY_OUTCOME_FAILED:
+				return $this->notice( 'notice-error', __( 'Resend failed: the request to Kledo did not succeed. See the Notes column for the error.', 'wc-kledo' ) );
+			case self::RETRY_OUTCOME_REJECTED:
+				return $this->notice( 'notice-error', __( 'Kledo rejected the data again. Correct what the error names, then resend. The order notes hold the full validation message.', 'wc-kledo' ) );
+			case self::RETRY_OUTCOME_INVALID_KEY:
+			case self::RETRY_OUTCOME_NOT_IN_QUEUE:
+			case self::RETRY_OUTCOME_BAD_ITEM:
+				return $this->notice( 'notice-warning', __( 'Not resent: this transaction is not waiting to be resent. Refresh the page to see its current state.', 'wc-kledo' ) );
+		}
+
+		return $this->notice( 'notice-error', __( 'An unexpected error occurred during the resend. Please check the WooCommerce logs for details.', 'wc-kledo' ) );
+	}
+
+	/**
+	 * Read one order back from Kledo from its row.
+	 *
+	 * @param  string $queue_key  `type:order_id`.
+	 *
+	 * @return array{class: string, text: string}
+	 * @since 1.8.0
+	 */
+	private function handle_single_check( string $queue_key ): array {
+		$order_ids = $this->get_order_ids_from_keys( array( $queue_key ) );
+
+		if ( empty( $order_ids ) ) {
+			return $this->notice( 'notice-warning', __( 'Not checked: the selected row is invalid.', 'wc-kledo' ) );
+		}
+
+		return $this->notice( 'notice-info', $this->format_check_summary( wc_kledo()->get_transaction_verifier()->check_orders_now( $order_ids ) ) );
+	}
+
+	/**
+	 * Run the bulk action chosen in the dropdown on the selected rows.
+	 *
+	 * @return array{class: string, text: string}
+	 * @since 1.8.0
+	 */
+	private function handle_bulk_action(): array {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified in maybe_handle_post().
+		$bulk_action = isset( $_POST['wc_kledo_failed_bulk_action'] )
+			? sanitize_key( wp_unslash( $_POST['wc_kledo_failed_bulk_action'] ) )
+			: '';
+
+		$posted_keys = array();
+
+		if ( isset( $_POST['wc_kledo_failed_keys'] ) && is_array( $_POST['wc_kledo_failed_keys'] ) ) {
+			$posted_keys = array_map( 'sanitize_text_field', wp_unslash( $_POST['wc_kledo_failed_keys'] ) );
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$posted_keys = array_values( array_unique( array_filter( $posted_keys, 'strlen' ) ) );
+
+		if ( ! in_array( $bulk_action, array( 'retry_selected', 'check_selected' ), true ) ) {
+			return $this->notice( 'notice-warning', __( 'Choose a bulk action before applying.', 'wc-kledo' ) );
+		}
+
+		if ( empty( $posted_keys ) ) {
+			return $this->notice( 'notice-warning', __( 'No transactions were selected. Choose one or more rows and try again.', 'wc-kledo' ) );
+		}
+
+		if ( 'check_selected' === $bulk_action ) {
+			$order_ids = $this->get_order_ids_from_keys( $posted_keys );
+
+			return $this->notice( 'notice-info', $this->format_check_summary( wc_kledo()->get_transaction_verifier()->check_orders_now( $order_ids ) ) );
+		}
+
+		return $this->bulk_resend( $posted_keys );
+	}
+
+	/**
+	 * Resend every selected row that is waiting to be resent.
+	 *
+	 * @param  string[] $posted_keys
+	 *
+	 * @return array{class: string, text: string}
+	 * @since 1.7.0
+	 * @since 1.8.0 Rows that are not resendable are counted as skipped instead of invalid.
+	 */
+	private function bulk_resend( array $posted_keys ): array {
+		wc_kledo_log_info(
+			sprintf( 'Kledo Transactions bulk manual retry start: user_id=%d count=%d', get_current_user_id(), count( $posted_keys ) )
+		);
+
+		$counts = array(
+			'ok'      => 0,
+			'failed'  => 0,
+			'skipped' => 0,
+		);
+
+		foreach ( $posted_keys as $queue_key ) {
+			try {
+				$outcome = $this->execute_manual_retry_for_key( $queue_key );
+			} catch ( Throwable $exception ) {
+				wc_kledo_log_warning(
+					sprintf( 'Kledo Transactions bulk retry exception: key=%s message=%s', $queue_key, $exception->getMessage() )
+				);
+
+				$outcome = 'exception';
+			}
+
+			if ( in_array( $outcome, array( self::RETRY_OUTCOME_SUCCESS, self::RETRY_OUTCOME_WAITING ), true ) ) {
+				++$counts['ok'];
+			} elseif ( in_array( $outcome, array( self::RETRY_OUTCOME_FAILED, self::RETRY_OUTCOME_REJECTED, 'exception' ), true ) ) {
+				++$counts['failed'];
+			} else {
+				++$counts['skipped'];
+			}
+		}
+
+		wc_kledo_log_info(
+			sprintf(
+				'Kledo Transactions bulk manual retry end: user_id=%d ok=%d failed=%d skipped=%d',
+				get_current_user_id(),
+				$counts['ok'],
+				$counts['failed'],
+				$counts['skipped']
+			)
+		);
+
+		return $this->notice(
+			$counts['failed'] > 0 ? 'notice-warning' : 'notice-success',
+			sprintf(
+				/* translators: 1: resent count, 2: failed count, 3: skipped count */
+				__( 'Resend finished. Accepted by Kledo: %1$d. Failed: %2$d. Skipped because they were not waiting to be resent: %3$d.', 'wc-kledo' ),
+				$counts['ok'],
+				$counts['failed'],
+				$counts['skipped']
+			)
+		);
+	}
+
+	/**
+	 * Notice text for a status check.
+	 *
+	 * @param  array $summary  From `WC_Kledo_Transaction_Verifier::check_orders_now()`.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function format_check_summary( array $summary ): string {
+		$parts = array(
+			/* translators: %d: number of orders */
+			sprintf( __( 'Kledo status checked: %d order(s) found in Kledo.', 'wc-kledo' ), $summary['confirmed'] ),
+		);
+
+		if ( $summary['pending'] > 0 ) {
+			/* translators: %d: number of orders */
+			$parts[] = sprintf( __( '%d not found yet; the plugin keeps checking and marks them "Failed in Kledo" if they never appear.', 'wc-kledo' ), $summary['pending'] );
+		}
+
+		if ( $summary['queued'] > 0 ) {
+			/* translators: %d: number of orders */
+			$parts[] = sprintf( __( '%d queued to be checked in the background.', 'wc-kledo' ), $summary['queued'] );
+		}
+
+		return implode( ' ', $parts );
+	}
+
+	/**
+	 * Distinct order ids from `type:order_id` keys.
+	 *
+	 * @param  string[] $keys
+	 *
+	 * @return int[]
+	 * @since 1.8.0
+	 */
+	private function get_order_ids_from_keys( array $keys ): array {
+		$order_ids = array();
+
+		foreach ( $keys as $key ) {
+			$parts = explode( ':', (string) $key );
+
+			if ( 2 === count( $parts ) && in_array( $parts[0], array( 'order', 'invoice' ), true ) && absint( $parts[1] ) > 0 ) {
+				$order_ids[ absint( $parts[1] ) ] = absint( $parts[1] );
+			}
+		}
+
+		return array_values( $order_ids );
+	}
+
+	/**
+	 * Build redirect query args from the current POST state (filter/sort/page).
+	 *
+	 * @return array<string, scalar>
+	 * @since 1.7.0
+	 */
+	private function get_redirect_args_from_post(): array {
+		// phpcs:disable WordPress.Security.NonceVerification -- `check_admin_referer()` in maybe_handle_post(); POST is only for redirect state preservation.
+		$out = array(
+			self::QUERY_STATUS  => sanitize_key( (string) wp_unslash( $_POST[ self::QUERY_STATUS ] ?? 'all' ) ),
+			self::QUERY_ORDERBY => sanitize_key( (string) wp_unslash( $_POST[ self::QUERY_ORDERBY ] ?? 'created' ) ),
+			self::QUERY_ORDER   => sanitize_key( (string) wp_unslash( $_POST[ self::QUERY_ORDER ] ?? 'desc' ) ),
+			self::QUERY_PAGED   => max( 1, absint( wp_unslash( $_POST[ self::QUERY_PAGED ] ?? '1' ) ) ),
+		);
+
+		foreach ( $this->get_filter_param_keys() as $param_key ) {
+			if ( isset( $_POST[ $param_key ] ) && '' !== $_POST[ $param_key ] ) {
+				$out[ $param_key ] = sanitize_text_field( (string) wp_unslash( $_POST[ $param_key ] ) );
+			}
+		}
+		// phpcs:enable WordPress.Security.NonceVerification
+
+		return $out;
+	}
+
+	/**
+	 * Render the screen.
 	 *
 	 * @return void
 	 * @since 1.5.0
+	 * @since 1.8.0 Summary cards, Kledo state tabs and columns, paginated by the database.
 	 */
 	public function render(): void {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -567,516 +578,703 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 		$filter_handler = new WC_Kledo_Admin_Table_Filter_Handler( array( 'screen' => 'wc-kledo-transactions' ) );
 		$filter_handler->fire_before_display();
 
-		$inline_notices = array();
+		$this->render_pending_notice();
 
-		// Read one-shot notice from single-row retry (PRG: set in maybe_handle_single_retry(), consumed here).
-		$single_transient_key = self::RETRY_NOTICE_TRANSIENT_PREFIX . get_current_user_id();
-		$single_notice        = get_transient( $single_transient_key );
-
-		if ( is_array( $single_notice ) && ! empty( $single_notice['class'] ) && ! empty( $single_notice['text'] ) ) {
-			delete_transient( $single_transient_key );
-			$inline_notices[] = $single_notice;
-		}
-
-		// Read one-shot notice from bulk retry (PRG: set in maybe_handle_bulk_retry(), consumed here).
-		$bulk_transient_key = self::BULK_RETRY_NOTICE_TRANSIENT_PREFIX . get_current_user_id();
-		$bulk_notice        = get_transient( $bulk_transient_key );
-
-		if ( is_array( $bulk_notice ) && ! empty( $bulk_notice['class'] ) && ! empty( $bulk_notice['text'] ) ) {
-			delete_transient( $bulk_transient_key );
-			$inline_notices[] = $bulk_notice;
-		}
-
-		$option_name = 'wc_kledo_failed_transactions';
-		$queue       = get_option( $option_name, array() );
-
-		if ( ! is_array( $queue ) ) {
-			$queue = array();
-		}
-
-		$req = $this->get_transaction_request_args();
-
-		// Resolve which columns the current user has opted to hide via Screen Options.
-		// get_hidden_columns() reads from user meta (managewoocommerce_page_wc-kledocolumnshidden).
-		// On first visit (no saved meta), all columns are visible by default.
-		// WordPress' wp_ajax_hidden-columns handler persists user changes automatically.
-		//
-		// IMPORTANT DOM CONTRACT: WP core's common.js saves preferences by scanning
-		// $( '.manage-column[id]' ).filter( ':hidden' ).map( function () { return this.id; } )
-		// which means every hideable <th> MUST carry an `id="<column_key>"` attribute
-		// (matching WP_List_Table::print_column_headers()). Without the id, WP posts an
-		// empty `hidden` list and the user's choice is silently discarded on refresh.
-		$wp_screen      = get_current_screen();
-		$hidden_columns = $wp_screen ? get_hidden_columns( $wp_screen ) : array();
-
-		// Returns the CSS classes for a hideable <th> or <td>.
-		$col_class = static function ( string $key ) use ( $hidden_columns ): string {
-			return ' column-' . $key . ( in_array( $key, $hidden_columns, true ) ? ' hidden' : '' );
-		};
-
-		// Always-visible columns (cb=1, order=1, status=1, actions=1) + up to 5 hideable ones.
-		$hideable_keys = array( 'type', 'attempts', 'created', 'next_retry', 'last_error' );
-		$colspan       = 9 - count( array_intersect( $hideable_keys, $hidden_columns ) );
-
-		$failed_rows = $this->build_failed_rows_from_queue( $queue );
-		$scan        = $this->build_success_rows_from_orders( array_keys( $queue ), $this->get_max_orders_for_success_scan() );
-
-		$success_rows           = $scan['rows'];
-		$success_scan_truncated = ! empty( $scan['truncated'] );
-
-		$filtered = $this->merge_and_filter_rows( $failed_rows, $success_rows, $req['status'] );
-		$filtered = $this->apply_advanced_filters( $filtered, $req['adv'] );
-		$this->sort_rows( $filtered, $req['orderby'], $req['order'] );
-
-		$per_page   = $this->get_items_per_page();
-		$total_rows = count( $filtered );
-		$offset     = ( max( 1, $req['paged'] ) - 1 ) * $per_page;
-		$page_rows  = array_slice( $filtered, $offset, $per_page );
-
-		$order_ids = array();
-
-		foreach ( $page_rows as $r ) {
-			if ( ! empty( $r['order_id'] ) ) {
-				$order_ids[] = (int) $r['order_id'];
-			}
-		}
-
-		$orders_by_id = $this->load_orders_for_queue( array_values( array_unique( $order_ids ) ) );
-
-		$nav_counts = $this->build_nav_counts( $failed_rows, $success_rows, $queue, $success_scan_truncated );
-
-		foreach ( $inline_notices as $notice ) {
-			printf(
-				'<div class="notice %1$s"><p>%2$s</p></div>',
-				esc_attr( $notice['class'] ),
-				esc_html( $notice['text'] )
-			);
-		}
-
-		if ( $success_scan_truncated && in_array(
-			$req['status'],
-			array(
-				self::STATUS_ALL,
-				self::STATUS_SUCCESS,
-			),
-			true
-		)
-		) {
-			printf(
-				'<div class="notice notice-info"><p>%s</p></div>',
-				esc_html(
-					sprintf(
-					/* translators: %d: max number of recent orders scanned for success rows */
-						__( 'Success list is built from the %d most recently modified orders that have Kledo sync meta. Older successes may not appear; use filters or order search if you need a specific order.', 'wc-kledo' ),
-						$this->get_max_orders_for_success_scan()
-					)
-				)
-			);
-		}
-
-		$hidden_args = array_merge(
-			array(
-				'page'              => WC_Kledo_Admin::PAGE_ID,
-				'tab'               => self::ID,
-				self::QUERY_STATUS  => $req['status'],
-				self::QUERY_ORDERBY => $req['orderby'],
-				self::QUERY_ORDER   => $req['order'],
-				self::QUERY_PAGED   => $req['paged'],
-			),
-			$this->adv_filters_to_query_args( $req['adv'] )
-		);
+		$request    = $this->get_transaction_request_args();
+		$query      = new WC_Kledo_Admin_Transactions_Query();
+		$query_args = $this->get_query_args( $request );
+		$page       = $query->get_page( $query_args );
 
 		?>
-		<ul class="subsubsub" style="float:none;margin:0 0 12px;">
-			<?php echo wp_kses_post( $this->get_status_subsubsub_html( $nav_counts, $req ) ); ?>
-		</ul>
+		<div id="wc-kledo-tx-summary">
+			<?php $this->render_summary( $query, $query_args, $request ); ?>
+		</div>
 
-		<div class="wc-kledo-tx-toolbar" style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:12px 16px;margin:0 0 12px;background:#fff;border:1px solid #c3c4c7;border-radius:4px;box-sizing:border-box;">
-			<div class="wc-kledo-tx-bulkactions alignleft actions bulkactions" style="margin:0;flex:0 0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+		<?php $this->render_status_help(); ?>
+
+		<div class="wc-kledo-tx-toolbar">
+			<div class="wc-kledo-tx-bulkactions alignleft actions bulkactions">
 				<label for="wc-kledo-tx-bulk-action" class="screen-reader-text"><?php esc_html_e( 'Bulk actions', 'wc-kledo' ); ?></label>
 				<select name="wc_kledo_failed_bulk_action" id="wc-kledo-tx-bulk-action" form="wc-kledo-transactions-form">
 					<option value=""><?php esc_html_e( 'Bulk actions', 'wc-kledo' ); ?></option>
-					<option value="retry_selected"><?php esc_html_e( 'Retry selected', 'wc-kledo' ); ?></option>
+					<option value="retry_selected"><?php esc_html_e( 'Resend selected (failed only)', 'wc-kledo' ); ?></option>
+					<option value="check_selected"><?php esc_html_e( 'Check status in Kledo', 'wc-kledo' ); ?></option>
 				</select>
 				<button type="submit" form="wc-kledo-transactions-form" name="wc_kledo_bulk_retry_failed" value="1" class="button action"><?php esc_html_e( 'Apply', 'wc-kledo' ); ?></button>
 			</div>
-			<?php $this->render_transactions_advanced_filter_form( $req, $failed_rows, $success_rows ); ?>
+			<?php $this->render_filter_form( $request ); ?>
 		</div>
 
-		<form method="post" class="wc-kledo-transactions-form" id="wc-kledo-transactions-form" action="
-		<?php
-		echo esc_url( $this->get_transactions_screen_url() );
-		?>
-		">
+		<form method="post" class="wc-kledo-transactions-form" id="wc-kledo-transactions-form" action="<?php echo esc_url( $this->get_transactions_screen_url() ); ?>">
 			<?php
-			wp_nonce_field( 'wc_kledo_retry_failed_transaction' );
+			wp_nonce_field( self::NONCE_ACTION );
+
+			foreach ( $this->get_list_url_args( $request ) as $hidden_key => $hidden_value ) {
+				printf( '<input type="hidden" name="%1$s" value="%2$s"/>', esc_attr( $hidden_key ), esc_attr( (string) $hidden_value ) );
+			}
+
+			$this->render_table( $page['rows'], $request );
 			?>
-			<?php
-			foreach ( $hidden_args as $hk => $hv ) :
-				?>
-				<input type="hidden" name="
-				<?php
-				echo esc_attr( $hk );
-				?>
-				" value="
-				<?php
-				echo esc_attr( (string) $hv );
-				?>
-				"/>
-				<?php
-			endforeach;
-			?>
-
-			<table class="wp-list-table widefat fixed striped wc-kledo-transactions-table">
-				<thead>
-					<tr>
-						<th id="cb" scope="col" class="manage-column column-cb check-column">
-							<span class="wc-kledo-tx-th-cb-inner">
-								<input type="checkbox" id="wc-kledo-tx-select-all" aria-label="
-								<?php
-								esc_attr_e( 'Select all retryable rows', 'wc-kledo' );
-								?>
-								"/>
-							</span>
-						</th>
-						<th id="order" scope="col" class="manage-column column-order <?php echo esc_attr( $this->get_sortable_th_class( 'order', $req ) ); ?>">
-						<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo $this->get_sortable_column_header( __( 'Order', 'wc-kledo' ), 'order', $req );
-						?>
-						</th>
-						<th id="type" scope="col" class="manage-column
-						<?php
-						echo esc_attr( $col_class( 'type' ) );
-						?>
-						<?php echo esc_attr( $this->get_sortable_th_class( 'type', $req ) ); ?>">
-						<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo $this->get_sortable_column_header( __( 'Type', 'wc-kledo' ), 'type', $req );
-						?>
-						</th>
-						<th id="status" scope="col" class="manage-column column-status <?php echo esc_attr( $this->get_sortable_th_class( 'status', $req ) ); ?>">
-						<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo $this->get_sortable_column_header( __( 'Status', 'wc-kledo' ), 'status', $req );
-						?>
-						</th>
-						<th id="attempts" scope="col" class="manage-column
-						<?php
-						echo esc_attr( $col_class( 'attempts' ) );
-						?>
-						">
-						<?php
-							esc_html_e( 'Attempts', 'wc-kledo' );
-						?>
-						</th>
-						<th id="created" scope="col" class="manage-column
-						<?php
-						echo esc_attr( $col_class( 'created' ) );
-						?>
-						<?php echo esc_attr( $this->get_sortable_th_class( 'created', $req ) ); ?>">
-						<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo $this->get_sortable_column_header( __( 'Created At', 'wc-kledo' ), 'created', $req );
-						?>
-						</th>
-						<th id="next_retry" scope="col" class="manage-column
-						<?php
-						echo esc_attr( $col_class( 'next_retry' ) );
-						?>
-						<?php echo esc_attr( $this->get_sortable_th_class( 'next_retry', $req ) ); ?>">
-						<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo $this->get_sortable_column_header( __( 'Next Retry', 'wc-kledo' ), 'next_retry', $req );
-						?>
-						</th>
-						<th id="last_error" scope="col" class="manage-column
-						<?php
-						echo esc_attr( $col_class( 'last_error' ) );
-						?>
-						">
-						<?php
-							esc_html_e( 'Last Error', 'wc-kledo' );
-						?>
-						</th>
-						<th id="actions" scope="col" class="manage-column column-actions">
-						<?php
-							esc_html_e( 'Actions', 'wc-kledo' );
-						?>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php
-					if ( empty( $page_rows ) ) :
-						?>
-						<tr>
-							<td colspan="
-							<?php
-							echo esc_attr( (string) $colspan );
-							?>
-							">
-							<?php
-								esc_html_e( 'No transactions match the current filter.', 'wc-kledo' );
-							?>
-							</td>
-						</tr>
-						<?php
-					else :
-						?>
-						<?php
-						foreach ( $page_rows as $row ) :
-							?>
-							<?php
-							$order_id   = (int) ( $row['order_id'] ?? 0 );
-							$type       = (string) ( $row['type'] ?? '' );
-							$qkey       = isset( $row['queue_key'] ) ? (string) $row['queue_key'] : '';
-							$attempts   = isset( $row['attempts'] ) ? (int) $row['attempts'] : 0;
-							$created    = isset( $row['created_at'] ) ? (int) $row['created_at'] : 0;
-							$next_run   = isset( $row['next_run_at'] ) ? (int) $row['next_run_at'] : 0;
-							$last_error = (string) ( $row['last_error'] ?? '' );
-							$dstatus    = (string) ( $row['display_status'] ?? '' );
-
-							$order_obj  = ( $order_id && isset( $orders_by_id[ $order_id ] ) ) ? $orders_by_id[ $order_id ] : null;
-							$order_cell = $this->format_order_identifier_cell( $order_id, $order_obj, $qkey ? $qkey : ( $type . ':' . $order_id ) );
-
-							$status_label = $this->get_display_status_label( $dstatus );
-							$can_retry    = ( 'queue' === ( $row['source'] ?? '' ) ) && '' !== $qkey;
-							?>
-							<tr>
-								<th scope="row" class="check-column">
-									<?php
-									if ( $can_retry ) :
-										?>
-										<input type="checkbox" name="wc_kledo_failed_keys[]" value="
-										<?php
-										echo esc_attr( $qkey );
-										?>
-										"/>
-										<?php
-									else :
-										?>
-										<span class="wc-kledo-tx-no-cb" aria-hidden="true">&mdash;</span>
-										<?php
-									endif;
-									?>
-								</th>
-								<td class="column-order">
-								<?php
-									echo wp_kses_post( $order_cell );
-								?>
-								</td>
-								<td class="
-								<?php
-								echo esc_attr( ltrim( $col_class( 'type' ) ) );
-								?>
-								">
-								<?php
-									echo esc_html( $type );
-								?>
-								</td>
-								<td class="column-status">
-								<?php
-									echo esc_html( $status_label );
-								?>
-								</td>
-								<td class="
-								<?php
-								echo esc_attr( ltrim( $col_class( 'attempts' ) ) );
-								?>
-								">
-								<?php
-									echo 'queue' === ( $row['source'] ?? '' ) ? esc_html( (string) $attempts ) : '&mdash;';
-								?>
-								</td>
-								<td class="
-								<?php
-								echo esc_attr( ltrim( $col_class( 'created' ) ) );
-								?>
-								">
-								<?php
-									echo esc_html( wc_kledo_format_admin_timestamp( $created, 'past' ) );
-								?>
-								</td>
-								<td class="
-								<?php
-								echo esc_attr( ltrim( $col_class( 'next_retry' ) ) );
-								?>
-								">
-								<?php
-									echo 'queue' === ( $row['source'] ?? '' ) ? esc_html( wc_kledo_format_admin_timestamp( $next_run, 'future' ) ) : '&mdash;';
-								?>
-								</td>
-								<td class="
-								<?php
-								echo esc_attr( ltrim( $col_class( 'last_error' ) ) );
-								?>
-								">
-								<?php
-									echo wp_kses_post( $this->format_last_error_cell( $last_error ) );
-								?>
-								</td>
-								<td class="column-actions">
-									<?php
-									if ( $can_retry ) :
-										?>
-										<button type="submit" class="button" name="wc_kledo_failed_key" value="
-										<?php
-										echo esc_attr( $qkey );
-										?>
-										">
-											<?php
-											esc_html_e( 'Retry now', 'wc-kledo' );
-											?>
-										</button>
-										<?php
-									else :
-										?>
-										&mdash;
-										<?php
-									endif;
-									?>
-								</td>
-							</tr>
-							<?php
-						endforeach;
-						?>
-						<?php
-					endif;
-					?>
-				</tbody>
-			</table>
 
 			<div class="tablenav bottom">
-				<?php
-				$this->render_pagination_controls( $total_rows, $req, $per_page, 'bottom' );
-				?>
+				<?php $this->render_pagination_controls( $page['total_orders'], $page['total_pages'], $request ); ?>
 				<br class="clear"/>
 			</div>
 		</form>
-		<script>
-			(function () {
-				let master = document.getElementById('wc-kledo-tx-select-all');
-				let form = document.getElementById('wc-kledo-transactions-form');
-				if (!master || !form) {
-					return;
-				}
-				master.addEventListener('change', function () {
-					let boxes = form.querySelectorAll('input[name="wc_kledo_failed_keys[]"]');
-					for (let i = 0; i < boxes.length; i++) {
-						boxes[i].checked = master.checked;
-					}
-				});
-			})();
-		</script>
 		<?php
 	}
 
 	/**
-	 * GET args driving the transactions list (server-side filter, sort, pagination).
+	 * The arguments of `WC_Kledo_Admin_Transactions_Query` for a request bundle.
 	 *
-	 * @return array{status:string,orderby:string,order:string,paged:int,adv:array<string, mixed>}
+	 * @param  array $request  From `get_transaction_request_args()`.
+	 *
+	 * @return array
+	 * @since 1.8.0
+	 */
+	private function get_query_args( array $request ): array {
+		return array(
+			'tab'       => $request['status'],
+			'type'      => $request['filters']['type'] ?? '',
+			'date_from' => $request['filters']['date_from'] ?? '',
+			'date_to'   => $request['filters']['date_to'] ?? '',
+			'order_id'  => $request['filters']['order_id'] ?? 0,
+			'orderby'   => $request['orderby'],
+			'order'     => $request['order'],
+			'paged'     => $request['paged'],
+			'per_page'  => $this->get_items_per_page(),
+		);
+	}
+
+	/**
+	 * Summary cards and tab links — the part of the screen a row action can change.
+	 *
+	 * Rendered on its own so the AJAX row actions can send it back and replace it in place.
+	 *
+	 * @param  \WC_Kledo_Admin_Transactions_Query $query
+	 * @param  array                              $query_args
+	 * @param  array                              $request
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_summary( WC_Kledo_Admin_Transactions_Query $query, array $query_args, array $request ): void {
+		$tab_counts = $query->get_tab_counts( $query_args );
+
+		$this->render_summary_cards( $tab_counts, $query->get_not_sent_counts(), $request );
+
+		echo '<ul class="subsubsub wc-kledo-tx-tabs">' . wp_kses_post( $this->get_status_subsubsub_html( $tab_counts, $request ) ) . '</ul>';
+	}
+
+	/**
+	 * Show the result of the last action on this screen, once.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_pending_notice(): void {
+		$transient_key = self::NOTICE_TRANSIENT_PREFIX . get_current_user_id();
+		$notice        = get_transient( $transient_key );
+
+		if ( ! is_array( $notice ) || empty( $notice['class'] ) || empty( $notice['text'] ) ) {
+			return;
+		}
+
+		delete_transient( $transient_key );
+
+		printf( '<div class="notice %1$s"><p>%2$s</p></div>', esc_attr( $notice['class'] ), esc_html( $notice['text'] ) );
+	}
+
+	/**
+	 * The four summary cards above the table.
+	 *
+	 * Three link to their tab; "Not sent" links to the WooCommerce order list with the Kledo filter
+	 * applied, because a transaction that was never sent has no row here.
+	 *
+	 * @param  array<string, int>              $tab_counts
+	 * @param  array{order: int, invoice: int} $not_sent
+	 * @param  array                           $request
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_summary_cards( array $tab_counts, array $not_sent, array $request ): void {
+		$cards = array(
+			array(
+				'tab'         => 'confirmed',
+				'count'       => $tab_counts['confirmed'] ?? 0,
+				'label'       => __( 'In Kledo', 'wc-kledo' ),
+				'description' => __( 'Confirmed to exist in Kledo.', 'wc-kledo' ),
+				'modifier'    => 'ok',
+			),
+			array(
+				'tab'         => 'pending',
+				'count'       => $tab_counts['pending'] ?? 0,
+				'label'       => __( 'Waiting for Kledo', 'wc-kledo' ),
+				'description' => __( 'Sent, not confirmed yet. Checked automatically.', 'wc-kledo' ),
+				'modifier'    => 'pending',
+			),
+			array(
+				'tab'         => 'failed',
+				'count'       => ( $tab_counts['send_failed'] ?? 0 ) + ( $tab_counts['rejected'] ?? 0 ) + ( $tab_counts['missing'] ?? 0 ),
+				'label'       => __( 'Needs attention', 'wc-kledo' ),
+				'description' => __( 'Send failed, rejected, or failed in Kledo.', 'wc-kledo' ),
+				'modifier'    => 'failed',
+			),
+		);
+
+		echo '<div class="wc-kledo-tx-cards">';
+
+		foreach ( $cards as $card ) {
+			// "Needs attention" spans three tabs; it opens the one with rows in it first.
+			$target_tab = $card['tab'];
+
+			if ( 'failed' === $target_tab ) {
+				$target_tab = 'send_failed';
+
+				foreach ( array( 'missing', 'rejected', 'send_failed' ) as $failed_tab ) {
+					if ( ( $tab_counts[ $failed_tab ] ?? 0 ) > 0 ) {
+						$target_tab = $failed_tab;
+					}
+				}
+			}
+
+			printf(
+				'<a class="wc-kledo-tx-card wc-kledo-tx-card--%1$s" href="%2$s"><span class="wc-kledo-tx-card-count">%3$s</span><span class="wc-kledo-tx-card-label">%4$s</span><span class="wc-kledo-tx-card-description">%5$s</span></a>',
+				esc_attr( $card['modifier'] ),
+				esc_url(
+					$this->get_transactions_screen_url(
+						array_merge(
+							$this->get_filter_url_args( $request ),
+							array( self::QUERY_STATUS => $target_tab )
+						)
+					)
+				),
+				esc_html( number_format_i18n( (int) $card['count'] ) ),
+				esc_html( $card['label'] ),
+				esc_html( $card['description'] )
+			);
+		}
+
+		printf(
+			'<div class="wc-kledo-tx-card wc-kledo-tx-card--none"><span class="wc-kledo-tx-card-count">%1$s</span><span class="wc-kledo-tx-card-label">%2$s</span><span class="wc-kledo-tx-card-description"><a href="%3$s">%4$s</a> &middot; <a href="%5$s">%6$s</a></span></div>',
+			esc_html( number_format_i18n( $not_sent['order'] + $not_sent['invoice'] ) ),
+			esc_html__( 'Not sent', 'wc-kledo' ),
+			esc_url( $this->get_orders_list_url( 'order', array( 'wc-processing', 'wc-completed' ) ) ),
+			/* translators: %s: number of orders */
+			esc_html( sprintf( __( '%s sales orders', 'wc-kledo' ), number_format_i18n( $not_sent['order'] ) ) ),
+			esc_url( $this->get_orders_list_url( 'invoice', array( 'wc-completed' ) ) ),
+			/* translators: %s: number of orders */
+			esc_html( sprintf( __( '%s invoices', 'wc-kledo' ), number_format_i18n( $not_sent['invoice'] ) ) )
+		);
+
+		echo '</div>';
+	}
+
+	/**
+	 * URL of the WooCommerce order list, filtered to orders whose `$type` was never sent.
+	 *
+	 * Links to the first status only: the order list filters by one status at a time.
+	 *
+	 * @param  string   $type
+	 * @param  string[] $statuses
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function get_orders_list_url( string $type, array $statuses ): string {
+		$uses_hpos = wc_kledo_uses_hpos();
+
+		$args = array( WC_Kledo_Admin_Order_Filter::PARAMS[ $type ] => 'not_sent' );
+
+		if ( 'invoice' === $type ) {
+			$args[ $uses_hpos ? 'status' : 'post_status' ] = $statuses[0];
+		}
+
+		return $uses_hpos
+			? add_query_arg( array_merge( array( 'page' => 'wc-orders' ), $args ), admin_url( 'admin.php' ) )
+			: add_query_arg( array_merge( array( 'post_type' => 'shop_order' ), $args ), admin_url( 'edit.php' ) );
+	}
+
+	/**
+	 * The collapsible "What do the statuses mean?" panel.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_status_help(): void {
+		$states = array( 'confirmed', 'verifying', 'waiting_sales_order', 'legacy_synced', 'retrying', 'failed', 'rejected', 'missing' );
+
+		echo '<details class="wc-kledo-tx-help"><summary>' . esc_html__( 'What do the statuses mean?', 'wc-kledo' ) . '</summary>';
+		echo '<p>' . esc_html__( 'Kledo answers a send as soon as it has queued the transaction, before creating it. The plugin then reads every transaction back from Kledo, so "In Kledo" means it was actually found there.', 'wc-kledo' ) . '</p>';
+		echo '<table class="widefat striped"><tbody>';
+
+		foreach ( $states as $state ) {
+			$badge = WC_Kledo_Status_Badge::describe( $state, 'order' );
+
+			printf(
+				'<tr><td class="wc-kledo-tx-help-badge">%1$s</td><td>%2$s%3$s</td></tr>',
+				WC_Kledo_Status_Badge::render( $state, 'order' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside render().
+				esc_html( $badge['description'] ),
+				'' !== $badge['action'] ? ' <em>' . esc_html( $badge['action'] ) . '</em>' : ''
+			);
+		}
+
+		echo '</tbody></table></details>';
+	}
+
+	/**
+	 * The transactions table.
+	 *
+	 * @param  array $rows
+	 * @param  array $request
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_table( array $rows, array $request ): void {
+		$columns       = $this->get_columns();
+		$hidden        = $this->get_hidden_column_keys();
+		$visible_count = 1 + count( $columns ) - count( array_intersect( array_keys( $this->get_hideable_columns() ), $hidden ) );
+
+		?>
+		<table class="wp-list-table widefat fixed striped wc-kledo-transactions-table" data-tab="<?php echo esc_attr( $request['status'] ); ?>">
+			<thead>
+				<tr>
+					<td id="cb" class="manage-column column-cb check-column">
+						<label class="screen-reader-text" for="wc-kledo-tx-select-all"><?php esc_html_e( 'Select all rows', 'wc-kledo' ); ?></label>
+						<input type="checkbox" id="wc-kledo-tx-select-all"/>
+					</td>
+					<?php
+					foreach ( $columns as $key => $label ) {
+						$classes = 'manage-column ' . $this->get_column_classes( $key, $hidden );
+
+						if ( 'order' === $key ) {
+							$classes .= ' ' . $this->get_sortable_th_class( 'order', $request );
+						}
+
+						printf(
+							'<th id="%1$s" scope="col" class="%2$s">%3$s</th>',
+							esc_attr( $key ),
+							esc_attr( $classes ),
+							'order' === $key
+								? $this->get_sortable_column_header( $label, 'order', $request ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside.
+								: esc_html( $label )
+						);
+					}
+					?>
+				</tr>
+			</thead>
+			<tbody id="the-list">
+				<?php if ( empty( $rows ) ) : ?>
+					<tr class="no-items">
+						<td class="colspanchange" colspan="<?php echo esc_attr( (string) $visible_count ); ?>"><?php echo esc_html( $this->get_empty_message( $request['status'] ) ); ?></td>
+					</tr>
+				<?php else : ?>
+					<?php
+					foreach ( $rows as $row ) {
+						echo $this->get_row_html( $row, $request['status'], $hidden ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside.
+					}
+					?>
+				<?php endif; ?>
+			</tbody>
+		</table>
+		<?php
+	}
+
+	/**
+	 * The table columns after the checkbox, in order.
+	 *
+	 * Five instead of the nine 1.8.0 started with: everything about the order — its status, its
+	 * date and the actions — sits in the first column, which is also the one WordPress keeps on a
+	 * narrow screen, so the actions are never the column that scrolls out of view.
+	 *
+	 * @return array<string, string>
+	 * @since 1.8.0
+	 */
+	private function get_columns(): array {
+		return array(
+			'order'      => __( 'Order', 'wc-kledo' ),
+			'type'       => __( 'Transaction', 'wc-kledo' ),
+			'status'     => __( 'Status in Kledo', 'wc-kledo' ),
+			'attempts'   => __( 'Attempts', 'wc-kledo' ),
+			'last_error' => __( 'Notes', 'wc-kledo' ),
+		);
+	}
+
+	/**
+	 * CSS classes of a column's header and cells.
+	 *
+	 * @param  string   $key
+	 * @param  string[] $hidden
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function get_column_classes( string $key, array $hidden ): string {
+		$classes = 'column-' . $key;
+
+		if ( 'order' === $key ) {
+			$classes .= ' column-primary';
+		}
+
+		if ( isset( $this->get_hideable_columns()[ $key ] ) && in_array( $key, $hidden, true ) ) {
+			$classes .= ' hidden';
+		}
+
+		return $classes;
+	}
+
+	/**
+	 * Columns the current user has hidden through Screen Options.
+	 *
+	 * Read from the same user option `get_hidden_columns()` uses, so it also works in an AJAX
+	 * request, where there is no current screen to ask.
+	 *
+	 * @return string[]
+	 * @since 1.8.0
+	 */
+	private function get_hidden_column_keys(): array {
+		$hidden = get_user_option( sprintf( 'managewoocommerce_page_%scolumnshidden', WC_Kledo_Admin::PAGE_ID ) );
+
+		return is_array( $hidden ) ? $hidden : $this->get_default_hidden_columns();
+	}
+
+	/**
+	 * Columns hidden until the user chooses otherwise.
+	 *
+	 * Attempts only matter for a failed send, and the Notes column already says when the next
+	 * retry is due for those, so it starts out hidden to give the other columns room.
+	 *
+	 * @return string[]
+	 * @since 1.8.0
+	 */
+	private function get_default_hidden_columns(): array {
+		return array( 'attempts' );
+	}
+
+	/**
+	 * Apply the default hidden columns to the Screen Options checkboxes.
+	 *
+	 * @param  array      $hidden
+	 * @param  \WP_Screen $screen
+	 *
+	 * @return array
+	 * @since 1.8.0
+	 */
+	public function filter_default_hidden_columns( $hidden, $screen ): array {
+		$hidden = is_array( $hidden ) ? $hidden : array();
+
+		if ( $screen instanceof WP_Screen && 'woocommerce_page_' . WC_Kledo_Admin::PAGE_ID === $screen->id ) {
+			return array_merge( $hidden, $this->get_default_hidden_columns() );
+		}
+
+		return $hidden;
+	}
+
+	/**
+	 * One transaction row, as HTML.
+	 *
+	 * Used both for the page and for the AJAX row actions, which replace the row in place.
+	 *
+	 * @param  array    $row     From `WC_Kledo_Admin_Transactions_Query`.
+	 * @param  string   $tab     The tab being shown.
+	 * @param  string[] $hidden  Hidden column keys.
+	 *
+	 * @return string Escaped HTML.
+	 * @since 1.8.0
+	 */
+	public function get_row_html( array $row, string $tab, array $hidden ): string {
+		/** @var WC_Order $order */
+		$order      = $row['order'];
+		$type       = $row['type'];
+		$state      = $row['state'];
+		$queue_item = $row['queue_item'];
+		$badge      = WC_Kledo_Status_Badge::describe( $state, $type );
+		$date       = $order->get_date_created();
+		$columns    = $this->get_columns();
+
+		$cells = array();
+
+		// Order: identity, WooCommerce status and date, then the actions — kept in this column so
+		// they stay next to the order number and survive the narrow-screen collapse.
+		$actions = array(
+			'check' => sprintf(
+				'<button type="submit" class="button-link wc-kledo-tx-action" name="wc_kledo_check_key" value="%1$s" data-action="check">%2$s</button>',
+				esc_attr( $row['key'] ),
+				esc_html__( 'Check status', 'wc-kledo' )
+			),
+		);
+
+		if ( in_array( $state, self::RESENDABLE_STATES, true ) ) {
+			$actions['resend'] = sprintf(
+				'<button type="submit" class="button-link wc-kledo-tx-action" name="wc_kledo_failed_key" value="%1$s" data-action="resend">%2$s</button>',
+				esc_attr( $row['key'] ),
+				esc_html__( 'Resend', 'wc-kledo' )
+			);
+		}
+
+		$actions['view'] = sprintf( '<a href="%1$s">%2$s</a>', esc_url( $order->get_edit_order_url() ), esc_html__( 'Open order', 'wc-kledo' ) );
+
+		if ( ! in_array( $state, array( 'confirmed', 'verifying', 'waiting_sales_order' ), true ) ) {
+			$actions['diagnose'] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_url( WC_Kledo_Diagnostics_Screen::get_url_for_order( $order->get_id() ) ),
+				esc_html__( 'Diagnose', 'wc-kledo' )
+			);
+		}
+
+		$action_html = array();
+
+		foreach ( $actions as $action_key => $html ) {
+			$action_html[] = sprintf( '<span class="%1$s">%2$s</span>', esc_attr( $action_key ), $html );
+		}
+
+		$cells['order'] = $this->format_order_identifier_cell( $order )
+			. sprintf(
+				'<div class="wc-kledo-tx-order-meta">%1$s &middot; %2$s</div>',
+				esc_html( wc_get_order_status_name( $order->get_status() ) ),
+				esc_html( $date ? wc_kledo_format_admin_timestamp( $date->getTimestamp() ) : '—' )
+			)
+			. '<div class="row-actions visible wc-kledo-tx-actions">' . implode( ' | ', $action_html ) . '</div>'
+			. '<div class="wc-kledo-tx-row-message" role="status" aria-live="polite"></div>'
+			. '<button type="button" class="toggle-row"><span class="screen-reader-text">' . esc_html__( 'Show more details', 'wc-kledo' ) . '</span></button>';
+
+		$cells['type'] = esc_html( WC_Kledo_Status_Badge::type_label( $type ) );
+
+		// Status: the badge, then what identifies it in Kledo and when that was last confirmed.
+		$status_html = WC_Kledo_Status_Badge::render( $state, $type, $row['reference'] );
+
+		if ( '' !== $row['reference'] ) {
+			/* translators: %s: Kledo reference number */
+			$status_html .= '<span class="wc-kledo-tx-detail">' . esc_html( sprintf( __( 'Kledo: %s', 'wc-kledo' ), $row['reference'] ) ) . '</span>';
+		}
+
+		if ( $row['checked_at'] > 0 ) {
+			/* translators: %s: date and time */
+			$status_html .= '<span class="wc-kledo-tx-detail">' . esc_html( sprintf( __( 'Checked: %s', 'wc-kledo' ), wc_kledo_format_admin_timestamp( $row['checked_at'], 'past' ) ) ) . '</span>';
+		}
+
+		$moved_to = $this->get_moved_tab_label( $state, $tab );
+
+		if ( '' !== $moved_to ) {
+			/* translators: %s: name of the tab the row now belongs to */
+			$status_html .= '<span class="wc-kledo-tx-moved">' . esc_html( sprintf( __( 'Moved to: %s', 'wc-kledo' ), $moved_to ) ) . '</span>';
+		}
+
+		$cells['status'] = $status_html;
+
+		// Attempts: only meaningful for a send that failed, and only while it sits in the queue.
+		$attempts_html = '&mdash;';
+
+		if ( null !== $queue_item ) {
+			/* translators: %d: number of attempts */
+			$attempts_html = esc_html( sprintf( _n( '%d attempt', '%d attempts', (int) ( $queue_item['attempts'] ?? 0 ), 'wc-kledo' ), (int) ( $queue_item['attempts'] ?? 0 ) ) );
+			$next_run      = (int) ( $queue_item['next_run_at'] ?? 0 );
+
+			if ( $next_run > 0 && in_array( $state, array( 'retrying', 'waiting_sales_order' ), true ) ) {
+				/* translators: %s: date and time */
+				$attempts_html .= '<span class="wc-kledo-tx-detail">' . esc_html( sprintf( __( 'Next retry: %s', 'wc-kledo' ), wc_kledo_format_admin_timestamp( $next_run, 'future' ) ) ) . '</span>';
+			}
+		}
+
+		$cells['attempts'] = $attempts_html;
+
+		// Notes: what went wrong, then what to do about it.
+		$last_error = null !== $queue_item ? (string) ( $queue_item['last_error'] ?? '' ) : '';
+		$notes_html = '' !== $last_error ? $this->format_last_error_cell( $last_error ) : '';
+
+		if ( '' !== $badge['action'] ) {
+			$notes_html .= '<span class="wc-kledo-tx-next-step">' . esc_html( $badge['action'] ) . '</span>';
+		}
+
+		$cells['last_error'] = '' !== $notes_html ? $notes_html : '&mdash;';
+
+		$html = sprintf(
+			'<tr class="wc-kledo-tx-row" data-key="%1$s"><th scope="row" class="check-column"><label class="screen-reader-text" for="wc-kledo-tx-cb-%2$s">%3$s</label><input type="checkbox" id="wc-kledo-tx-cb-%2$s" name="wc_kledo_failed_keys[]" value="%1$s"/></th>',
+			esc_attr( $row['key'] ),
+			esc_attr( str_replace( ':', '-', $row['key'] ) ),
+			esc_html__( 'Select row', 'wc-kledo' )
+		);
+
+		foreach ( array_keys( $columns ) as $key ) {
+			$html .= sprintf(
+				'<td class="%1$s" data-colname="%2$s">%3$s</td>',
+				esc_attr( $this->get_column_classes( $key, $hidden ) . ( 'order' === $key ? ' has-row-actions' : '' ) ),
+				esc_attr( $columns[ $key ] ),
+				$cells[ $key ]
+			);
+		}
+
+		return $html . '</tr>';
+	}
+
+	/**
+	 * Name of the tab a row now belongs to, when it no longer matches the one being shown.
+	 *
+	 * A row checked from the "Waiting for Kledo" tab that turns out to be in Kledo is left where
+	 * it is — removing it under the admin's cursor reads as if it vanished — and labelled instead.
+	 *
+	 * @param  string $state
+	 * @param  string $tab
+	 *
+	 * @return string Empty when the row still belongs on `$tab`.
+	 * @since 1.8.0
+	 */
+	private function get_moved_tab_label( string $state, string $tab ): string {
+		$tabs = WC_Kledo_Admin_Transactions_Query::get_tabs();
+
+		if ( 'all' === $tab || ! isset( $tabs[ $tab ] ) ) {
+			return '';
+		}
+
+		$belongs = 'legacy_synced' === $state ? $tabs[ $tab ]['legacy'] : in_array( $state, $tabs[ $tab ]['states'], true );
+
+		if ( $belongs ) {
+			return '';
+		}
+
+		foreach ( $tabs as $tab_key => $definition ) {
+			if ( 'all' !== $tab_key && ( in_array( $state, $definition['states'], true ) || ( 'legacy_synced' === $state && $definition['legacy'] ) ) ) {
+				return $this->get_tab_labels()[ $tab_key ];
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Message for a tab with no rows.
+	 *
+	 * @param  string $tab
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function get_empty_message( string $tab ): string {
+		switch ( $tab ) {
+			case 'pending':
+				return __( 'Nothing is waiting for Kledo.', 'wc-kledo' );
+			case 'confirmed':
+				return __( 'No transaction has been confirmed in Kledo yet for the current filter.', 'wc-kledo' );
+			case 'send_failed':
+				return __( 'No failed sends. Every request reached Kledo.', 'wc-kledo' );
+			case 'rejected':
+				return __( 'Kledo has not rejected any transaction.', 'wc-kledo' );
+			case 'missing':
+				return __( 'No transaction went missing in Kledo.', 'wc-kledo' );
+		}
+
+		return __( 'No transactions match the current filter.', 'wc-kledo' );
+	}
+
+	/**
+	 * GET args driving the list (tab, filters, sort, pagination).
+	 *
+	 * @return array{status: string, orderby: string, order: string, paged: int, filters: array<string, mixed>}
+	 * @since 1.5.0
 	 */
 	private function get_transaction_request_args(): array {
-		// phpcs:disable WordPress.Security.NonceVerification
-		$src = $_REQUEST;
+		$status = sanitize_key( (string) wc_kledo_get_requested_value( self::QUERY_STATUS, 'all' ) );
 
-		$status = isset( $src[ self::QUERY_STATUS ] )
-			? sanitize_key( wp_unslash( $src[ self::QUERY_STATUS ] ) )
-			: self::STATUS_ALL;
+		// Values used by 1.7.x links and bookmarks.
+		$legacy_tabs = array(
+			'success'  => 'all',
+			'failed'   => 'send_failed',
+			'retrying' => 'send_failed',
+		);
 
-		$allowed_status = array( self::STATUS_ALL, self::STATUS_SUCCESS, self::STATUS_FAILED, self::STATUS_RETRYING );
-
-		if ( ! in_array( $status, $allowed_status, true ) ) {
-			$status = self::STATUS_ALL;
+		if ( isset( $legacy_tabs[ $status ] ) ) {
+			$status = $legacy_tabs[ $status ];
 		}
 
-		$orderby = isset( $src[ self::QUERY_ORDERBY ] )
-			? sanitize_key( wp_unslash( $src[ self::QUERY_ORDERBY ] ) )
-			: 'created';
-
-		$allowed_orderby = array( 'created', 'order', 'type', 'status', 'next_retry' );
-
-		if ( ! in_array( $orderby, $allowed_orderby, true ) ) {
-			$orderby = 'created';
+		if ( ! array_key_exists( $status, WC_Kledo_Admin_Transactions_Query::get_tabs() ) ) {
+			$status = 'all';
 		}
 
-		$order = isset( $src[ self::QUERY_ORDER ] )
-			? strtolower( sanitize_text_field( wp_unslash( $src[ self::QUERY_ORDER ] ) ) )
-			: 'desc';
-
-		if ( ! in_array( $order, array( 'asc', 'desc' ), true ) ) {
-			$order = 'desc';
-		}
-
-		$paged = isset( $src[ self::QUERY_PAGED ] ) ? absint( $src[ self::QUERY_PAGED ] ) : 1;
-
-		if ( $paged < 1 ) {
-			$paged = 1;
-		}
-
-		$adv = $this->parse_advanced_filters_from_request();
-		// phpcs:enable WordPress.Security.NonceVerification
+		$orderby = sanitize_key( (string) wc_kledo_get_requested_value( self::QUERY_ORDERBY, 'created' ) );
+		$order   = strtolower( (string) wc_kledo_get_requested_value( self::QUERY_ORDER, 'desc' ) );
 
 		return array(
 			'status'  => $status,
-			'orderby' => $orderby,
-			'order'   => $order,
-			'paged'   => $paged,
-			'adv'     => $adv,
+			'orderby' => in_array( $orderby, array( 'created', 'order' ), true ) ? $orderby : 'created',
+			'order'   => in_array( $order, array( 'asc', 'desc' ), true ) ? $order : 'desc',
+			'paged'   => max( 1, absint( wc_kledo_get_requested_value( self::QUERY_PAGED, 1 ) ) ),
+			'filters' => $this->parse_filters_from_request(),
 		);
 	}
 
 	/**
-	 * Parses advanced filter query args using the shared sanitizer.
+	 * Filter query parameters understood by this screen.
+	 *
+	 * @return string[]
+	 * @since 1.8.0
+	 */
+	private function get_filter_param_keys(): array {
+		return array(
+			WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE,
+			WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_FROM,
+			WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_TO,
+			WC_Kledo_Admin_Table_Filter_Handler::PARAM_ORDER_ID,
+		);
+	}
+
+	/**
+	 * Parse the filters through the shared sanitizer.
 	 *
 	 * @return array<string, mixed>
+	 * @since 1.8.0
 	 */
-	private function parse_advanced_filters_from_request(): array {
-		$param_keys = array(
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_ATTEMPTS,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_CREATED_DATE,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_NEXT_RETRY_DATE,
-			WC_Kledo_Admin_Table_Filter_Handler::PARAM_LAST_ERROR,
-		);
-
+	private function parse_filters_from_request(): array {
 		$subset = array();
 
-		// phpcs:disable WordPress.Security.NonceVerification
-		foreach ( $param_keys as $pk ) {
-			if ( isset( $_REQUEST[ $pk ] ) && '' !== $_REQUEST[ $pk ] ) {
-				$subset[ $pk ] = sanitize_text_field( (string) wp_unslash( (string) $_REQUEST[ $pk ] ) );
+		foreach ( $this->get_filter_param_keys() as $param_key ) {
+			$value = (string) wc_kledo_get_requested_value( $param_key );
+
+			if ( '' !== $value ) {
+				$subset[ $param_key ] = $value;
 			}
 		}
-		// phpcs:enable WordPress.Security.NonceVerification
+
+		// A single-day link from 1.8.0 development builds still opens that day.
+		$single_day = (string) wc_kledo_get_requested_value( WC_Kledo_Admin_Table_Filter_Handler::PARAM_CREATED_DATE );
+
+		if ( '' !== $single_day && ! isset( $subset[ WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_FROM ] ) && ! isset( $subset[ WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_TO ] ) ) {
+			$subset[ WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_FROM ] = $single_day;
+			$subset[ WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_TO ]   = $single_day;
+		}
 
 		$handler = new WC_Kledo_Admin_Table_Filter_Handler( array( 'screen' => 'wc-kledo-transactions' ) );
+		$filters = $handler->parse_from_array( $subset );
 
-		return $handler->parse_from_array( $subset );
+		if ( isset( $filters['type'] ) && ! in_array( $filters['type'], array( 'order', 'invoice' ), true ) ) {
+			unset( $filters['type'] );
+		}
+
+		return $filters;
 	}
 
 	/**
-	 * Maps sanitized advanced filters to public query parameter names for URLs and hidden fields.
+	 * Filter values as query parameters, for links and hidden fields.
 	 *
-	 * @param array<string, mixed> $adv Sanitized advanced filters.
+	 * @param  array $request
 	 *
 	 * @return array<string, scalar>
+	 * @since 1.8.0
 	 */
-	private function adv_filters_to_query_args( array $adv ): array {
+	private function get_filter_url_args( array $request ): array {
 		$map = array(
-			'type'            => WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE,
-			'attempts'        => WC_Kledo_Admin_Table_Filter_Handler::PARAM_ATTEMPTS,
-			'created_date'    => WC_Kledo_Admin_Table_Filter_Handler::PARAM_CREATED_DATE,
-			'next_retry_date' => WC_Kledo_Admin_Table_Filter_Handler::PARAM_NEXT_RETRY_DATE,
-			'last_error'      => WC_Kledo_Admin_Table_Filter_Handler::PARAM_LAST_ERROR,
+			'type'      => WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE,
+			'date_from' => WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_FROM,
+			'date_to'   => WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_TO,
+			'order_id'  => WC_Kledo_Admin_Table_Filter_Handler::PARAM_ORDER_ID,
 		);
 
 		$out = array();
 
-		foreach ( $map as $fk => $qk ) {
-			if ( isset( $adv[ $fk ] ) && '' !== $adv[ $fk ] && null !== $adv[ $fk ] ) {
-				$out[ $qk ] = is_scalar( $adv[ $fk ] ) ? $adv[ $fk ] : '';
+		foreach ( $map as $filter_key => $param_key ) {
+			if ( ! empty( $request['filters'][ $filter_key ] ) ) {
+				$out[ $param_key ] = $request['filters'][ $filter_key ];
 			}
 		}
 
@@ -1084,265 +1282,65 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Builds stable query args for list URLs (status, sort, pagination, advanced filters).
+	 * Every query parameter of the current list view.
 	 *
-	 * @param array<string, mixed> $req Request bundle from {@see self::get_transaction_request_args()}.
+	 * @param  array $request
 	 *
 	 * @return array<string, scalar>
+	 * @since 1.8.0
 	 */
-	private function get_transactions_list_base_url_args( array $req ): array {
+	private function get_list_url_args( array $request ): array {
 		return array_merge(
 			array(
-				self::QUERY_STATUS  => $req['status'],
-				self::QUERY_ORDERBY => $req['orderby'],
-				self::QUERY_ORDER   => $req['order'],
-				self::QUERY_PAGED   => $req['paged'],
+				self::QUERY_STATUS  => $request['status'],
+				self::QUERY_ORDERBY => $request['orderby'],
+				self::QUERY_ORDER   => $request['order'],
+				self::QUERY_PAGED   => $request['paged'],
 			),
-			$this->adv_filters_to_query_args( $req['adv'] ?? array() )
+			$this->get_filter_url_args( $request )
 		);
 	}
 
 	/**
-	 * Converts a calendar day (Y-m-d) to a Unix range boundary in the site timezone.
+	 * The GET filter bar (separate from the POST action form).
 	 *
-	 * @param string $ymd   Date string.
-	 * @param bool   $end   True for end-of-day, false for start-of-day.
-	 *
-	 * @return int 0 when invalid.
-	 */
-	private function get_day_boundary_timestamp( string $ymd, bool $end ): int {
-		if ( '' === $ymd || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $ymd ) ) {
-			return 0;
-		}
-
-		$tz = wp_timezone();
-		$dt = \DateTimeImmutable::createFromFormat( 'Y-m-d', $ymd, $tz );
-
-		if ( ! $dt instanceof \DateTimeImmutable ) {
-			return 0;
-		}
-
-		if ( $end ) {
-			$dt = $dt->setTime( 23, 59, 59 );
-		} else {
-			$dt = $dt->setTime( 0, 0, 0 );
-		}
-
-		return $dt->getTimestamp();
-	}
-
-	/**
-	 * Filters merged rows by type, attempts, date windows, and last error substring.
-	 *
-	 * @param array<int, array<string, mixed>> $rows Merged rows after status filter.
-	 * @param array<string, mixed>             $adv  Sanitized advanced filters.
-	 *
-	 * @return array<int, array<string, mixed>>
-	 */
-	private function apply_advanced_filters( array $rows, array $adv ): array {
-		if ( empty( $adv ) ) {
-			return $rows;
-		}
-
-		$type_filter = isset( $adv['type'] ) ? (string) $adv['type'] : '';
-
-		$has_attempts   = isset( $adv['attempts'] );
-		$exact_attempts = $has_attempts ? (int) $adv['attempts'] : 0;
-
-		$has_created = ! empty( $adv['created_date'] );
-		$c_from      = $has_created ? $this->get_day_boundary_timestamp( (string) $adv['created_date'], false ) : 0;
-		$c_to        = $has_created ? $this->get_day_boundary_timestamp( (string) $adv['created_date'], true ) : 0;
-
-		$has_next = ! empty( $adv['next_retry_date'] );
-		$n_from   = $has_next ? $this->get_day_boundary_timestamp( (string) $adv['next_retry_date'], false ) : 0;
-		$n_to     = $has_next ? $this->get_day_boundary_timestamp( (string) $adv['next_retry_date'], true ) : 0;
-
-		$err_q = isset( $adv['last_error'] ) ? (string) $adv['last_error'] : '';
-
-		return array_values(
-			array_filter(
-				$rows,
-				function ( $row ) use ( $type_filter, $has_attempts, $exact_attempts, $has_created, $c_from, $c_to, $has_next, $n_from, $n_to, $err_q ) {
-					if ( ! is_array( $row ) ) {
-						return false;
-					}
-
-					if ( '' !== $type_filter && (string) ( $row['type'] ?? '' ) !== $type_filter ) {
-						return false;
-					}
-
-					if ( $has_attempts ) {
-						if ( 'queue' !== ( $row['source'] ?? '' ) ) {
-							return false;
-						}
-
-						$a = (int) ( $row['attempts'] ?? 0 );
-
-						if ( $a !== $exact_attempts ) {
-							return false;
-						}
-					}
-
-					if ( $has_created ) {
-						$c = (int) ( $row['created_at'] ?? 0 );
-
-						if ( $c <= 0 ) {
-							return false;
-						}
-
-						if ( $c_from > 0 && $c < $c_from ) {
-							return false;
-						}
-
-						if ( $c_to > 0 && $c > $c_to ) {
-							return false;
-						}
-					}
-
-					if ( $has_next ) {
-						if ( 'queue' !== ( $row['source'] ?? '' ) ) {
-							return false;
-						}
-
-						$n = (int) ( $row['next_run_at'] ?? 0 );
-
-						if ( $n <= 0 ) {
-							return false;
-						}
-
-						if ( $n_from > 0 && $n < $n_from ) {
-							return false;
-						}
-
-						if ( $n_to > 0 && $n > $n_to ) {
-							return false;
-						}
-					}
-
-					if ( '' !== $err_q ) {
-						$le = (string) ( $row['last_error'] ?? '' );
-
-						if ( '' === $le || false === stripos( $le, $err_q ) ) {
-							return false;
-						}
-					}
-
-					return true;
-				}
-			)
-		);
-	}
-
-	/**
-	 * Renders the GET filter bar (separate from bulk/retry POST form).
-	 *
-	 * @param array<string, mixed>             $req          Current request bundle.
-	 * @param array<int, array<string, mixed>> $failed_rows  Failed queue rows (for type list).
-	 * @param array<int, array<string, mixed>> $success_rows Success rows (for type list).
+	 * @param  array $request
 	 *
 	 * @return void
+	 * @since 1.8.0
 	 */
-	private function render_transactions_advanced_filter_form(
-		array $req,
-		array $failed_rows,
-		array $success_rows
-	): void {
-		$adv = $req['adv'] ?? array();
-
-		$types = $this->collect_distinct_transaction_types( $failed_rows, $success_rows );
-
-		$type_val            = isset( $adv['type'] ) ? (string) $adv['type'] : '';
-		$attempts_val        = isset( $adv['attempts'] ) ? (int) $adv['attempts'] : '';
-		$created_date_val    = isset( $adv['created_date'] ) ? (string) $adv['created_date'] : '';
-		$next_retry_date_val = isset( $adv['next_retry_date'] ) ? (string) $adv['next_retry_date'] : '';
-		$err                 = isset( $adv['last_error'] ) ? (string) $adv['last_error'] : '';
+	private function render_filter_form( array $request ): void {
+		$filters = $request['filters'];
+		$type    = (string) ( $filters['type'] ?? '' );
 
 		?>
-		<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="wc-kledo-transactions-adv-filters" style="margin:0;flex:1 1 260px;min-width:min(100%,200px);box-sizing:border-box;">
+		<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="wc-kledo-tx-filters">
 			<input type="hidden" name="page" value="<?php echo esc_attr( WC_Kledo_Admin::PAGE_ID ); ?>" />
 			<input type="hidden" name="tab" value="<?php echo esc_attr( self::ID ); ?>" />
-			<input type="hidden" name="<?php echo esc_attr( self::QUERY_STATUS ); ?>" value="<?php echo esc_attr( $req['status'] ); ?>" />
-			<input type="hidden" name="<?php echo esc_attr( self::QUERY_ORDERBY ); ?>" value="<?php echo esc_attr( $req['orderby'] ); ?>" />
-			<input type="hidden" name="<?php echo esc_attr( self::QUERY_ORDER ); ?>" value="<?php echo esc_attr( $req['order'] ); ?>" />
-			<input type="hidden" name="<?php echo esc_attr( self::QUERY_PAGED ); ?>" value="1" />
+			<input type="hidden" name="<?php echo esc_attr( self::QUERY_STATUS ); ?>" value="<?php echo esc_attr( $request['status'] ); ?>" />
+			<input type="hidden" name="<?php echo esc_attr( self::QUERY_ORDERBY ); ?>" value="<?php echo esc_attr( $request['orderby'] ); ?>" />
+			<input type="hidden" name="<?php echo esc_attr( self::QUERY_ORDER ); ?>" value="<?php echo esc_attr( $request['order'] ); ?>" />
 
-			<span class="wc-kledo-tx-filter-fields" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-				<label for="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE ); ?>" class="screen-reader-text"><?php esc_html_e( 'Transaction type', 'wc-kledo' ); ?></label>
-				<select name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE ); ?>" id="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE ); ?>">
-					<option value=""><?php esc_html_e( 'All types', 'wc-kledo' ); ?></option>
-					<?php foreach ( $types as $tv ) : ?>
-						<option value="<?php echo esc_attr( $tv ); ?>" <?php selected( $type_val, $tv ); ?>><?php echo esc_html( $tv ); ?></option>
-					<?php endforeach; ?>
-				</select>
+			<label for="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE ); ?>" class="screen-reader-text"><?php esc_html_e( 'Transaction type', 'wc-kledo' ); ?></label>
+			<select name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE ); ?>" id="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_TYPE ); ?>">
+				<option value=""><?php esc_html_e( 'Sales orders and invoices', 'wc-kledo' ); ?></option>
+				<option value="order" <?php selected( $type, 'order' ); ?>><?php esc_html_e( 'Sales orders only', 'wc-kledo' ); ?></option>
+				<option value="invoice" <?php selected( $type, 'invoice' ); ?>><?php esc_html_e( 'Invoices only', 'wc-kledo' ); ?></option>
+			</select>
 
-				<input type="number" min="0" step="1" style="width:6em;" name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_ATTEMPTS ); ?>" value="<?php echo esc_attr( '' !== $attempts_val ? (string) $attempts_val : '' ); ?>" placeholder="<?php esc_attr_e( 'Attempts (exact)', 'wc-kledo' ); ?>" title="<?php esc_attr_e( 'Column Attempts: exact count for queue rows only. Leave empty to ignore.', 'wc-kledo' ); ?>" />
-
-				<span style="display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;">
-					<label for="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_CREATED_DATE ); ?>" style="margin:0;">
-						<?php esc_html_e( 'Created At', 'wc-kledo' ); ?>
-					</label>
-					<input type="date" id="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_CREATED_DATE ); ?>" name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_CREATED_DATE ); ?>" value="<?php echo esc_attr( $created_date_val ); ?>" title="<?php esc_attr_e( 'Same column as the table: one calendar day in the site timezone.', 'wc-kledo' ); ?>" />
-				</span>
-
-				<span style="display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;">
-					<label for="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_NEXT_RETRY_DATE ); ?>" style="margin:0;">
-						<?php esc_html_e( 'Next Retry', 'wc-kledo' ); ?>
-					</label>
-					<input type="date" id="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_NEXT_RETRY_DATE ); ?>" name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_NEXT_RETRY_DATE ); ?>" value="<?php echo esc_attr( $next_retry_date_val ); ?>" title="<?php esc_attr_e( 'Same column as the table: queue rows only, one calendar day in the site timezone.', 'wc-kledo' ); ?>" />
-				</span>
-
-				<input type="search" class="regular-text" style="max-width:220px;" name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_LAST_ERROR ); ?>" value="<?php echo esc_attr( $err ); ?>" placeholder="<?php esc_attr_e( 'Last error contains…', 'wc-kledo' ); ?>" />
-
-				<?php submit_button( __( 'Filter', 'wc-kledo' ), 'secondary', 'wc_kledo_tx_adv_filter', false ); ?>
+			<span class="wc-kledo-date-range">
+				<label for="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_FROM ); ?>"><?php esc_html_e( 'Order date from', 'wc-kledo' ); ?></label>
+				<input type="date" id="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_FROM ); ?>" name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_FROM ); ?>" value="<?php echo esc_attr( (string) ( $filters['date_from'] ?? '' ) ); ?>" />
+				<label for="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_TO ); ?>"><?php esc_html_e( 'to', 'wc-kledo' ); ?></label>
+				<input type="date" id="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_TO ); ?>" name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_DATE_TO ); ?>" value="<?php echo esc_attr( (string) ( $filters['date_to'] ?? '' ) ); ?>" />
 			</span>
+
+			<label for="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_ORDER_ID ); ?>" class="screen-reader-text"><?php esc_html_e( 'Order number', 'wc-kledo' ); ?></label>
+			<input type="number" min="1" step="1" class="wc-kledo-tx-order-id" id="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_ORDER_ID ); ?>" name="<?php echo esc_attr( WC_Kledo_Admin_Table_Filter_Handler::PARAM_ORDER_ID ); ?>" value="<?php echo esc_attr( ! empty( $filters['order_id'] ) ? (string) $filters['order_id'] : '' ); ?>" placeholder="<?php esc_attr_e( 'Order #', 'wc-kledo' ); ?>" />
+
+			<?php submit_button( __( 'Filter', 'wc-kledo' ), 'secondary', 'wc_kledo_tx_adv_filter', false ); ?>
 		</form>
 		<?php
-	}
-
-	/**
-	 * Collects distinct non-empty type strings for the filter dropdown.
-	 *
-	 * @param array<int, array<string, mixed>> $failed_rows  Failed rows.
-	 * @param array<int, array<string, mixed>> $success_rows Success rows.
-	 *
-	 * @return string[]
-	 */
-	private function collect_distinct_transaction_types( array $failed_rows, array $success_rows ): array {
-		$types = array();
-
-		foreach ( array_merge( $failed_rows, $success_rows ) as $row ) {
-			if ( ! is_array( $row ) ) {
-				continue;
-			}
-
-			$t = isset( $row['type'] ) ? (string) $row['type'] : '';
-
-			if ( '' !== $t ) {
-				$types[ $t ] = $t;
-			}
-		}
-
-		sort( $types );
-
-		return array_values( $types );
-	}
-
-	/**
-	 * Max orders to scan (by modified date) when building success rows.
-	 *
-	 * @return int
-	 */
-	private function get_max_orders_for_success_scan(): int {
-		/**
-		 * Filters how many recent orders are scanned for Kledo success meta on the Transactions screen.
-		 *
-		 * @param  int  $max_orders  default 2500
-		 *
-		 * @since 1.6.0
-		 */
-		$max = (int) apply_filters( 'wc_kledo_transactions_max_orders_for_success_scan', 2500 );
-
-		return max( 50, min( 20000, $max ) );
 	}
 
 	/**
@@ -1353,387 +1351,63 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	 * @return string
 	 */
 	private function get_transactions_screen_url( array $args = array() ): string {
-		$base = array_merge(
-			array(
-				'page' => WC_Kledo_Admin::PAGE_ID,
-				'tab'  => self::ID,
-			),
-			$args
-		);
-
-		return add_query_arg( $base, admin_url( 'admin.php' ) );
-	}
-
-	/**
-	 * Normalize failed-queue entries to table rows.
-	 *
-	 * @param  array<string, array<string, mixed>> $queue
-	 *
-	 * @return array<int, array<string, mixed>>
-	 */
-	private function build_failed_rows_from_queue( array $queue ): array {
-		$rows = array();
-		$now  = time();
-
-		foreach ( $queue as $key => $item ) {
-			if ( ! is_string( $key ) || '' === $key || ! is_array( $item ) ) {
-				continue;
-			}
-
-			$order_id    = isset( $item['order_id'] ) ? (int) $item['order_id'] : 0;
-			$type        = isset( $item['type'] ) ? (string) $item['type'] : '';
-			$created     = isset( $item['created_at'] ) ? (int) $item['created_at'] : 0;
-			$next        = isset( $item['next_run_at'] ) ? (int) $item['next_run_at'] : 0;
-			$attempts    = isset( $item['attempts'] ) ? (int) $item['attempts'] : 0;
-			$item_status = isset( $item['status'] ) ? (string) $item['status'] : '';
-
-			// 'failed' = terminal (max attempts/lifetime exhausted); everything else in the
-			// queue is still in the automatic retry lifecycle regardless of next_run_at timing.
-			$display = ( 'failed' === $item_status ) ? self::STATUS_FAILED : self::STATUS_RETRYING;
-			$sort_ts = $created > 0 ? $created : $next;
-
-			if ( $sort_ts <= 0 ) {
-				$sort_ts = $now;
-			}
-
-			$rows[] = array(
-				'source'         => 'queue',
-				'queue_key'      => $key,
-				'order_id'       => $order_id,
-				'type'           => $type,
-				'attempts'       => $attempts,
-				'created_at'     => $created,
-				'next_run_at'    => $next,
-				'last_error'     => isset( $item['last_error'] ) ? (string) $item['last_error'] : '',
-				'sort_ts'        => $sort_ts,
-				'display_status' => $display,
-			);
-		}
-
-		return $rows;
-	}
-
-	/**
-	 * Build success rows from recent orders carrying Kledo synced meta.
-	 *
-	 * Skips (order_id, type) pairs that still exist in the failed queue so the UI does not contradict itself.
-	 *
-	 * @param  string[] $queue_keys  Keys currently in the failed option.
-	 * @param  int      $max_orders
-	 *
-	 * @return array{rows: array<int, array<string, mixed>>, truncated: bool}
-	 */
-	private function build_success_rows_from_orders( array $queue_keys, int $max_orders ): array {
-		$queue_lookup = array_fill_keys( $queue_keys, true );
-		$rows         = array();
-
-		$orders = wc_get_orders(
-			array(
-				'limit'      => $max_orders,
-				'paginate'   => false,
-				'return'     => 'objects',
-				'orderby'    => 'modified',
-				'order'      => 'DESC',
-				'meta_query' => array(
-					'relation' => 'OR',
-					array(
-						'key'   => '_wc_kledo_order_synced',
-						'value' => 'yes',
-					),
-					array(
-						'key'   => '_wc_kledo_invoice_synced',
-						'value' => 'yes',
-					),
+		return add_query_arg(
+			array_merge(
+				array(
+					'page' => WC_Kledo_Admin::PAGE_ID,
+					'tab'  => self::ID,
 				),
-			)
+				$args
+			),
+			admin_url( 'admin.php' )
 		);
+	}
 
-		if ( ! is_array( $orders ) ) {
-			return array(
-				'rows'      => array(),
-				'truncated' => false,
-			);
-		}
-
-		$truncated = count( $orders ) >= $max_orders;
-
-		foreach ( $orders as $order ) {
-			if ( ! $order instanceof WC_Order ) {
-				continue;
-			}
-
-			$oid = $order->get_id();
-
-			foreach ( array( 'order', 'invoice' ) as $type ) {
-				$key = $type . ':' . $oid;
-
-				if ( isset( $queue_lookup[ $key ] ) ) {
-					continue;
-				}
-
-				if ( ! wc_kledo_is_delivery_synced( $order, $type ) ) {
-					continue;
-				}
-
-				$modified = $order->get_date_modified();
-
-				if ( $modified ) {
-					$sort_ts = $modified->getTimestamp();
-				} else {
-					$created_dt = $order->get_date_created();
-					$sort_ts    = $created_dt ? $created_dt->getTimestamp() : time();
-				}
-
-				$rows[] = array(
-					'source'         => 'synced',
-					'queue_key'      => '',
-					'order_id'       => $oid,
-					'type'           => $type,
-					'attempts'       => null,
-					'created_at'     => $sort_ts,
-					'next_run_at'    => 0,
-					'last_error'     => '',
-					'sort_ts'        => $sort_ts,
-					'display_status' => self::STATUS_SUCCESS,
-				);
-			}
-		}
-
+	/**
+	 * Label of each tab.
+	 *
+	 * @return array<string, string>
+	 * @since 1.8.0
+	 */
+	private function get_tab_labels(): array {
 		return array(
-			'rows'      => $rows,
-			'truncated' => $truncated,
+			'all'         => __( 'All', 'wc-kledo' ),
+			'pending'     => __( 'Waiting for Kledo', 'wc-kledo' ),
+			'confirmed'   => __( 'In Kledo', 'wc-kledo' ),
+			'send_failed' => __( 'Send failed', 'wc-kledo' ),
+			'rejected'    => __( 'Rejected by Kledo', 'wc-kledo' ),
+			'missing'     => __( 'Failed in Kledo', 'wc-kledo' ),
 		);
 	}
 
 	/**
-	 * Apply status filter to merged failed + success datasets.
+	 * HTML for the tab links (subsubsub).
 	 *
-	 * @param  array<int, array<string, mixed>> $failed_rows
-	 * @param  array<int, array<string, mixed>> $success_rows
-	 * @param  string                           $status
+	 * @param  array<string, int> $counts
+	 * @param  array              $request
 	 *
-	 * @return array<int, array<string, mixed>>
+	 * @return string
 	 */
-	private function merge_and_filter_rows( array $failed_rows, array $success_rows, string $status ): array {
-		if ( self::STATUS_SUCCESS === $status ) {
-			return $success_rows;
-		}
+	private function get_status_subsubsub_html( array $counts, array $request ): string {
+		$labels = $this->get_tab_labels();
 
-		// Terminal failures only.
-		if ( self::STATUS_FAILED === $status ) {
-			return array_values(
-				array_filter(
-					$failed_rows,
-					static function ( $row ) {
-						return self::STATUS_FAILED === ( $row['display_status'] ?? '' );
-					}
-				)
-			);
-		}
-
-		// Items still in the automatic retry lifecycle.
-		if ( self::STATUS_RETRYING === $status ) {
-			return array_values(
-				array_filter(
-					$failed_rows,
-					static function ( $row ) {
-						return self::STATUS_RETRYING === ( $row['display_status'] ?? '' );
-					}
-				)
-			);
-		}
-
-		return array_merge( $failed_rows, $success_rows );
-	}
-
-	/**
-	 * Sort rows in place.
-	 *
-	 * @param  array<int, array<string, mixed>> $rows
-	 * @param  string                           $orderby
-	 * @param  string                           $order
-	 *
-	 * @return void
-	 */
-	private function sort_rows( array &$rows, string $orderby, string $order ): void {
-		$dir = ( 'asc' === $order ) ? 1 : - 1;
-
-		usort(
-			$rows,
-			function ( $a, $b ) use ( $orderby, $dir ) {
-				if ( 'order' === $orderby ) {
-					$va = (int) ( $a['order_id'] ?? 0 );
-					$vb = (int) ( $b['order_id'] ?? 0 );
-				} elseif ( 'type' === $orderby ) {
-					$va = (string) ( $a['type'] ?? '' );
-					$vb = (string) ( $b['type'] ?? '' );
-				} elseif ( 'status' === $orderby ) {
-					$va = (string) ( $a['display_status'] ?? '' );
-					$vb = (string) ( $b['display_status'] ?? '' );
-				} elseif ( 'next_retry' === $orderby ) {
-					return $this->compare_rows_by_next_retry( $a, $b, $dir );
-				} else {
-					$va = (int) ( $a['sort_ts'] ?? 0 );
-					$vb = (int) ( $b['sort_ts'] ?? 0 );
-				}
-
-				if ( $va === $vb ) {
-					return ( (int) ( $a['order_id'] ?? 0 ) <=> (int) ( $b['order_id'] ?? 0 ) ) * $dir;
-				}
-
-				if ( is_int( $va ) && is_int( $vb ) ) {
-					return ( $va <=> $vb ) * $dir;
-				}
-
-				return $dir * strcmp( (string) $va, (string) $vb );
-			}
-		);
-	}
-
-	/**
-	 * Sort bucket for "Next Retry": scheduled queue rows first, then queue without a positive time, then success rows.
-	 *
-	 * @param array<string, mixed> $row Row from {@see build_failed_rows_from_queue()} or {@see build_success_rows_from_orders()}.
-	 *
-	 * @return int 0 = queue with scheduled next_run_at, 1 = queue otherwise, 2 = synced (no next retry).
-	 */
-	private function get_next_retry_sort_bucket( array $row ): int {
-		if ( 'synced' === ( $row['source'] ?? '' ) ) {
-			return 2;
-		}
-
-		$n = (int) ( $row['next_run_at'] ?? 0 );
-
-		if ( 'queue' === ( $row['source'] ?? '' ) && $n > 0 ) {
-			return 0;
-		}
-
-		return 1;
-	}
-
-	/**
-	 * Compare two rows by next retry time (queue timestamps; non-queue rows follow in a stable bucket).
-	 *
-	 * @param array<string, mixed> $a
-	 * @param array<string, mixed> $b
-	 * @param int                  $dir 1 = asc, -1 = desc
-	 *
-	 * @return int
-	 */
-	private function compare_rows_by_next_retry( array $a, array $b, int $dir ): int {
-		$ba = $this->get_next_retry_sort_bucket( $a );
-		$bb = $this->get_next_retry_sort_bucket( $b );
-
-		if ( $ba !== $bb ) {
-			return $ba <=> $bb;
-		}
-
-		if ( 0 === $ba ) {
-			$va = (int) ( $a['next_run_at'] ?? 0 );
-			$vb = (int) ( $b['next_run_at'] ?? 0 );
-
-			if ( $va !== $vb ) {
-				return ( $va <=> $vb ) * $dir;
-			}
-		}
-
-		return ( (int) ( $a['order_id'] ?? 0 ) <=> (int) ( $b['order_id'] ?? 0 ) ) * $dir;
-	}
-
-	/**
-	 * Counts for subsubsub navigation (approximate when success scan is capped).
-	 *
-	 * @param  array<int, array<string, mixed>> $failed_rows
-	 * @param  array<int, array<string, mixed>> $success_rows
-	 * @param  array<string, mixed>             $queue
-	 * @param  bool                             $success_truncated
-	 *
-	 * @return array{all:int,success:int,failed:int,retrying:int,queue:int,success_plus:bool}
-	 */
-	private function build_nav_counts(
-		array $failed_rows,
-		array $success_rows,
-		array $queue,
-		bool $success_truncated
-	): array {
-		$retrying_count = 0;
-		$terminal_count = 0;
-
-		foreach ( $failed_rows as $fr ) {
-			if ( self::STATUS_RETRYING === ( $fr['display_status'] ?? '' ) ) {
-				++$retrying_count;
-			} elseif ( self::STATUS_FAILED === ( $fr['display_status'] ?? '' ) ) {
-				++$terminal_count;
-			}
-		}
-
-		$success_count = count( $success_rows );
-		$queue_count   = count( $queue );
-		$all           = $queue_count + $success_count;
-
-		return array(
-			'all'          => $all,
-			'success'      => $success_count,
-			'failed'       => $terminal_count,
-			'retrying'     => $retrying_count,
-			'queue'        => $queue_count,
-			'success_plus' => $success_truncated,
-		);
-	}
-
-	/**
-	 * HTML for status filter links (subsubsub).
-	 *
-	 * @param array<string, int|bool> $counts Nav counts.
-	 * @param array<string, mixed>    $req    Request bundle (preserves advanced filters in links).
-	 */
-	private function get_status_subsubsub_html( array $counts, array $req ): string {
-		$parts = array();
 		$base  = array_merge(
-			$this->adv_filters_to_query_args( $req['adv'] ?? array() ),
+			$this->get_filter_url_args( $request ),
 			array(
-				self::QUERY_ORDERBY => $req['orderby'],
-				self::QUERY_ORDER   => $req['order'],
+				self::QUERY_ORDERBY => $request['orderby'],
+				self::QUERY_ORDER   => $request['order'],
 				self::QUERY_PAGED   => 1,
 			)
 		);
+		$parts = array();
 
-		$current_status = $req['status'];
-
-		$defs = array(
-			self::STATUS_ALL      => __( 'All', 'wc-kledo' ),
-			self::STATUS_SUCCESS  => __( 'Success', 'wc-kledo' ),
-			self::STATUS_FAILED   => __( 'Failed', 'wc-kledo' ),
-			self::STATUS_RETRYING => __( 'Retrying', 'wc-kledo' ),
-		);
-
-		foreach ( $defs as $st => $label ) {
-			if ( self::STATUS_ALL === $st ) {
-				$count = (int) ( $counts['all'] ?? 0 );
-			} elseif ( self::STATUS_SUCCESS === $st ) {
-				$count = (int) ( $counts['success'] ?? 0 );
-				if ( ! empty( $counts['success_plus'] ) ) {
-					$label = sprintf(
-					/* translators: %s: translated word "Success" when the success list may be truncated */
-						__( '%s+', 'wc-kledo' ),
-						__( 'Success', 'wc-kledo' )
-					);
-				}
-			} elseif ( self::STATUS_FAILED === $st ) {
-				$count = (int) ( $counts['failed'] ?? 0 );
-			} else {
-				$count = (int) ( $counts['retrying'] ?? 0 );
-			}
-
-			$url   = esc_url( $this->get_transactions_screen_url( array_merge( $base, array( self::QUERY_STATUS => $st ) ) ) );
-			$class = ( $current_status === $st ) ? ' class="current"' : '';
-
+		foreach ( $labels as $tab => $label ) {
 			$parts[] = sprintf(
-				'<li><a href="%s"%s>%s <span class="count">(%d)</span></a></li>',
-				$url,
-				$class,
+				'<li><a href="%1$s"%2$s>%3$s <span class="count">(%4$s)</span></a></li>',
+				esc_url( $this->get_transactions_screen_url( array_merge( $base, array( self::QUERY_STATUS => $tab ) ) ) ),
+				$request['status'] === $tab ? ' class="current" aria-current="page"' : '',
 				esc_html( $label ),
-				$count
+				esc_html( number_format_i18n( (int) ( $counts[ $tab ] ?? 0 ) ) )
 			);
 		}
 
@@ -1743,121 +1417,98 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	/**
 	 * Classes for sortable &lt;th&gt; (matches WP_List_Table so core list-table.css shows arrows).
 	 *
-	 * @param string               $column_key Orderby key (order, type, status, created, next_retry).
-	 * @param array<string, mixed> $req        Request bundle.
+	 * @param  string $column_key
+	 * @param  array  $request
 	 *
-	 * @return string Space-separated class names.
+	 * @return string
 	 */
-	private function get_sortable_th_class( string $column_key, array $req ): string {
-		$orderby = isset( $req['orderby'] ) ? (string) $req['orderby'] : 'created';
-		$order   = isset( $req['order'] ) ? (string) $req['order'] : 'desc';
-
-		if ( $orderby === $column_key ) {
-			return 'sorted ' . ( 'asc' === $order ? 'asc' : 'desc' );
+	private function get_sortable_th_class( string $column_key, array $request ): string {
+		if ( $request['orderby'] === $column_key ) {
+			return 'sorted ' . ( 'asc' === $request['order'] ? 'asc' : 'desc' );
 		}
 
 		return 'sortable desc';
 	}
 
 	/**
-	 * Sortable column link markup (Dashicons sort / arrow — clear sort affordance).
+	 * Sortable column link markup.
+	 *
+	 * @param  string $label
+	 * @param  string $column_key
+	 * @param  array  $request
 	 *
 	 * @return string HTML (already escaped).
 	 */
-	private function get_sortable_column_header( string $label, string $column_key, array $req ): string {
-		$current_orderby = $req['orderby'];
-		$current_order   = $req['order'];
+	private function get_sortable_column_header( string $label, string $column_key, array $request ): string {
+		$is_current = $request['orderby'] === $column_key;
+		$next_order = ( $is_current && 'desc' === $request['order'] ) ? 'asc' : 'desc';
 
-		$next_order = ( $column_key === $current_orderby && 'desc' === $current_order ) ? 'asc' : 'desc';
-
-		if ( $column_key !== $current_orderby ) {
-			$next_order = 'desc';
-		}
-
-		$url = esc_url(
-			$this->get_transactions_screen_url(
-				array_merge(
-					$this->adv_filters_to_query_args( $req['adv'] ?? array() ),
-					array(
-						self::QUERY_STATUS  => $req['status'],
-						self::QUERY_ORDERBY => $column_key,
-						self::QUERY_ORDER   => $next_order,
-						self::QUERY_PAGED   => 1,
-					)
+		$url = $this->get_transactions_screen_url(
+			array_merge(
+				$this->get_filter_url_args( $request ),
+				array(
+					self::QUERY_STATUS  => $request['status'],
+					self::QUERY_ORDERBY => $column_key,
+					self::QUERY_ORDER   => $next_order,
+					self::QUERY_PAGED   => 1,
 				)
 			)
 		);
 
-		$aria = array();
-		if ( $column_key === $current_orderby ) {
-			$aria[] = sprintf(
+		$title = $is_current
+			? sprintf(
 				/* translators: %s: sort direction, ascending or descending */
 				__( 'Sorted %s.', 'wc-kledo' ),
-				'asc' === $current_order ? __( 'ascending', 'wc-kledo' ) : __( 'descending', 'wc-kledo' )
-			);
-		} else {
-			$aria[] = __( 'Sort by this column.', 'wc-kledo' );
-		}
+				'asc' === $request['order'] ? __( 'ascending', 'wc-kledo' ) : __( 'descending', 'wc-kledo' )
+			)
+			: __( 'Sort by this column.', 'wc-kledo' );
 
-		$title = implode( ' ', array_filter( $aria ) );
-
-		$icon_classes = array( 'wc-kledo-tx-sort-icon', 'dashicons' );
-
-		if ( $column_key === $current_orderby ) {
-			$icon_classes[] = 'asc' === $current_order ? 'dashicons-arrow-up-alt2' : 'dashicons-arrow-down-alt2';
-		} else {
-			$icon_classes[] = 'dashicons-sort';
-		}
+		$icon = $is_current
+			? ( 'asc' === $request['order'] ? 'dashicons-arrow-up-alt2' : 'dashicons-arrow-down-alt2' )
+			: 'dashicons-sort';
 
 		return sprintf(
-			'<a href="%s" class="wc-kledo-tx-sort-link"%s><span class="wc-kledo-tx-col-label">%s</span><span class="%s" aria-hidden="true"></span></a>',
-			$url,
-			'' !== $title ? ' title="' . esc_attr( $title ) . '"' : '',
+			'<a href="%1$s" class="wc-kledo-tx-sort-link" title="%2$s"><span class="wc-kledo-tx-col-label">%3$s</span><span class="wc-kledo-tx-sort-icon dashicons %4$s" aria-hidden="true"></span></a>',
+			esc_url( $url ),
+			esc_attr( $title ),
 			esc_html( $label ),
-			esc_attr( implode( ' ', $icon_classes ) )
+			esc_attr( $icon )
 		);
 	}
 
 	/**
-	 * Pagination links (top or bottom).
+	 * Pagination links.
 	 *
-	 * @param int                  $total    Total number of rows across all pages.
-	 * @param array<string, mixed> $req      Request bundle (sort + advanced filters).
-	 * @param int                  $per_page Rows per page (from user preference or default).
-	 * @param string               $which    Render position: 'top' or 'bottom'.
+	 * @param  int   $total_orders
+	 * @param  int   $total_pages
+	 * @param  array $request
 	 *
 	 * @return void
 	 */
-	private function render_pagination_controls( int $total, array $req, int $per_page, string $which ): void {
-		$total_pages = (int) ceil( $total / $per_page );
-
+	private function render_pagination_controls( int $total_orders, int $total_pages, array $request ): void {
 		if ( $total_pages <= 1 ) {
 			return;
 		}
 
-		$paged = (int) $req['paged'];
-
 		$base_url = $this->get_transactions_screen_url(
 			array_merge(
-				$this->adv_filters_to_query_args( $req['adv'] ?? array() ),
+				$this->get_filter_url_args( $request ),
 				array(
-					self::QUERY_STATUS  => $req['status'],
-					self::QUERY_ORDERBY => $req['orderby'],
-					self::QUERY_ORDER   => $req['order'],
+					self::QUERY_STATUS  => $request['status'],
+					self::QUERY_ORDERBY => $request['orderby'],
+					self::QUERY_ORDER   => $request['order'],
 				)
 			)
 		);
 
-		$paginate_base = esc_url_raw( $base_url . '&' . self::QUERY_PAGED . '=%#%' );
-
 		$links = paginate_links(
 			array(
-				'base'      => $paginate_base,
+				'base'      => esc_url_raw( $base_url . '&' . self::QUERY_PAGED . '=%#%' ),
 				'format'    => '',
 				'prev_text' => '&laquo;',
 				'next_text' => '&raquo;',
 				'total'     => $total_pages,
-				'current'   => max( 1, $paged ),
+				'current'   => max( 1, (int) $request['paged'] ),
 				'type'      => 'plain',
 			)
 		);
@@ -1867,12 +1518,12 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 		}
 
 		printf(
-			'<div class="tablenav-pages"><span class="displaying-num">%s</span><span class="pagination-links">%s</span></div>',
+			'<div class="tablenav-pages"><span class="displaying-num">%1$s</span><span class="pagination-links">%2$s</span></div>',
 			esc_html(
 				sprintf(
-				/* translators: %d: number of items */
-					_n( '%d item', '%d items', $total, 'wc-kledo' ),
-					$total
+					/* translators: %s: number of orders */
+					_n( '%s order', '%s orders', $total_orders, 'wc-kledo' ),
+					number_format_i18n( $total_orders )
 				)
 			),
 			wp_kses_post( $links )
@@ -1880,147 +1531,45 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Human label for display_status.
+	 * Order column: #ID and billing name, linked to the order.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return string HTML, already escaped.
 	 */
-	private function get_display_status_label( string $display_status ): string {
-		switch ( $display_status ) {
-			case self::STATUS_SUCCESS:
-				return __( 'Success', 'wc-kledo' );
-			case self::STATUS_RETRYING:
-				return __( 'Retrying', 'wc-kledo' );
-			case self::STATUS_FAILED:
-			default:
-				return __( 'Failed', 'wc-kledo' );
+	private function format_order_identifier_cell( WC_Order $order ): string {
+		$label = '#' . $order->get_order_number();
+		$name  = trim( $order->get_formatted_billing_full_name() );
+
+		if ( '' === $name ) {
+			$name = trim( $order->get_formatted_shipping_full_name() );
 		}
+
+		if ( '' !== $name ) {
+			$label .= ' ' . $name;
+		}
+
+		return sprintf( '<a href="%1$s"><strong>%2$s</strong></a>', esc_url( $order->get_edit_order_url() ), esc_html( $label ) );
 	}
 
 	/**
-	 * Load WooCommerce orders for queue rows in a single query (avoids per-row wc_get_order calls).
-	 *
-	 * @param  int[] $order_ids
-	 *
-	 * @return array<int, WC_Order>
-	 */
-	private function load_orders_for_queue( array $order_ids ): array {
-		$map = array();
-
-		if ( empty( $order_ids ) ) {
-			return $map;
-		}
-
-		$orders = wc_get_orders(
-			array(
-				'include'  => $order_ids,
-				// Ensure we can resolve trashed orders too; otherwise the UI loses link + name.
-				'status'   => array( 'any', 'trash' ),
-				'limit'    => count( $order_ids ),
-				'paginate' => false,
-				'return'   => 'objects',
-			)
-		);
-
-		if ( ! is_array( $orders ) ) {
-			return $map;
-		}
-
-		foreach ( $orders as $order ) {
-			if ( $order instanceof WC_Order ) {
-				$map[ $order->get_id() ] = $order;
-			}
-		}
-
-		return $map;
-	}
-
-	/**
-	 * Build admin-safe HTML for the order column: #ID, optional billing name, link when the order exists.
-	 *
-	 * @param  int           $order_id
-	 * @param  WC_Order|null $order
-	 * @param  string        $queue_key  Option key (e.g. order:62) when order_id is missing.
-	 *
-	 * @return string
-	 */
-	private function format_order_identifier_cell( int $order_id, $order, string $queue_key ): string {
-		$order_obj = $order instanceof WC_Order ? $order : null;
-
-		// Fallback: if bulk preload missed an order (e.g. status filtering), attempt a single resolve.
-		if ( ! $order_obj && $order_id > 0 ) {
-			$resolved = wc_get_order( $order_id );
-			if ( $resolved instanceof WC_Order ) {
-				$order_obj = $resolved;
-			}
-		}
-
-		if ( $order_obj instanceof WC_Order ) {
-			$label = '#' . $order_obj->get_id();
-			$name  = '';
-
-			$billing_name = trim( $order_obj->get_formatted_billing_full_name() );
-			if ( '' !== $billing_name ) {
-				$name = $billing_name;
-			} else {
-				$shipping_name = trim( $order_obj->get_formatted_shipping_full_name() );
-				if ( '' !== $shipping_name ) {
-					$name = $shipping_name;
-				}
-			}
-
-			if ( '' !== $name ) {
-				$label .= ' ' . $name;
-			}
-
-			$edit_url = $order_obj->get_edit_order_url();
-
-			if ( is_string( $edit_url ) && '' !== $edit_url ) {
-				return sprintf(
-					'<a href="%s">%s</a>',
-					esc_url( $edit_url ),
-					esc_html( $label )
-				);
-			}
-
-			return esc_html( $label );
-		}
-
-		if ( $order_id > 0 ) {
-			return sprintf(
-				'<span class="wc-kledo-order-missing" title="%s">%s</span>',
-				esc_attr__( 'Order no longer exists.', 'wc-kledo' ),
-				esc_html( '#' . $order_id . ' (' . __( 'deleted', 'wc-kledo' ) . ')' )
-			);
-		}
-
-		return esc_html( '#' . $queue_key );
-	}
-
-	/**
-	 * Format the Last Error cell for admin display.
-	 *
-	 * Messages longer than $max_length characters are truncated with an ellipsis
-	 * and the full text is preserved in a title tooltip.
+	 * Format the last error for admin display, truncated with the full text in a tooltip.
 	 *
 	 * @param  string $last_error
-	 * @param  int    $max_length  Visible character limit before truncation.
+	 * @param  int    $max_length
 	 *
-	 * @return string  HTML, already escaped.
+	 * @return string HTML, already escaped.
 	 * @since 1.7.0
 	 */
 	private function format_last_error_cell( string $last_error, int $max_length = 120 ): string {
-		if ( '' === $last_error ) {
-			return '&mdash;';
-		}
-
 		if ( mb_strlen( $last_error ) <= $max_length ) {
-			return esc_html( $last_error );
+			return '<span class="wc-kledo-tx-error">' . esc_html( $last_error ) . '</span>';
 		}
-
-		$truncated = mb_substr( $last_error, 0, $max_length - 3 ) . '...';
 
 		return sprintf(
-			'<span title="%s" style="cursor:help;">%s</span>',
+			'<span class="wc-kledo-tx-error wc-kledo-tx-error--truncated" title="%1$s">%2$s</span>',
 			esc_attr( $last_error ),
-			esc_html( $truncated )
+			esc_html( mb_substr( $last_error, 0, $max_length - 3 ) . '...' )
 		);
 	}
 
@@ -2030,29 +1579,20 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	 * Scoped to the transactions tab only — other tabs share the same WP screen ID
 	 * (woocommerce_page_wc-kledo) and must not inherit these options.
 	 *
-	 * Column visibility default: all columns visible (no default_hidden_columns filter needed).
-	 * Per-page default: {@see self::PER_PAGE_DEFAULT}.
-	 *
 	 * @return void
 	 */
 	private function register_screen_columns(): void {
-		if ( wc_kledo_get_requested_value( 'tab' ) !== self::ID ) {
+		if ( ! $this->is_this_tab() ) {
 			return;
 		}
 
-		// Column show/hide checkboxes — WordPress renders these in Screen Options automatically
-		// via WP_Screen::get_columns() which calls this filter. All columns visible by default
-		// (no default_hidden_columns override means empty hidden array = all visible).
 		add_filter( 'manage_woocommerce_page_wc-kledo_columns', array( $this, 'get_hideable_columns' ) );
+		add_filter( 'default_hidden_columns', array( $this, 'filter_default_hidden_columns' ), 10, 2 );
 
-		// Items per page input in Screen Options. WordPress renders this input in the
-		// Screen Options panel and submits it via $_POST['wp_screen_options'].
-		// Persistence is handled by the set_screen_option_wc_kledo_transactions_per_page
-		// filter registered in register_screen_options_handlers() (admin_init).
 		add_screen_option(
 			'per_page',
 			array(
-				'label'   => __( 'Transactions per page', 'wc-kledo' ),
+				'label'   => __( 'Orders per page', 'wc-kledo' ),
 				'default' => self::PER_PAGE_DEFAULT,
 				'option'  => 'wc_kledo_transactions_per_page',
 			)
@@ -2060,24 +1600,15 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Intercept the hidden-columns AJAX request for our Transactions table.
+	 * Intercept the hidden-columns AJAX request for the Transactions table.
 	 *
-	 * WordPress's native wp_ajax_hidden_columns() (priority 10) opens with
-	 *   $screen = get_current_screen(); if ( null === $screen ) { wp_die( 0 ); }
-	 * In admin-ajax.php the screen is never initialised automatically, so the core handler
-	 * silently discards the user's column preference every time.
-	 *
-	 * By registering at priority 1 we run before the core handler.  We save the hidden
-	 * columns directly to user_meta using the exact key that get_hidden_columns() reads:
-	 *   'manage' . $screen->id . 'columnshidden'
-	 * then wp_die(1) so the request terminates and the broken core handler never runs.
-	 * For any other admin page we return immediately — the core handler processes it normally.
+	 * See the constructor for why WordPress's own handler cannot be relied on here. The hidden
+	 * columns are saved to the same user meta key `get_hidden_columns()` reads.
 	 *
 	 * @return void
 	 */
 	public function ajax_save_hidden_columns(): void {
-		// Only intercept the request when it belongs to our page.
-		$page = isset( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '';
+		$page = isset( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Only routes; check_ajax_referer() follows.
 
 		if ( ( 'woocommerce_page_' . WC_Kledo_Admin::PAGE_ID ) !== $page ) {
 			return; // Not our page; let WP core's handler run.
@@ -2091,13 +1622,8 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 
 		$hidden_raw = isset( $_POST['hidden'] ) ? sanitize_text_field( wp_unslash( $_POST['hidden'] ) ) : '';
 		$hidden     = ( '' !== $hidden_raw ) ? explode( ',', $hidden_raw ) : array();
+		$hidden     = array_values( array_intersect( array_map( 'sanitize_key', $hidden ), array_keys( $this->get_hideable_columns() ) ) );
 
-		// Accept only recognised hideable column keys; discard anything unexpected.
-		$valid_keys = array_keys( $this->get_hideable_columns() );
-		$hidden     = array_values( array_intersect( array_map( 'sanitize_key', $hidden ), $valid_keys ) );
-
-		// Meta key format: 'manage' . $screen->id . 'columnshidden'
-		// This is identical to what get_hidden_columns( $wp_screen ) reads on page render.
 		update_user_meta(
 			get_current_user_id(),
 			sprintf( 'managewoocommerce_page_%scolumnshidden', WC_Kledo_Admin::PAGE_ID ),
@@ -2110,27 +1636,21 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	/**
 	 * Columns eligible for show/hide via Screen Options.
 	 *
-	 * Always-visible columns (Order, Status, Actions) are intentionally excluded so they
-	 * cannot be hidden. WordPress renders one checkbox per entry returned here.
+	 * Order and Status in Kledo are always visible. Keys that also existed in 1.7.x keep their
+	 * names so saved preferences carry over; keys of removed columns are simply ignored.
 	 *
 	 * @return array<string, string>
 	 */
 	public function get_hideable_columns(): array {
 		return array(
-			'type'       => __( 'Type', 'wc-kledo' ),
+			'type'       => __( 'Transaction', 'wc-kledo' ),
 			'attempts'   => __( 'Attempts', 'wc-kledo' ),
-			'created'    => __( 'Created At', 'wc-kledo' ),
-			'next_retry' => __( 'Next Retry', 'wc-kledo' ),
-			'last_error' => __( 'Last Error', 'wc-kledo' ),
+			'last_error' => __( 'Notes', 'wc-kledo' ),
 		);
 	}
 
 	/**
-	 * Resolve the active items-per-page value for the current user.
-	 *
-	 * Reads the value saved by the Screen Options 'per_page' input (user meta key
-	 * `wc_kledo_transactions_per_page`). Falls back to {@see self::PER_PAGE_DEFAULT}
-	 * for users who have not yet saved a preference.
+	 * Orders per page for the current user.
 	 *
 	 * @return int
 	 */
@@ -2141,7 +1661,69 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Run the same manual retry pipeline used for a single row, for one queue key.
+	 * Whether the current request is this tab.
+	 *
+	 * @return bool
+	 * @since 1.8.0
+	 */
+	private function is_this_tab(): bool {
+		return WC_Kledo_Admin::PAGE_ID === wc_kledo_get_requested_value( 'page' )
+			&& self::ID === wc_kledo_get_requested_value( 'tab' );
+	}
+
+	/**
+	 * Notice payload for the PRG transient.
+	 *
+	 * @param  string $class
+	 * @param  string $text
+	 *
+	 * @return array{class: string, text: string}
+	 * @since 1.8.0
+	 */
+	private function notice( string $class, string $text ): array {
+		return array(
+			'class' => $class,
+			'text'  => $text,
+		);
+	}
+
+	/**
+	 * A stand-in queue row for a transaction whose state says it failed but whose row is gone.
+	 *
+	 * The state meta outlives the queue row in a few ways — the option cleared by hand, a
+	 * migration, an order restored from a backup — and a row without a Resend button would leave
+	 * the admin no way to send it from here.
+	 *
+	 * @param  string $key  `type:order_id`.
+	 *
+	 * @return array|null Null when the key is malformed or the transaction is not resendable.
+	 * @since 1.8.0
+	 */
+	private function get_queue_item_from_state( string $key ): ?array {
+		$parts = explode( ':', $key );
+
+		if ( 2 !== count( $parts ) || ! in_array( $parts[0], array( 'order', 'invoice' ), true ) ) {
+			return null;
+		}
+
+		$order = wc_get_order( absint( $parts[1] ) );
+
+		if ( ! $order instanceof WC_Order || ! in_array( wc_kledo_get_remote_state( $order, $parts[0] ), self::RESENDABLE_STATES, true ) ) {
+			return null;
+		}
+
+		return array(
+			'order_id'   => $order->get_id(),
+			'type'       => $parts[0],
+			'attempts'   => 0,
+			'created_at' => time(),
+			'status'     => 'failed',
+			'last_error' => '',
+		);
+	}
+
+	/**
+	 * Run the manual resend pipeline for one queue key.
 	 *
 	 * @param  string $key  Queue option key (e.g. order:62).
 	 *
@@ -2160,15 +1742,12 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 		$option_name = 'wc_kledo_failed_transactions';
 		$queue       = get_option( $option_name, array() );
 
-		if ( ! is_array( $queue ) ) {
+		$queue = is_array( $queue ) ? $queue : array();
+		$item  = isset( $queue[ $key ] ) && is_array( $queue[ $key ] ) ? $queue[ $key ] : $this->get_queue_item_from_state( $key );
+
+		if ( null === $item ) {
 			return self::RETRY_OUTCOME_NOT_IN_QUEUE;
 		}
-
-		if ( empty( $queue[ $key ] ) || ! is_array( $queue[ $key ] ) ) {
-			return self::RETRY_OUTCOME_NOT_IN_QUEUE;
-		}
-
-		$item = $queue[ $key ];
 
 		$order_id = isset( $item['order_id'] ) ? (int) $item['order_id'] : 0;
 		$type     = $item['type'] ?? '';
@@ -2199,7 +1778,7 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 			$order->add_order_note(
 				sprintf(
 					/* translators: %s: "order" or "invoice" */
-					__( 'Kledo: manually resent %s to Kledo from Transactions screen.', 'wc-kledo' ),
+					__( 'Kledo: manually resent %s to Kledo from the Kledo Status tab.', 'wc-kledo' ),
 					$type
 				)
 			);
@@ -2211,9 +1790,14 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 			return self::RETRY_OUTCOME_SKIPPED_SYNCED;
 		}
 
+		// Re-read: deliver() may have rewritten the row (an invoice held for its sales order).
+		$queue = get_option( $option_name, array() );
+		$queue = is_array( $queue ) ? $queue : array();
+		$item  = isset( $queue[ $key ] ) && is_array( $queue[ $key ] ) ? $queue[ $key ] : $item;
+
 		if ( ! empty( $result['error'] ) ) {
 			$item['last_error'] = $result['error'];
-		} else {
+		} elseif ( 'awaiting_sales_order' !== ( $result['reason'] ?? '' ) ) {
 			$http_code          = (int) ( $result['http_code'] ?? 0 );
 			$item['last_error'] = wc_kledo_sanitize_api_error_message(
 				$http_code > 0
@@ -2221,23 +1805,38 @@ class WC_Kledo_Transactions_Screen extends WC_Kledo_Settings_Screen {
 					: __( 'There was a problem when connecting to the API.', 'wc-kledo' )
 			);
 		}
+
 		// Kledo rejected the payload rather than failing to process it, so there is nothing to
 		// schedule: the row stays terminal until an admin fixes the data and retries by hand.
 		if ( ! empty( $result['permanent'] ) ) {
 			$item['status'] = 'failed';
 
-			unset( $item['next_run_at'] );
+			unset( $item['next_run_at'], $item['reason'] );
 
 			$queue[ $key ] = $item;
 			update_option( $option_name, $queue, false );
 
+			wc_kledo_set_remote_state( $order, $type, 'rejected' );
+
 			return self::RETRY_OUTCOME_REJECTED;
 		}
 
+		// Handed back to the automatic retry loop, with a fresh budget.
+		$item['status']      = 'retrying';
+		$item['attempts']    = 0;
+		$item['created_at']  = time();
 		$item['next_run_at'] = time() + HOUR_IN_SECONDS;
+
+		unset( $item['reason'] );
 
 		$queue[ $key ] = $item;
 		update_option( $option_name, $queue, false );
+
+		if ( 'awaiting_sales_order' === ( $result['reason'] ?? '' ) ) {
+			return self::RETRY_OUTCOME_WAITING;
+		}
+
+		wc_kledo_set_remote_state( $order, $type, 'retrying' );
 
 		return self::RETRY_OUTCOME_FAILED;
 	}

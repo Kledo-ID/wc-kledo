@@ -372,6 +372,13 @@ class WC_Kledo_Connection_Status {
 			return;
 		}
 
+		// The Configure tab shows the same warning as a banner with the steps; a notice above it
+		// would only repeat it.
+		if ( WC_Kledo_Admin::PAGE_ID === wc_kledo_get_requested_value( 'page' )
+			&& WC_Kledo_Configure_Screen::ID === wc_kledo_get_requested_value( 'tab', WC_Kledo_Configure_Screen::ID ) ) {
+			return;
+		}
+
 		$notice = $this->is_unauthenticated()
 			? $this->build_rejected_key_notice()
 			: $this->build_expiry_notice();
@@ -425,9 +432,80 @@ class WC_Kledo_Connection_Status {
 				/* translators: %s: link to the plugin Configure screen */
 				__( 'Kledo: this store\'s API key is no longer valid, so nothing is syncing to Kledo right now. It has either expired or been replaced by a newer login. Paste a current API key in %s.', 'wc-kledo' ),
 				$this->get_settings_link()
-			),
+			) . ' ' . $this->get_create_key_link(),
 			'class'       => 'notice-error',
 			'dismissible' => false,
+		);
+	}
+
+	/**
+	 * A link to the Kledo page where a new API key is made, for use inside a notice.
+	 *
+	 * Opens in a new tab: the admin comes back here to paste the key.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function get_create_key_link(): string {
+		return sprintf(
+			'<a href="%1$s" target="_blank" rel="noopener noreferrer"><strong>%2$s</strong></a>',
+			esc_url( wc_kledo_get_api_key_management_url() ),
+			esc_html__( 'Create a new API key in Kledo', 'wc-kledo' )
+		);
+	}
+
+	/**
+	 * What the Configure tab's banner should say about the key, if anything.
+	 *
+	 * The same situations as the admin notices — a key refused by Kledo, an account without access
+	 * to the company, a key expiring within 30 days — but shown where the new key is pasted, with
+	 * the steps to get one.
+	 *
+	 * @return array{level: string, title: string, message: string}|null `level` is `error` or
+	 *                                                                    `warning`.
+	 * @since 1.8.0
+	 */
+	public function get_banner(): ?array {
+		if ( ! wc_kledo()->get_connection_handler()->is_configured() ) {
+			return null;
+		}
+
+		if ( $this->is_unauthenticated() ) {
+			if ( $this->is_missing_website_access() ) {
+				return array(
+					'level'   => 'error',
+					'title'   => __( 'The API key\'s account has no access to this company — nothing is syncing', 'wc-kledo' ),
+					'message' => __( 'Kledo accepts the key, but the account it belongs to no longer has access to the company. Check the account in Kledo, or create a key while logged in to the right company.', 'wc-kledo' ),
+				);
+			}
+
+			return array(
+				'level'   => 'error',
+				'title'   => __( 'The API key is no longer valid — nothing is syncing', 'wc-kledo' ),
+				'message' => __( 'Kledo refused the saved key: it has expired or was replaced. Orders and invoices are not reaching Kledo until a new key is saved.', 'wc-kledo' ),
+			);
+		}
+
+		$status = $this->get();
+
+		if ( null === $status || null === $status['days_remaining'] || $status['days_remaining'] > self::NOTICE_THRESHOLD_DAYS ) {
+			return null;
+		}
+
+		$days = max( 0, (int) $status['days_remaining'] );
+
+		return array(
+			'level'   => $days <= self::URGENT_THRESHOLD_DAYS ? 'error' : 'warning',
+			'title'   => sprintf(
+				/* translators: %d: number of days */
+				_n( 'The API key expires in %d day', 'The API key expires in %d days', $days, 'wc-kledo' ),
+				$days
+			),
+			'message' => trim(
+				$this->describe_expiry( $status ) . ' ' . ( ! empty( $status['auto_renews'] )
+					? __( 'Kledo normally renews it by itself while orders keep syncing. If orders are not reaching Kledo, create a new key now so syncing does not stop.', 'wc-kledo' )
+					: __( 'This key does not renew itself. Create a new key before it expires, so orders and invoices keep reaching Kledo automatically.', 'wc-kledo' ) )
+			),
 		);
 	}
 
@@ -507,7 +585,7 @@ class WC_Kledo_Connection_Status {
 				max( 0, $days_remaining ),
 				$expiry,
 				$advice
-			),
+			) . ' ' . $this->get_create_key_link(),
 			'class'       => $urgent ? 'notice-error' : 'notice-warning',
 			'dismissible' => true,
 		);

@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.8.0 (belum dirilis)
+
+### Fitur baru
+
+- Setiap pesanan penjualan dan tagihan yang dikirim kini dicek ulang ke Kledo. Kledo langsung menjawab begitu transaksi masuk antrean, jadi transaksi yang ternyata gagal dibuat di Kledo dulu tetap tampil "terkirim". Sekarang statusnya "Menunggu Kledo" sampai ditemukan, lalu "Ada di Kledo", atau "Gagal di Kledo" kalau tidak pernah terbentuk sehingga bisa dikirim ulang. Tidak ada kirim ulang otomatis, supaya tidak muncul duplikat kalau masih di proses di Kledo.
+- Kolom "Kledo" di daftar pesanan menampilkan status pesanan penjualan dan tagihan secara terpisah, dengan nomor Kledo saat kursor diarahkan.
+- Dua filter baru di daftar pesanan, "Pesanan penjualan Kledo" dan "Tagihan Kledo", misalnya untuk melihat semua pesanan Completed yang tagihannya belum ada di Kledo.
+- Filter rentang tanggal (Dari–Sampai) di daftar pesanan. WooCommerce sendiri hanya bisa memfilter per bulan. Rentang yang diisi menggantikan pilihan bulan.
+- Aksi massal di daftar pesanan: "Kledo: Kirim pesanan penjualan", "Kledo: Kirim tagihan", dan "Kledo: Cek status di Kledo". Yang sudah ada di Kledo atau sedang diproses dilewati.
+- Tab Transaksi dirombak dan namanya diganti menjadi **Status Kledo**, supaya langsung jelas isinya: status setiap pesanan penjualan dan tagihan di Kledo. Isinya kartu ringkasan, tab per status Kledo, nomor Kledo dan waktu cek terakhir, langkah berikutnya untuk setiap baris gagal, serta panel "Apa arti setiap status?". Kolom diringkas dari 10 menjadi 5, dan aksi *Cek status · Kirim ulang · Buka pesanan* ada di bawah nomor pesanan, sehingga tetap terlihat di layar sempit. *Cek status* dan *Kirim ulang* berjalan tanpa memuat ulang halaman. Filter tanggal berupa rentang. Daftar sekarang dipaginasi di database, jadi pesanan di luar 2.500 terbaru tidak hilang lagi.
+- Tab baru **Sinkronisasi** untuk mengirim pesanan yang belum ada di Kledo, misalnya pesanan dari sebelum plugin dipasang. Pesanan dikirim bertahap 5–10 per menit, dan batch berikutnya baru dikirim setelah batch sebelumnya benar-benar terbentuk di Kledo. Pesanan yang sudah ada di Kledo dilewati. Bisa dijeda, dilanjutkan, dan dibatalkan, dan dijeda otomatis kalau Kledo belum selesai setelah 30 menit. Tidak pernah berjalan sendiri saat plugin dipasang atau di-update: plugin hanya menghitung pesanan yang belum ada di Kledo dari 30 hari terakhir lalu menampilkan pemberitahuan.
+- Opsi "Kirim Otomatis Setiap Hari" di tab Sinkronisasi (default mati) untuk mengirim sendiri, setiap malam, pesanan beberapa hari terakhir yang terlewat.
+- Link "Kirim semuanya bertahap lewat Sinkronisasi" di daftar pesanan saat filter Kledo "Belum dikirim" atau "Gagal" dipakai, karena aksi massal dibatasi 20 pesanan per klik.
+- Setting baru di tab Invoice, "Buat Pesanan Penjualan Dulu Jika Pesanan Langsung Selesai". Default aktif (perilaku sama seperti 1.7.4). Kalau dimatikan, pesanan yang langsung Completed hanya dibuatkan tagihan, tanpa tautan ke pesanan penjualan.
+- Kotak Kledo di halaman pesanan merangkum status pesanan penjualan dan tagihan, dan aksi "Periksa status Kledo sekarang" juga memastikan keduanya ada di Kledo.
+- "Cek status di Kledo" mengenali transaksi yang sudah ada di Kledo tapi belum tercatat terkirim, lalu menandainya terkirim agar tidak dibuat dua kali.
+
+- Tab baru **Diagnosa** untuk mencari tahu kenapa sebuah pesanan tidak masuk ke Kledo. Masukkan nomor pesanan, lalu delapan pemeriksaan berjalan satu per satu (lingkungan toko, koneksi, pengaturan, pesanan, data yang akan dikirim, status di Kledo, riwayat pengiriman, tugas terjadwal) dan kemungkinan penyebabnya dijelaskan dengan bahasa sederhana beserta cara memperbaikinya. Bisa sekalian mengirim ulang sambil merekam apa yang dikirim dan jawaban Kledo. Laporannya bisa diunduh (teks atau JSON) untuk dikirim ke tim Kledo; API key tidak pernah ikut dan data pelanggan disamarkan secara default. Ada juga tombol "Rekam selama 24 jam" untuk masalah yang hanya terjadi sesekali. Pesanan dipilih dari daftar yang bisa dicari (pesanan yang belum ada di Kledo atau gagal tampil paling atas, lengkap dengan status, tanggal, total, dan statusnya di Kledo), atau nomornya diketik manual. Bisa dibuka dari tab Status Kledo, halaman pesanan, dan tab Support.
+
+- Saat API key akan kedaluwarsa (30 hari sebelumnya) atau sudah ditolak Kledo, tab Configure menampilkan banner berisi langkah-langkah dan tombol **Buat API key baru di Kledo** yang langsung membuka halaman API key di Kledo (Pengaturan › Integrasi › Developer & Keamanan › API Key). Pemberitahuan di halaman admin lain juga membawa link yang sama.
+
+- Tab baru **Panduan & FAQ** di sebelah tab Bantuan: panduan langkah demi langkah dari membuat API key sampai mencari pesanan yang tidak masuk, 17 pertanyaan yang sering diajukan, kotak pencarian, dan tombol ke tab terkait. Setiap tab pengaturan punya link "Panduan untuk tab ini".
+
+- Angka notifikasi di menu **WooCommerce › Kledo**, seperti angka di menu Orders, berisi jumlah pesanan yang perlu dicek: pesanan Processing/Completed 30 hari terakhir yang belum dikirim ke Kledo, ditambah pesanan yang pesanan penjualan atau tagihannya gagal, ditolak, atau tidak ditemukan di Kledo. Di atas 99 ditampilkan "99+". Tidak muncul kalau jumlahnya nol, atau saat integrasi mati atau belum terhubung. Dihitung ulang paling lambat setiap 10 menit, dan langsung setiap kali status transaksi berubah. Angkanya juga dipecah ke tab tempat menanganinya: tab **Sinkronisasi** (belum dikirim) dan tab **Status Kledo** (gagal di Kledo). Warnanya mengikuti skema warna admin WordPress (merah di skema Default) dan tetap terlihat saat menu aktif atau disorot.
+
+### Perbaikan
+
+- Jadwal cron plugin dibersihkan saat plugin dinonaktifkan.
+
 ## 1.7.4 (2026-10-01)
 
 Rilis ini langsung naik dari 1.5.0. Versi 1.6.0 sampai 1.7.3 tidak pernah dirilis, jadi semua perubahannya digabung di sini.

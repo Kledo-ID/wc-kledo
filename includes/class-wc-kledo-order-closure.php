@@ -298,12 +298,11 @@ class WC_Kledo_Order_Closure {
 			);
 		}
 
-		$data = isset( $response['data'] ) && is_array( $response['data'] ) ? $response['data'] : array();
+		$status = wc_kledo_read_transaction_status( $response );
 
-		$kledo_order = isset( $data['order'] ) && is_array( $data['order'] ) ? $data['order'] : null;
-		$linked      = ! empty( $data['linked'] );
-
-		$kledo_invoice = isset( $data['invoice'] ) && is_array( $data['invoice'] ) ? $data['invoice'] : null;
+		$kledo_order   = $status['order'];
+		$kledo_invoice = $status['invoice'];
+		$linked        = $status['linked'];
 
 		// The invoice exists but there is no Kledo sales order to close at all — normal when
 		// "Enable Create Order" is off, in which case waiting is meaningless rather than broken.
@@ -363,9 +362,7 @@ class WC_Kledo_Order_Closure {
 			return;
 		}
 
-		$reference = isset( $kledo_order['ref_number'] ) && '' !== (string) $kledo_order['ref_number']
-			? (string) $kledo_order['ref_number']
-			: (string) ( $kledo_order['id'] ?? '' );
+		$reference = wc_kledo_get_kledo_reference( $kledo_order );
 
 		wc_kledo_mark_order_closed_in_kledo( $order );
 

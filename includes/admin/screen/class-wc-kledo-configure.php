@@ -377,6 +377,54 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
+	 * Render the tab, with the API key banner above the settings when the key needs replacing.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	public function render(): void {
+		$this->render_api_key_banner();
+
+		parent::render();
+	}
+
+	/**
+	 * Tell the admin, where the key is pasted, that it is expiring or no longer works — and how to
+	 * get a new one.
+	 *
+	 * Shown instead of the admin notice on this tab, so the same warning does not appear twice.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_api_key_banner(): void {
+		$banner = wc_kledo()->get_connection_status()->get_banner();
+
+		if ( null === $banner ) {
+			return;
+		}
+
+		?>
+		<div class="notice notice-<?php echo esc_attr( $banner['level'] ); ?> inline wc-kledo-key-banner">
+			<h3><?php echo esc_html( $banner['title'] ); ?></h3>
+			<p><?php echo esc_html( $banner['message'] ); ?></p>
+			<ol>
+				<li><?php esc_html_e( 'Open the API key page in Kledo with the button below (in Kledo: Settings › Integrations › Developer & Security › API Key), and create a new API key for WooCommerce.', 'wc-kledo' ); ?></li>
+				<li><?php esc_html_e( 'Copy the new key.', 'wc-kledo' ); ?></li>
+				<li><?php esc_html_e( 'Paste it into the API Key field below and click "Save changes". Orders keep syncing automatically from then on.', 'wc-kledo' ); ?></li>
+			</ol>
+			<p>
+				<a class="button button-primary" href="<?php echo esc_url( wc_kledo_get_api_key_management_url() ); ?>" target="_blank" rel="noopener noreferrer">
+					<?php esc_html_e( 'Create a new API key in Kledo', 'wc-kledo' ); ?>
+					<span class="screen-reader-text"><?php esc_html_e( '(opens in a new tab)', 'wc-kledo' ); ?></span>
+				</a>
+				<a class="button" href="#<?php echo esc_attr( self::SETTING_API_KEY ); ?>"><?php esc_html_e( 'Go to the API Key field', 'wc-kledo' ); ?></a>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Render configure admin settings title.
 	 *
 	 * @param  array $field  field data

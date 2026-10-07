@@ -173,3 +173,502 @@
 .wc-kledo-settings td.wc-kledo-api-key-status > ul {
     margin-bottom: 0;
 }
+
+/* Transactions tab: summary cards, toolbar and row details (1.8.0). Previously inline styles. */
+.wc-kledo-tx-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 0 0 16px;
+}
+
+.wc-kledo-tx-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-left-width: 4px;
+    border-radius: 4px;
+    color: #1d2327;
+    text-decoration: none;
+}
+
+a.wc-kledo-tx-card:hover,
+a.wc-kledo-tx-card:focus {
+    border-color: #2271b1;
+    color: #1d2327;
+}
+
+.wc-kledo-tx-card--ok {
+    border-left-color: #00a32a;
+}
+
+.wc-kledo-tx-card--pending {
+    border-left-color: #2271b1;
+}
+
+.wc-kledo-tx-card--failed {
+    border-left-color: #d63638;
+}
+
+.wc-kledo-tx-card--none {
+    border-left-color: #8c8f94;
+}
+
+.wc-kledo-tx-card-count {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.wc-kledo-tx-card-label {
+    font-weight: 600;
+}
+
+.wc-kledo-tx-card-description {
+    color: #50575e;
+    font-size: 12px;
+}
+
+.wc-kledo-tx-help {
+    margin: 0 0 12px;
+}
+
+.wc-kledo-tx-help summary {
+    cursor: pointer;
+    color: #2271b1;
+}
+
+.wc-kledo-tx-help table {
+    max-width: 900px;
+    margin-top: 8px;
+}
+
+.wc-kledo-tx-help-badge {
+    width: 13em;
+    white-space: nowrap;
+}
+
+.wc-kledo-tx-tabs.subsubsub {
+    float: none;
+    margin: 0 0 12px;
+}
+
+.wc-kledo-tx-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    margin: 0 0 12px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.wc-kledo-tx-toolbar .wc-kledo-tx-bulkactions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.wc-kledo-tx-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.wc-kledo-tx-filters .wc-kledo-tx-order-id {
+    width: 8em;
+}
+
+/* Five columns that share the width; Notes takes whatever is left. */
+.wc-kledo-transactions-table .column-order {
+    width: 26%;
+}
+
+.wc-kledo-transactions-table .column-type {
+    width: 12%;
+}
+
+.wc-kledo-transactions-table .column-status {
+    width: 22%;
+}
+
+.wc-kledo-transactions-table .column-attempts {
+    width: 13%;
+}
+
+.wc-kledo-tx-order-meta,
+.wc-kledo-tx-detail {
+    display: block;
+    color: #50575e;
+    font-size: 12px;
+}
+
+.wc-kledo-tx-detail:first-of-type {
+    margin-top: 4px;
+}
+
+/* Actions sit under the order number and stay visible, not only on hover. */
+.wc-kledo-transactions-table .row-actions.wc-kledo-tx-actions {
+    position: static;
+    padding-top: 4px;
+}
+
+.wc-kledo-tx-actions .button-link {
+    font-size: 13px;
+    vertical-align: baseline;
+}
+
+.wc-kledo-tx-actions .button-link:disabled {
+    color: #8c8f94;
+    cursor: default;
+}
+
+.wc-kledo-tx-spinner.spinner {
+    float: none;
+    width: 16px;
+    height: 16px;
+    margin: 0 0 0 4px;
+    background-size: 16px 16px;
+    vertical-align: text-bottom;
+}
+
+.wc-kledo-tx-row-message:empty {
+    display: none;
+}
+
+.wc-kledo-tx-row-message {
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.wc-kledo-tx-row-message--success {
+    color: #00712e;
+}
+
+.wc-kledo-tx-row-message--error,
+.wc-kledo-tx-row-message--warning {
+    color: #b32d2e;
+}
+
+.wc-kledo-tx-moved {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 0 6px;
+    border-radius: 3px;
+    background: #f0f6fc;
+    color: #135e96;
+    font-size: 12px;
+}
+
+.wc-kledo-tx-row--busy td {
+    opacity: 0.6;
+}
+
+.wc-kledo-tx-row--updated td,
+.wc-kledo-tx-row--updated th {
+    background-color: #fcf9e8 !important;
+    transition: background-color 0.4s ease;
+}
+
+.wc-kledo-date-range {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.wc-kledo-tx-error {
+    display: block;
+}
+
+.wc-kledo-tx-error--truncated {
+    cursor: help;
+}
+
+.wc-kledo-tx-next-step {
+    display: block;
+    margin-top: 4px;
+    color: #50575e;
+    font-style: italic;
+}
+
+.wc-kledo-badge--none {
+    color: #50575e;
+}
+
+/* Diagnostics tab (1.8.0). */
+.wc-kledo-diag-intro {
+    max-width: 800px;
+}
+
+.wc-kledo-diag-steps {
+    max-width: 1000px;
+    margin: 16px 0;
+    padding: 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.wc-kledo-diag-step {
+    margin: 0;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.wc-kledo-diag-step:last-child {
+    border-bottom: 0;
+}
+
+.wc-kledo-diag-icon {
+    display: inline-block;
+    width: 1.5em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.wc-kledo-diag-icon .spinner {
+    float: none;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    background-size: 16px 16px;
+}
+
+.wc-kledo-diag-label {
+    font-weight: 600;
+}
+
+.wc-kledo-diag-step.is-ok .wc-kledo-diag-icon {
+    color: #00a32a;
+}
+
+.wc-kledo-diag-step.is-warn .wc-kledo-diag-icon {
+    color: #dba617;
+}
+
+.wc-kledo-diag-step.is-fail .wc-kledo-diag-icon {
+    color: #d63638;
+}
+
+.wc-kledo-diag-step.is-info .wc-kledo-diag-icon,
+.wc-kledo-diag-step.is-running .wc-kledo-diag-summary {
+    color: #50575e;
+}
+
+.wc-kledo-diag-step details {
+    margin: 6px 0 0 1.5em;
+}
+
+.wc-kledo-diag-step pre {
+    max-height: 320px;
+    overflow: auto;
+    padding: 8px;
+    background: #f6f7f7;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.wc-kledo-diag-conclusion {
+    max-width: 1000px;
+    margin: 0 0 24px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-left-width: 4px;
+    border-radius: 4px;
+}
+
+.wc-kledo-diag-conclusion.is-ok {
+    border-left-color: #00a32a;
+}
+
+.wc-kledo-diag-conclusion.is-fail {
+    border-left-color: #d63638;
+}
+
+.wc-kledo-diag-cause {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.wc-kledo-diag-code {
+    color: #50575e;
+}
+
+.wc-kledo-diag-recording {
+    color: #996800;
+    font-weight: 600;
+}
+
+/* Sync tab (1.8.0). */
+.wc-kledo-sync-divider {
+    margin: 24px 0;
+}
+
+.wc-kledo-sync-job {
+    max-width: 800px;
+    padding: 12px 16px;
+    margin: 0 0 16px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.wc-kledo-sync-bar {
+    width: 100%;
+    height: 12px;
+}
+
+.wc-kledo-sync-warning {
+    color: #b32d2e;
+    font-weight: 600;
+}
+
+.wc-kledo-sync-list-filters {
+    margin: 16px 0 8px;
+}
+
+/* API key banner on the Configure tab (1.8.0). */
+.wc-kledo-key-banner {
+    max-width: 900px;
+    padding: 4px 16px 8px;
+}
+
+.wc-kledo-key-banner h3 {
+    margin: 12px 0 4px;
+}
+
+.wc-kledo-key-banner ol {
+    margin-left: 1.5em;
+}
+
+/* Guide & FAQ tab (1.8.0). */
+.wc-kledo-help {
+    max-width: 960px;
+}
+
+.wc-kledo-help-toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 16px;
+}
+
+.wc-kledo-help-toc a {
+    padding: 4px 10px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 999px;
+    text-decoration: none;
+}
+
+.wc-kledo-help-item {
+    margin: 0 0 8px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.wc-kledo-help-item summary {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.wc-kledo-help-item[open] summary {
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.wc-kledo-help-body {
+    padding: 4px 16px 12px;
+}
+
+.wc-kledo-help-body ol,
+.wc-kledo-help-notes {
+    margin-left: 1.5em;
+}
+
+.wc-kledo-help-notes {
+    list-style: disc;
+    color: #50575e;
+}
+
+.wc-kledo-help-table {
+    margin: 8px 0;
+}
+
+.wc-kledo-help-footer {
+    margin-top: 24px;
+    font-weight: 600;
+}
+
+.wc-kledo-guide-link {
+    margin: 0 0 12px;
+}
+
+.wc-kledo-guide-link .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+}
+
+/* Diagnostics order picker (1.8.0). */
+.wc-kledo-diag-order-field {
+    max-width: 640px;
+}
+
+.wc-kledo-diag-option-title {
+    font-weight: 600;
+}
+
+.wc-kledo-diag-option-meta,
+.wc-kledo-diag-option-states {
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+.wc-kledo-diag-option-states.is-problem {
+    color: #b32d2e;
+    opacity: 1;
+}
+
+.select2-results__option--highlighted .wc-kledo-diag-option-states.is-problem {
+    color: inherit;
+}
+
+/* Count bubble on the Sync and Transactions tabs, matching the one on the admin menu. */
+.wc-kledo-tab-count {
+    display: inline-block;
+    box-sizing: border-box;
+    min-width: 18px;
+    height: 18px;
+    margin: 0 0 0 4px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--wp-admin-theme-color, #d63638);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: text-top;
+}
+
+/* The Default color scheme uses red for menu bubbles. */
+.admin-color-fresh .wc-kledo-tab-count {
+    background: #d63638;
+}

@@ -600,9 +600,871 @@ if ( ! function_exists( 'wc_kledo_mark_delivery_synced' ) ) {
 		}
 
 		$order->update_meta_data( $key, 'yes' );
-		$order->save();
+
+		// A 200 from Kledo only means the write was queued over there, so the record starts out
+		// unconfirmed and the verifier is what later turns it into `confirmed` or `missing`.
+		wc_kledo_set_remote_state( $order, $type, 'verifying' );
 
 		wc_kledo_remove_failed_transaction_from_queue( $order->get_id(), $type );
+		wc_kledo_enqueue_verification( $order->get_id(), $type );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_states' ) ) {
+	/**
+	 * Every state a transaction can be recorded in, as stored in its remote-state meta.
+	 *
+	 * - `retrying`            failed to send, the retry queue will try again
+	 * - `failed`              failed to send, automatic retries have stopped
+	 * - `rejected`            Kledo refused the payload; resending as-is cannot succeed
+	 * - `waiting_sales_order` an invoice held back until its sales order exists in Kledo
+	 * - `verifying`           Kledo accepted it (HTTP 200), not yet seen in Kledo
+	 * - `confirmed`           read back from Kledo
+	 * - `missing`             accepted by Kledo but never appeared there
+	 *
+	 * Two further states are derived rather than stored: `not_sent` and `legacy_synced`, see
+	 * `wc_kledo_get_remote_state()`.
+	 *
+	 * @return string[]
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_states(): array {
+		return array( 'retrying', 'failed', 'rejected', 'waiting_sales_order', 'verifying', 'confirmed', 'missing' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_state_groups' ) ) {
+	/**
+	 * The stored states behind each filter choice offered on the order list and Transactions screen.
+	 *
+	 * `pending` also covers `legacy_synced` — an order sent before 1.8.0, which has no stored state
+	 * at all — and `not_sent` is the absence of both metas. Neither can be listed here because
+	 * neither is a stored value; `wc_kledo_get_remote_state_meta_query()` handles them.
+	 *
+	 * @return array<string, string[]>
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_state_groups(): array {
+		return array(
+			'pending'   => array( 'verifying', 'waiting_sales_order' ),
+			'confirmed' => array( 'confirmed' ),
+			'failed'    => array( 'retrying', 'failed', 'rejected', 'missing' ),
+		);
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_state_meta_key' ) ) {
+	/**
+	 * Order meta key holding the Kledo-side state of one transaction type.
+	 *
+	 * Kept apart from `_wc_kledo_{type}_synced` on purpose. That meta has meant "Kledo answered
+	 * 200" since 1.5.0 and other code reads it with that meaning; this one records what is
+	 * actually known about the transaction in Kledo, and is the one that can be filtered on.
+	 *
+	 * @param  string $type  `order` or `invoice`.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_state_meta_key( string $type ): string {
+		return '_wc_kledo_' . $type . '_remote_state';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_ref_meta_key' ) ) {
+	/**
+	 * Order meta key holding the Kledo reference number of one transaction type.
+	 *
+	 * @param  string $type  `order` or `invoice`.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_ref_meta_key( string $type ): string {
+		return '_wc_kledo_' . $type . '_remote_ref';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_checked_at_meta_key' ) ) {
+	/**
+	 * Order meta key holding when Kledo was last asked about one transaction type.
+	 *
+	 * @param  string $type  `order` or `invoice`.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_checked_at_meta_key( string $type ): string {
+		return '_wc_kledo_' . $type . '_checked_at';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_set_remote_state' ) ) {
+	/**
+	 * Record the Kledo-side state of one transaction and save the order.
+	 *
+	 * @param  \WC_Order $order
+	 * @param  string    $type   `order` or `invoice`.
+	 * @param  string    $state  One of `wc_kledo_get_remote_states()`.
+	 * @param  array     $extra {
+	 *     Optional.
+	 *
+	 *     @type string $ref      Kledo reference number to store alongside.
+	 *     @type bool   $checked  Whether Kledo was asked just now; stamps the checked-at meta.
+	 * }
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	function wc_kledo_set_remote_state( WC_Order $order, string $type, string $state, array $extra = array() ): void {
+		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) || ! in_array( $state, wc_kledo_get_remote_states(), true ) ) {
+			return;
+		}
+
+		// The queue helpers load their own WC_Order instance of the same order, so this key may
+		// already have been written by another object earlier in the request. update_meta_data()
+		// on an instance that has not seen that row adds a second row for the key instead of
+		// replacing it — and get_meta() then keeps answering with the stale first one. Saving any
+		// pending change first and re-reading the meta is what makes the write below land on the
+		// existing row.
+		$order->save();
+		$order->read_meta_data( true );
+
+		$order->update_meta_data( wc_kledo_get_remote_state_meta_key( $type ), $state );
+
+		if ( isset( $extra['ref'] ) && '' !== (string) $extra['ref'] ) {
+			$order->update_meta_data( wc_kledo_get_remote_ref_meta_key( $type ), sanitize_text_field( (string) $extra['ref'] ) );
+		}
+
+		if ( ! empty( $extra['checked'] ) ) {
+			$order->update_meta_data( wc_kledo_get_checked_at_meta_key( $type ), time() );
+		}
+
+		$order->save();
+
+		// The admin menu bubble counts orders by these states.
+		delete_transient( 'wc_kledo_attention_count' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_attention_counts' ) ) {
+	/**
+	 * How many orders need someone to look at them in Kledo, split by the tab that handles them.
+	 *
+	 * - `not_sent`: due and never sent — Processing/Completed within the Sync tab's range (the last
+	 *   30 days by default). Handled in the Sync tab.
+	 * - `failed`: the sales order or invoice failed in a way the plugin will not fix by itself —
+	 *   `failed`, `rejected`, `missing` — at any date. Handled in the Transactions tab.
+	 * - `total`: distinct orders in either group, for the admin menu bubble. An order can be in
+	 *   both (its sales order failed, its invoice was never sent), so it is not the plain sum.
+	 *
+	 * Anything still being retried or waited for is left out — it needs no action yet. Cached for
+	 * 10 minutes and dropped whenever a transaction's state changes, so the menu, which renders on
+	 * every admin page, does not query orders on every page load.
+	 *
+	 * @return array{not_sent: int, failed: int, total: int}
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_attention_counts(): array {
+		$cached = get_transient( 'wc_kledo_attention_count' );
+
+		if ( is_array( $cached ) && isset( $cached['not_sent'], $cached['failed'], $cached['total'] ) ) {
+			return array_map( 'intval', $cached );
+		}
+
+		$candidates = new WC_Kledo_Sync_Candidates();
+		$not_sent   = $candidates->get_ids( WC_Kledo_Sync_Screen::get_default_range() );
+
+		// Recount the "not in Kledo yet" notice too, so it never shows a different number than the bubbles.
+		$candidates->refresh_cached_count();
+
+		$clauses = array( 'relation' => 'OR' );
+
+		foreach ( array( 'order', 'invoice' ) as $type ) {
+			$clauses[] = array(
+				'key'     => wc_kledo_get_remote_state_meta_key( $type ),
+				'value'   => array( 'failed', 'rejected', 'missing' ),
+				'compare' => 'IN',
+			);
+		}
+
+		$failed = wc_kledo_get_orders(
+			array(
+				'type'       => 'shop_order',
+				'status'     => array_keys( wc_get_order_statuses() ),
+				'limit'      => -1,
+				'return'     => 'ids',
+				'meta_query' => $clauses, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			)
+		);
+
+		$failed = array_map( 'intval', is_array( $failed ) ? $failed : array() );
+
+		$counts = array(
+			'not_sent' => count( $not_sent ),
+			'failed'   => count( $failed ),
+			'total'    => count( array_unique( array_merge( $not_sent, $failed ) ) ),
+		);
+
+		set_transient( 'wc_kledo_attention_count', $counts, 10 * MINUTE_IN_SECONDS );
+
+		return $counts;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_attention_count' ) ) {
+	/**
+	 * How many distinct orders need checking in Kledo — the number on the admin menu bubble.
+	 *
+	 * @return int
+	 * @since 1.8.0
+	 * @see wc_kledo_get_attention_counts()
+	 */
+	function wc_kledo_get_attention_count(): int {
+		return wc_kledo_get_attention_counts()['total'];
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_set_remote_state_by_id' ) ) {
+	/**
+	 * Same as `wc_kledo_set_remote_state()`, for callers that only hold an order id.
+	 *
+	 * The queue helpers are keyed by id and run from cron, where no order object is at hand.
+	 *
+	 * @param  int    $order_id
+	 * @param  string $type
+	 * @param  string $state
+	 * @param  array  $extra
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	function wc_kledo_set_remote_state_by_id( int $order_id, string $type, string $state, array $extra = array() ): void {
+		$order = wc_get_order( $order_id );
+
+		if ( $order instanceof WC_Order ) {
+			wc_kledo_set_remote_state( $order, $type, $state, $extra );
+		}
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_state' ) ) {
+	/**
+	 * The Kledo-side state of one transaction, including the two derived states.
+	 *
+	 * @param  \WC_Order $order
+	 * @param  string    $type  `order` or `invoice`.
+	 *
+	 * @return string A stored state, `legacy_synced` for a record sent before 1.8.0 that has never
+	 *                been verified, or `not_sent`.
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_state( WC_Order $order, string $type ): string {
+		$state = (string) $order->get_meta( wc_kledo_get_remote_state_meta_key( $type ) );
+
+		if ( in_array( $state, wc_kledo_get_remote_states(), true ) ) {
+			return $state;
+		}
+
+		return wc_kledo_is_delivery_synced( $order, $type ) ? 'legacy_synced' : 'not_sent';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_ref' ) ) {
+	/**
+	 * The Kledo reference number recorded for one transaction, if any.
+	 *
+	 * @param  \WC_Order $order
+	 * @param  string    $type
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_ref( WC_Order $order, string $type ): string {
+		return (string) $order->get_meta( wc_kledo_get_remote_ref_meta_key( $type ) );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_checked_at' ) ) {
+	/**
+	 * When Kledo was last asked about one transaction, as a timestamp, or 0 if never.
+	 *
+	 * @param  \WC_Order $order
+	 * @param  string    $type
+	 *
+	 * @return int
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_checked_at( WC_Order $order, string $type ): int {
+		return (int) $order->get_meta( wc_kledo_get_checked_at_meta_key( $type ) );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_remote_state_meta_query' ) ) {
+	/**
+	 * A `meta_query` clause selecting orders whose transaction of `$type` is in a filter group.
+	 *
+	 * Shared by the order list filter and the Transactions screen so both count the same orders.
+	 *
+	 * @param  string $type   `order` or `invoice`.
+	 * @param  string $group  `not_sent`, `pending`, `confirmed`, `failed` or `sent` (any of the
+	 *                        last three plus legacy records).
+	 *
+	 * @return array Empty when the group is unknown.
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_remote_state_meta_query( string $type, string $group ): array {
+		if ( ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+			return array();
+		}
+
+		$state_key  = wc_kledo_get_remote_state_meta_key( $type );
+		$synced_key = wc_kledo_get_delivery_meta_key( $type );
+		$groups     = wc_kledo_get_remote_state_groups();
+
+		// Sent before 1.8.0: accepted by Kledo, never verified, so it has no state of its own.
+		$legacy_synced = array(
+			'relation' => 'AND',
+			array(
+				'key'   => $synced_key,
+				'value' => 'yes',
+			),
+			array(
+				'key'     => $state_key,
+				'compare' => 'NOT EXISTS',
+			),
+		);
+
+		switch ( $group ) {
+			case 'not_sent':
+				return array(
+					'relation' => 'AND',
+					array(
+						'key'     => $synced_key,
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'     => $state_key,
+						'compare' => 'NOT EXISTS',
+					),
+				);
+
+			case 'pending':
+				return array(
+					'relation' => 'OR',
+					array(
+						'key'     => $state_key,
+						'value'   => $groups['pending'],
+						'compare' => 'IN',
+					),
+					$legacy_synced,
+				);
+
+			case 'confirmed':
+			case 'failed':
+				return array(
+					array(
+						'key'     => $state_key,
+						'value'   => $groups[ $group ],
+						'compare' => 'IN',
+					),
+				);
+
+			case 'sent':
+				return array(
+					'relation' => 'OR',
+					array(
+						'key'     => $state_key,
+						'compare' => 'EXISTS',
+					),
+					$legacy_synced,
+				);
+		}
+
+		return array();
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_uses_hpos' ) ) {
+	/**
+	 * Whether orders are stored in the HPOS tables.
+	 *
+	 * @return bool
+	 * @since 1.8.0
+	 */
+	function wc_kledo_uses_hpos(): bool {
+		return class_exists( OrderUtil::class )
+			&& (bool) call_user_func( array( OrderUtil::class, 'custom_orders_table_usage_is_enabled' ) );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_orders' ) ) {
+	/**
+	 * `wc_get_orders()` with a `meta_query` that works in both storage modes.
+	 *
+	 * The HPOS query honours `meta_query`, but the legacy post data store drops it from the query
+	 * vars without a word (`WC_Data_Store_WP::get_wp_query_args()` skips the key), so every
+	 * filtered count would silently become a count of all orders. On legacy storage the clause is
+	 * handed to `WP_Query` through the data store's own filter instead, for this one call only.
+	 *
+	 * @param  array $args  `wc_get_orders()` arguments, `meta_query` included.
+	 *
+	 * @return mixed Whatever `wc_get_orders()` returns.
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_orders( array $args ) {
+		if ( empty( $args['meta_query'] ) || wc_kledo_uses_hpos() ) {
+			return wc_get_orders( $args );
+		}
+
+		$meta_query = $args['meta_query'];
+		unset( $args['meta_query'] );
+
+		$callback = static function ( $wp_query_args ) use ( $meta_query ) {
+			$existing = isset( $wp_query_args['meta_query'] ) && is_array( $wp_query_args['meta_query'] ) ? $wp_query_args['meta_query'] : array();
+
+			$wp_query_args['meta_query'] = empty( $existing ) // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				? $meta_query
+				: array(
+					'relation' => 'AND',
+					$existing,
+					$meta_query,
+				);
+
+			return $wp_query_args;
+		};
+
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $callback );
+
+		try {
+			return wc_get_orders( $args );
+		} finally {
+			remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $callback );
+		}
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_sanitize_date' ) ) {
+	/**
+	 * A strict `Y-m-d` calendar day, or an empty string.
+	 *
+	 * Round-trips the value so impossible days such as 2026-02-30 are refused rather than rolled
+	 * over into the next month.
+	 *
+	 * @param  mixed $value
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_sanitize_date( $value ): string {
+		$value = is_string( $value ) ? trim( $value ) : '';
+
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+			return '';
+		}
+
+		$date = DateTimeImmutable::createFromFormat( '!Y-m-d', $value );
+
+		return $date instanceof DateTimeImmutable && $date->format( 'Y-m-d' ) === $value ? $value : '';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_date_range' ) ) {
+	/**
+	 * Normalise a from/to pair of calendar days.
+	 *
+	 * Either end may be empty, meaning open-ended, and a pair given the wrong way round is swapped
+	 * rather than rejected — an admin who typed the dates backwards still means that range.
+	 *
+	 * @param  mixed $from
+	 * @param  mixed $to
+	 *
+	 * @return array{from: string, to: string}
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_date_range( $from, $to ): array {
+		$from = wc_kledo_sanitize_date( $from );
+		$to   = wc_kledo_sanitize_date( $to );
+
+		if ( '' !== $from && '' !== $to && $from > $to ) {
+			list( $from, $to ) = array( $to, $from );
+		}
+
+		return array(
+			'from' => $from,
+			'to'   => $to,
+		);
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_date_created_query_arg' ) ) {
+	/**
+	 * The `date_created` argument of `wc_get_orders()` for a calendar-day range.
+	 *
+	 * Days without a time are read by WooCommerce in the store's timezone in both storage modes,
+	 * so a range ending on the 17th includes an order placed at 23:59 that day and not one placed
+	 * at 00:00 on the 18th — the same days the order list shows.
+	 *
+	 * @param  array{from: string, to: string} $range  From `wc_kledo_get_date_range()`.
+	 *
+	 * @return string Empty when both ends are open.
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_date_created_query_arg( array $range ): string {
+		$from = (string) ( $range['from'] ?? '' );
+		$to   = (string) ( $range['to'] ?? '' );
+
+		if ( '' !== $from && '' !== $to ) {
+			return $from . '...' . $to;
+		}
+
+		if ( '' !== $from ) {
+			return '>=' . $from;
+		}
+
+		return '' !== $to ? '<=' . $to : '';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_mask_text' ) ) {
+	/**
+	 * Keep the first and last characters of a value and hide the rest.
+	 *
+	 * @param  mixed $value
+	 * @param  int   $keep_start
+	 * @param  int   $keep_end
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_mask_text( $value, int $keep_start = 1, int $keep_end = 0 ): string {
+		$value  = (string) $value;
+		$length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+
+		if ( '' === $value ) {
+			return '';
+		}
+
+		if ( $length <= $keep_start + $keep_end ) {
+			return str_repeat( '*', $length );
+		}
+
+		$start = function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $keep_start ) : substr( $value, 0, $keep_start );
+		$end   = $keep_end > 0 ? ( function_exists( 'mb_substr' ) ? mb_substr( $value, -$keep_end ) : substr( $value, -$keep_end ) ) : '';
+
+		return $start . str_repeat( '*', max( 3, $length - $keep_start - $keep_end ) ) . $end;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_mask_customer_data' ) ) {
+	/**
+	 * Hide the customer's personal data in a request body, for reports and debug logs.
+	 *
+	 * Keeps enough to recognise the record — the first letter of the name, the domain of the
+	 * email, the last digits of the phone — so a developer can still tell two customers apart.
+	 *
+	 * @param  array $body  A sales order or invoice request body.
+	 *
+	 * @return array
+	 * @since 1.8.0
+	 */
+	function wc_kledo_mask_customer_data( array $body ): array {
+		if ( isset( $body['contact_name'] ) ) {
+			$body['contact_name'] = implode( ' ', array_map( 'wc_kledo_mask_text', explode( ' ', (string) $body['contact_name'] ) ) );
+		}
+
+		if ( ! empty( $body['contact_email'] ) && false !== strpos( (string) $body['contact_email'], '@' ) ) {
+			list( $local, $domain ) = explode( '@', (string) $body['contact_email'], 2 );
+			$body['contact_email']  = wc_kledo_mask_text( $local ) . '@' . $domain;
+		}
+
+		if ( isset( $body['contact_phone'] ) ) {
+			$body['contact_phone'] = wc_kledo_mask_text( $body['contact_phone'], 4, 3 );
+		}
+
+		if ( isset( $body['contact_address'] ) && '' !== (string) $body['contact_address'] ) {
+			$body['contact_address'] = '[hidden]';
+		}
+
+		return $body;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_redact_http_headers' ) ) {
+	/**
+	 * Replace credentials in a header list. The API key never leaves the store in a report or log.
+	 *
+	 * @param  mixed $headers
+	 *
+	 * @return array
+	 * @since 1.8.0
+	 */
+	function wc_kledo_redact_http_headers( $headers ): array {
+		$headers = is_array( $headers ) ? $headers : array();
+
+		foreach ( $headers as $name => $value ) {
+			if ( in_array( strtolower( (string) $name ), array( 'authorization', 'x-api-key', 'cookie', 'set-cookie' ), true ) ) {
+				$headers[ $name ] = '[redacted]';
+			}
+		}
+
+		return $headers;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_api_key_management_url' ) ) {
+	/**
+	 * The page in the Kledo app where API keys are created.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_api_key_management_url(): string {
+		/**
+		 * Filters the Kledo page linked to for creating a new API key.
+		 *
+		 * @param  string  $url
+		 *
+		 * @since 1.8.0
+		 */
+		return (string) apply_filters( 'wc_kledo_api_key_management_url', 'https://app.kledo.com/#/settings/apps?activeKey=6' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_debug_log_until' ) ) {
+	/**
+	 * When the temporary detailed log switches itself off, or 0 when it is off.
+	 *
+	 * @return int
+	 * @since 1.8.0
+	 */
+	function wc_kledo_debug_log_until(): int {
+		$until = (int) get_option( 'wc_kledo_debug_log_until', 0 );
+
+		return $until > time() ? $until : 0;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_read_transaction_status' ) ) {
+	/**
+	 * Pull the parts of a `GET /woocommerce/transactions/{id}` response the plugin acts on.
+	 *
+	 * `order` and `invoice` are each null for exactly as long as Kledo has not produced them; the
+	 * shape is documented on `WC_Kledo_Request_Transaction_Status::get_status()`. Read in one place
+	 * so the verifier, the closure loop and the invoice hold all agree on what "present" means.
+	 *
+	 * @param  mixed $response  The decoded response, or false.
+	 *
+	 * @return array{readable: bool, order: ?array, invoice: ?array, linked: bool}
+	 *         `readable` is false when there is no usable answer at all, which callers must treat
+	 *         as "unknown" rather than "absent".
+	 * @since 1.8.0
+	 */
+	function wc_kledo_read_transaction_status( $response ): array {
+		$status = array(
+			'readable' => false,
+			'order'    => null,
+			'invoice'  => null,
+			'linked'   => false,
+		);
+
+		if ( ! is_array( $response ) ) {
+			return $status;
+		}
+
+		$data = isset( $response['data'] ) && is_array( $response['data'] ) ? $response['data'] : array();
+
+		$status['readable'] = true;
+		$status['linked']   = ! empty( $data['linked'] );
+
+		foreach ( array( 'order', 'invoice' ) as $type ) {
+			if ( isset( $data[ $type ] ) && is_array( $data[ $type ] ) && ! empty( $data[ $type ]['id'] ) ) {
+				$status[ $type ] = $data[ $type ];
+			}
+		}
+
+		return $status;
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_kledo_reference' ) ) {
+	/**
+	 * The reference to show for a Kledo transaction: its `ref_number`, or its id when that is empty.
+	 *
+	 * @param  array $transaction  `data.order` or `data.invoice`.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_kledo_reference( array $transaction ): string {
+		if ( isset( $transaction['ref_number'] ) && '' !== (string) $transaction['ref_number'] ) {
+			return (string) $transaction['ref_number'];
+		}
+
+		return (string) ( $transaction['id'] ?? '' );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_get_verification_queue_option_name' ) ) {
+	/**
+	 * Option holding the transactions waiting to be read back from Kledo.
+	 *
+	 * Separate from the retry queue (a delivery that failed) and the closure queue (an invoice
+	 * waiting for its sales order to close): this one is a delivery that succeeded and has not
+	 * been seen in Kledo yet.
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	function wc_kledo_get_verification_queue_option_name(): string {
+		return 'wc_kledo_pending_verifications';
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_enqueue_verification' ) ) {
+	/**
+	 * Queue a read-back of one transaction and make sure the cron event exists.
+	 *
+	 * @param  int    $order_id
+	 * @param  string $type       `order` or `invoice`.
+	 * @param  bool   $immediate  Due now instead of after the first delay — for an admin who asked.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	function wc_kledo_enqueue_verification( int $order_id, string $type, bool $immediate = false ): void {
+		if ( $order_id <= 0 || ! in_array( $type, array( 'order', 'invoice' ), true ) ) {
+			return;
+		}
+
+		$option_name = wc_kledo_get_verification_queue_option_name();
+		$queue       = get_option( $option_name, array() );
+		$key         = $type . ':' . $order_id;
+
+		if ( ! is_array( $queue ) ) {
+			$queue = array();
+		}
+
+		$now    = time();
+		$run_at = $immediate ? $now : $now + WC_Kledo_Transaction_Verifier::FIRST_DELAY;
+
+		// A fresh send deserves a fresh budget, so an existing row is reset rather than kept.
+		$queue[ $key ] = array(
+			'order_id'    => $order_id,
+			'type'        => $type,
+			'attempts'    => 0,
+			'created_at'  => $now,
+			'next_run_at' => $run_at,
+		);
+
+		update_option( $option_name, $queue, false );
+
+		if ( ! wp_next_scheduled( WC_Kledo_Transaction_Verifier::CRON_HOOK ) ) {
+			$scheduled = wp_schedule_single_event( max( $run_at, $now + 30 ), WC_Kledo_Transaction_Verifier::CRON_HOOK );
+
+			if ( false === $scheduled ) {
+				wc_kledo_log_warning(
+					sprintf(
+						'wp_schedule_single_event returned false for verification of order %d (%s); the admin-page fallback will still run it.',
+						$order_id,
+						$type
+					)
+				);
+			}
+		}
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_remove_verification' ) ) {
+	/**
+	 * Drop the read-back row of one transaction, if it has one.
+	 *
+	 * @param  int    $order_id
+	 * @param  string $type
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	function wc_kledo_remove_verification( int $order_id, string $type ): void {
+		$option_name = wc_kledo_get_verification_queue_option_name();
+		$queue       = get_option( $option_name, array() );
+		$key         = $type . ':' . $order_id;
+
+		if ( ! is_array( $queue ) || ! isset( $queue[ $key ] ) ) {
+			return;
+		}
+
+		unset( $queue[ $key ] );
+		update_option( $option_name, $queue, false );
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_record_missing_transaction' ) ) {
+	/**
+	 * Record that Kledo accepted a transaction which then never appeared in Kledo.
+	 *
+	 * The synced flag is cleared, because it is what stops every send path from sending again;
+	 * leaving it set would make the record impossible to resend short of a forced duplicate. The
+	 * row goes into the failed queue as terminal — visible on the Transactions screen and
+	 * resendable by hand, but never resent automatically, since Kledo may simply be slow and an
+	 * automatic resend would then create the duplicate this whole check exists to avoid.
+	 *
+	 * @param  \WC_Order $order
+	 * @param  string    $type
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	function wc_kledo_record_missing_transaction( WC_Order $order, string $type ): void {
+		$synced_key = wc_kledo_get_delivery_meta_key( $type );
+
+		if ( ! $synced_key ) {
+			return;
+		}
+
+		$order->delete_meta_data( $synced_key );
+		wc_kledo_set_remote_state( $order, $type, 'missing', array( 'checked' => true ) );
+
+		$option_name = 'wc_kledo_failed_transactions';
+		$queue       = get_option( $option_name, array() );
+		$key         = $type . ':' . $order->get_id();
+
+		if ( ! is_array( $queue ) ) {
+			$queue = array();
+		}
+
+		$queue[ $key ] = array(
+			'order_id'   => $order->get_id(),
+			'type'       => $type,
+			'attempts'   => 0,
+			'created_at' => time(),
+			'status'     => 'failed',
+			'reason'     => 'missing_in_kledo',
+			'last_error' => __( 'Kledo accepted the request, but the transaction never appeared in Kledo.', 'wc-kledo' ),
+		);
+
+		update_option( $option_name, $queue, false );
+
+		wc_kledo_log_warning(
+			sprintf( 'Kledo %s for order %d was accepted but never appeared in Kledo; recorded as missing.', $type, $order->get_id() )
+		);
+	}
+}
+
+if ( ! function_exists( 'wc_kledo_create_order_on_completed' ) ) {
+	/**
+	 * Whether an order moved straight to Completed gets its sales order created first.
+	 *
+	 * Read with a `yes` default so a shop updating from an earlier version — which has never saved
+	 * this option — keeps the 1.7.4 behaviour without a migration.
+	 *
+	 * @return string Either `yes` or `no`.
+	 * @since 1.8.0
+	 */
+	function wc_kledo_create_order_on_completed(): string {
+		$value = get_option( WC_Kledo_Invoice_Screen::CREATE_ORDER_ON_COMPLETED_OPTION_NAME, 'yes' );
+
+		return wc_string_to_bool( $value ) ? 'yes' : 'no';
 	}
 }
 
@@ -848,6 +1710,14 @@ if ( ! function_exists( 'wc_kledo_add_failed_transaction_to_queue' ) ) {
 
 		update_option( $option_name, $queue, false );
 
+		// A row an admin or the retry loop already retired keeps saying so; anything else is due
+		// for another automatic attempt.
+		wc_kledo_set_remote_state_by_id(
+			$order_id,
+			$type,
+			'failed' === $queue[ $key ]['status'] ? 'failed' : 'retrying'
+		);
+
 		$next_scheduled = wp_next_scheduled( 'wc_kledo_retry_failed_transactions' );
 
 		if ( ! $next_scheduled ) {
@@ -976,6 +1846,8 @@ if ( ! function_exists( 'wc_kledo_mark_transaction_permanently_failed' ) ) {
 		}
 
 		update_option( $option_name, $queue, false );
+
+		wc_kledo_set_remote_state_by_id( $order_id, $type, 'rejected' );
 
 		wc_kledo_log_warning(
 			sprintf(
