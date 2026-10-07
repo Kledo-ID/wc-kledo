@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Kledo\n"
@@ -10,22 +11,21 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.2\n"
 "X-Poedit-Basepath: ..\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
-"X-Poedit-WPHeader: kledo.php\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: "
-"__;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-WPHeader: kledo.php\n"
 
 #. Plugin Name of the plugin
 #. Author of the plugin
-#: kledo.php includes/admin/class-wc-kledo-admin-order-column.php:63
-#: includes/admin/class-wc-kledo-admin.php:206
-#: includes/admin/class-wc-kledo-admin.php:207
+#: kledo.php includes/admin/class-wc-kledo-admin-order-column.php:90
+#: includes/admin/class-wc-kledo-admin.php:240
+#: includes/admin/class-wc-kledo-admin.php:241
 msgid "Kledo"
 msgstr "Kledo"
 
@@ -50,7 +50,7 @@ msgstr ""
 msgid "https://kledo.com"
 msgstr "https://kledo.com"
 
-#: includes/abstracts/class-wc-kledo-request.php:233
+#: includes/abstracts/class-wc-kledo-request.php:257
 msgid ""
 "Can't do API request because the api key & endpoint url has not been "
 "configured."
@@ -58,8 +58,8 @@ msgstr ""
 "Tidak dapat melakukan permintaan API karena API key & API Endpoint belum "
 "diatur."
 
-#: includes/abstracts/class-wc-kledo-request.php:269
-#: includes/admin/screen/class-wc-kledo-transactions.php:2221
+#: includes/abstracts/class-wc-kledo-request.php:321
+#: includes/admin/screen/class-wc-kledo-transactions.php:1805
 msgid "There was a problem when connecting to the API."
 msgstr "Terjadi masalah pada saat menghubungkan ke API."
 
@@ -67,15 +67,7 @@ msgstr "Terjadi masalah pada saat menghubungkan ke API."
 msgid "Save changes"
 msgstr "Simpan perubahan"
 
-#: includes/admin/class-wc-kledo-admin-order-column.php:111
-msgid "Not sent to Kledo"
-msgstr "Belum dikirim ke Kledo"
-
-#: includes/admin/class-wc-kledo-admin-order-column.php:143
-msgid "Closed"
-msgstr "Tertutup"
-
-#: includes/admin/class-wc-kledo-admin-order-column.php:144
+#: includes/admin/class-wc-kledo-admin-order-column.php:175
 msgid ""
 "Kledo has closed its sales order for this order; every quantity has been "
 "invoiced."
@@ -83,11 +75,7 @@ msgstr ""
 "Kledo sudah menutup pesanan penjualan untuk order ini; seluruh kuantitas "
 "telah ditagihkan."
 
-#: includes/admin/class-wc-kledo-admin-order-column.php:153
-msgid "Waiting"
-msgstr "Menunggu"
-
-#: includes/admin/class-wc-kledo-admin-order-column.php:154
+#: includes/admin/class-wc-kledo-admin-order-column.php:185
 msgid ""
 "The invoice reached Kledo and the plugin is waiting for Kledo to finish "
 "processing it and close the sales order."
@@ -95,11 +83,7 @@ msgstr ""
 "Tagihan sudah sampai di Kledo dan plugin sedang menunggu Kledo selesai "
 "memprosesnya lalu menutup pesanan penjualannya."
 
-#: includes/admin/class-wc-kledo-admin-order-column.php:161
-msgid "Check Kledo"
-msgstr "Cek di Kledo"
-
-#: includes/admin/class-wc-kledo-admin-order-column.php:162
+#: includes/admin/class-wc-kledo-admin-order-column.php:193
 msgid ""
 "The plugin stopped waiting for Kledo to close the sales order. Open the "
 "order to read why, then check it in Kledo."
@@ -107,11 +91,11 @@ msgstr ""
 "Plugin berhenti menunggu Kledo menutup pesanan penjualan. Buka order ini "
 "untuk membaca alasannya, lalu periksa di Kledo."
 
-#: includes/admin/class-wc-kledo-admin-order-column.php:169
+#: includes/admin/class-wc-kledo-admin-order-column.php:200
 msgid "Not linked"
 msgstr "Tidak ditautkan"
 
-#: includes/admin/class-wc-kledo-admin-order-column.php:170
+#: includes/admin/class-wc-kledo-admin-order-column.php:201
 msgid ""
 "The invoice was sent without a link to the sales order. The sales order "
 "never registered it, its quantities do not count as billed, and it stays "
@@ -121,32 +105,20 @@ msgstr ""
 "tidak pernah mencatat tagihan ini, kuantitasnya tidak terhitung tertagih, "
 "dan pesanan itu tetap terbuka di Kledo sampai Anda menutupnya di sana."
 
-#: includes/admin/class-wc-kledo-admin-order-column.php:177
+#: includes/admin/class-wc-kledo-admin-order-column.php:208
 msgid "Left open"
 msgstr "Dibiarkan terbuka"
 
-#: includes/admin/class-wc-kledo-admin-order-column.php:178
+#: includes/admin/class-wc-kledo-admin-order-column.php:209
 msgid ""
-"The invoice is linked to the sales order and its quantities count as billed, "
-"but Kledo was asked not to close the sales order at the time. Kledo closes "
+"The invoice is linked to the sales order and its quantities count as billed,"
+" but Kledo was asked not to close the sales order at the time. Kledo closes "
 "it anyway once anything makes it recalculate that sales order."
 msgstr ""
 "Tagihan tertaut ke pesanan penjualan dan kuantitasnya terhitung tertagih, "
 "tetapi Kledo diminta untuk tidak menutup pesanan penjualannya saat itu. "
 "Kledo tetap akan menutupnya begitu ada hal yang membuatnya menghitung ulang "
 "pesanan penjualan itu."
-
-#: includes/admin/class-wc-kledo-admin-order-column.php:185
-msgid "Sent"
-msgstr "Terkirim"
-
-#: includes/admin/class-wc-kledo-admin-order-column.php:186
-msgid ""
-"The invoice was sent to Kledo. There is no confirmation on record that the "
-"sales order was closed."
-msgstr ""
-"Tagihan sudah dikirim ke Kledo. Belum ada catatan konfirmasi bahwa pesanan "
-"penjualannya tertutup."
 
 #: includes/admin/class-wc-kledo-admin-order-sync.php:79
 msgid "Kledo sync"
@@ -159,13 +131,14 @@ msgstr "Anda tidak memiliki izin untuk menyinkronkan pesanan ini ke Kledo."
 #: includes/admin/class-wc-kledo-admin-order-sync.php:122
 msgid "Re-sending may create a duplicate sales order in Kledo. Continue?"
 msgstr ""
-"Mengirim ulang dapat membuat duplikasi pesanan penjualan di Kledo. Lanjutkan?"
+"Mengirim ulang dapat membuat duplikasi pesanan penjualan di Kledo. "
+"Lanjutkan?"
 
 #: includes/admin/class-wc-kledo-admin-order-sync.php:123
 msgid "Re-sending may create a duplicate invoice in Kledo. Continue?"
 msgstr "Mengirim ulang dapat membuat duplikasi tagihan di Kledo. Lanjutkan?"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:127
+#: includes/admin/class-wc-kledo-admin-order-sync.php:129
 msgid ""
 "Manual actions match plugin rules: sales order when the order is Processing "
 "(same lifecycle as automatic sync on Processing); invoice only when the "
@@ -175,28 +148,28 @@ msgstr ""
 "Processing (sama seperti sinkronisasi otomatis); tagihan hanya saat status "
 "Completed. Kirim ulang hanya tersedia setelah sinkronisasi berhasil."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:145
+#: includes/admin/class-wc-kledo-admin-order-sync.php:147
 msgid "Re-send sales order to Kledo"
 msgstr "Kirim ulang pesanan penjualan ke Kledo"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:153
+#: includes/admin/class-wc-kledo-admin-order-sync.php:155
 msgid "Send sales order to Kledo (first manual)"
 msgstr "Kirim pesanan penjualan ke Kledo (manual pertama)"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:167
+#: includes/admin/class-wc-kledo-admin-order-sync.php:169
 msgid "Re-send invoice to Kledo"
 msgstr "Kirim ulang tagihan ke Kledo"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:175
+#: includes/admin/class-wc-kledo-admin-order-sync.php:177
 msgid "Send invoice to Kledo (first manual)"
 msgstr "Kirim tagihan ke Kledo (manual pertama)"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:219
+#: includes/admin/class-wc-kledo-admin-order-sync.php:221
 msgid "Both sales order and invoice creation are disabled in Kledo settings."
 msgstr ""
 "Pembuatan pesanan penjualan dan tagihan dinonaktifkan di pengaturan Kledo."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:221
+#: includes/admin/class-wc-kledo-admin-order-sync.php:223
 msgid ""
 "No manual Kledo actions apply to this order status. Automatic sync still "
 "runs on status changes (Processing → sales order, Completed → invoice)."
@@ -205,73 +178,52 @@ msgstr ""
 "tetap berjalan saat perubahan status (Processing → pesanan penjualan, "
 "Completed → tagihan)."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:242
+#: includes/admin/class-wc-kledo-admin-order-sync.php:290
 msgid "Kledo: Re-send sales order (already synced; may duplicate)"
 msgstr ""
 "Kledo: Kirim ulang pesanan penjualan (sudah tersinkron; berpotensi duplikat)"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:244
+#: includes/admin/class-wc-kledo-admin-order-sync.php:292
 msgid "Kledo: Send sales order (first manual)"
 msgstr "Kledo: Kirim pesanan penjualan (manual pertama)"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:250
+#: includes/admin/class-wc-kledo-admin-order-sync.php:298
 msgid "Kledo: Re-send invoice (already synced; may duplicate)"
 msgstr "Kledo: Kirim ulang tagihan (sudah tersinkron; dapat duplikat)"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:252
+#: includes/admin/class-wc-kledo-admin-order-sync.php:300
 msgid "Kledo: Send invoice (first manual)"
 msgstr "Kirim tagihan ke Kledo (manual pertama)"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:259
+#: includes/admin/class-wc-kledo-admin-order-sync.php:309
 msgid "Kledo: Check Kledo status now"
 msgstr "Kledo: Periksa status Kledo sekarang"
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:330
+#: includes/admin/class-wc-kledo-admin-order-sync.php:401
 msgid ""
 "Kledo: could not read the order status from Kledo. Check the WooCommerce "
 "logs for details."
 msgstr ""
-"Kledo: tidak bisa membaca status pesanan dari Kledo. Periksa log WooCommerce "
-"untuk detailnya."
+"Kledo: tidak bisa membaca status pesanan dari Kledo. Periksa log WooCommerce"
+" untuk detailnya."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:338
-msgid "Kledo: the Kledo sales order is closed. The order has been updated."
-msgstr ""
-"Kledo: pesanan penjualan Kledo sudah tertutup. Pesanan ini sudah diperbarui."
-
-#: includes/admin/class-wc-kledo-admin-order-sync.php:346
-msgid ""
-"Kledo: this order will not be closed automatically. See the order notes for "
-"the reason."
-msgstr ""
-"Kledo: pesanan ini tidak akan ditutup otomatis. Lihat order note untuk "
-"alasannya."
-
-#: includes/admin/class-wc-kledo-admin-order-sync.php:353
-msgid ""
-"Kledo: the Kledo sales order is not closed yet. The automatic check will "
-"keep trying."
-msgstr ""
-"Kledo: pesanan penjualan Kledo belum tertutup. Pemeriksaan otomatis akan "
-"terus mencoba."
-
-#: includes/admin/class-wc-kledo-admin-order-sync.php:373
+#: includes/admin/class-wc-kledo-admin-order-sync.php:444
 msgid "You do not have permission to run this action."
 msgstr "Anda tidak memiliki izin untuk menjalankan tindakan ini."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:384
+#: includes/admin/class-wc-kledo-admin-order-sync.php:455
 msgid "Invalid request."
 msgstr "Permintaan tidak valid."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:390
+#: includes/admin/class-wc-kledo-admin-order-sync.php:461
 msgid "Order not found."
 msgstr "Pesanan tidak ditemukan."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:394
+#: includes/admin/class-wc-kledo-admin-order-sync.php:465
 msgid "You do not have permission to sync this order."
 msgstr "Anda tidak memiliki izin untuk menyinkronkan pesanan ini."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:538
+#: includes/admin/class-wc-kledo-admin-order-sync.php:609
 msgid ""
 "Kledo: manual sales order actions are only available when the order is "
 "Processing or Completed."
@@ -279,24 +231,25 @@ msgstr ""
 "Kledo: aksi manual pesanan penjualan hanya tersedia saat status Processing "
 "atau Completed."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:542
+#: includes/admin/class-wc-kledo-admin-order-sync.php:613
 msgid ""
-"Kledo: manual invoice actions are only available when the order is Completed."
+"Kledo: manual invoice actions are only available when the order is "
+"Completed."
 msgstr "Kledo: aksi manual tagihan hanya tersedia saat status Completed."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:545
+#: includes/admin/class-wc-kledo-admin-order-sync.php:616
 msgid "Kledo: invalid sync type."
 msgstr "Kledo: tipe sinkronisasi tidak valid."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:552
+#: includes/admin/class-wc-kledo-admin-order-sync.php:623
 msgid ""
 "Kledo: re-send is only available when this record is already marked synced "
 "in WooCommerce."
 msgstr ""
-"Kledo: kirim ulang hanya tersedia jika data ini sudah ditandai tersinkron di "
-"WooCommerce."
+"Kledo: kirim ulang hanya tersedia jika data ini sudah ditandai tersinkron di"
+" WooCommerce."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:555
+#: includes/admin/class-wc-kledo-admin-order-sync.php:626
 msgid ""
 "Kledo: initial manual send is not available because this is already marked "
 "synced. Use the re-send action instead."
@@ -305,13 +258,13 @@ msgstr ""
 "Gunakan fitur kirim ulang."
 
 #. translators: %s: order or invoice
-#: includes/admin/class-wc-kledo-admin-order-sync.php:571
+#: includes/admin/class-wc-kledo-admin-order-sync.php:642
 #, php-format
 msgid "Kledo: %s was sent successfully."
 msgstr "Kledo: %s berhasil dikirim."
 
 #. translators: %s: order or invoice
-#: includes/admin/class-wc-kledo-admin-order-sync.php:580
+#: includes/admin/class-wc-kledo-admin-order-sync.php:651
 #, php-format
 msgid ""
 "Kledo: %s is already marked synced. Use the re-send action if you need to "
@@ -320,103 +273,103 @@ msgstr ""
 "Kledo: %s sudah ditandai tersinkron. Gunakan aksi kirim ulang jika perlu "
 "mengirim kembali."
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:586
+#: includes/admin/class-wc-kledo-admin-order-sync.php:657
 msgid "Kledo: API connection is disabled; nothing was sent."
 msgstr "Kledo: Koneksi API dinonaktifkan; tidak ada yang dikirim."
 
 #. translators: %s: order or invoice
-#: includes/admin/class-wc-kledo-admin-order-sync.php:592
+#: includes/admin/class-wc-kledo-admin-order-sync.php:663
 #, php-format
 msgid "Kledo: %s push is disabled in plugin settings."
 msgstr "Kledo: Pengiriman %s dinonaktifkan di pengaturan plugin."
 
 #. translators: %s: order or invoice
-#: includes/admin/class-wc-kledo-admin-order-sync.php:599
+#: includes/admin/class-wc-kledo-admin-order-sync.php:670
 #, php-format
 msgid "Kledo: %s was skipped."
 msgstr "Kledo: %s dilewati."
 
 #. translators: 1: type, 2: error
-#: includes/admin/class-wc-kledo-admin-order-sync.php:607
+#: includes/admin/class-wc-kledo-admin-order-sync.php:678
 #, php-format
 msgid "Kledo: failed to push %1$s — %2$s"
 msgstr "Kledo: gagal mengirim %1$s — %2$s"
 
 #. translators: 1: type, 2: HTTP code
-#: includes/admin/class-wc-kledo-admin-order-sync.php:615
+#: includes/admin/class-wc-kledo-admin-order-sync.php:686
 #, php-format
 msgid "Kledo: failed to push %1$s (HTTP %2$d)."
 msgstr "Kledo: gagal mengirim %1$s (HTTP %2$d)."
 
-#: includes/admin/class-wc-kledo-admin.php:175
+#: includes/admin/class-wc-kledo-admin.php:209
 msgid "You do not have permission to save these settings."
 msgstr "Anda tidak memiliki izin untuk menyimpan pengaturan ini."
 
-#: includes/admin/class-wc-kledo-admin.php:184
+#: includes/admin/class-wc-kledo-admin.php:218
 msgid "Your settings have been saved."
 msgstr "Pengaturan Anda telah disimpan."
 
 #. translators: %s: error message.
-#: includes/admin/class-wc-kledo-admin.php:190
+#: includes/admin/class-wc-kledo-admin.php:224
 #, php-format
 msgid "Your settings could not be saved. %s"
 msgstr "Pengaturan tidak dapat disimpan. %s"
 
-#: includes/admin/class-wc-kledo-admin.php:240
+#: includes/admin/class-wc-kledo-admin.php:373
 msgid "Settings"
 msgstr "Pengaturan"
 
-#: includes/admin/class-wc-kledo-admin.php:431
+#: includes/admin/class-wc-kledo-admin.php:595
 msgid "Kledo: Configure"
 msgstr "Kledo: Konfigurasi"
 
-#: includes/admin/class-wc-kledo-admin.php:432
+#: includes/admin/class-wc-kledo-admin.php:596
 msgid "Kledo: Invoice settings"
 msgstr "Kledo: Pengaturan tagihan"
 
-#: includes/admin/class-wc-kledo-admin.php:433
+#: includes/admin/class-wc-kledo-admin.php:597
 msgid "Kledo: Order settings"
 msgstr "Kledo: Pengaturan pesanan"
 
-#: includes/admin/class-wc-kledo-admin.php:434
-msgid "Kledo: Transactions"
-msgstr "Kledo: Transaksi"
+#: includes/admin/class-wc-kledo-admin.php:598
+msgid "Kledo: Kledo Status"
+msgstr "Kledo: Status Kledo"
 
-#: includes/admin/class-wc-kledo-admin.php:435
+#: includes/admin/class-wc-kledo-admin.php:602
 msgid "Kledo: Support"
 msgstr "Kledo: Dukungan"
 
-#: includes/admin/class-wc-kledo-admin.php:470
+#: includes/admin/class-wc-kledo-admin.php:645
 msgid "Select Account"
 msgstr "Pilih Akun"
 
-#: includes/admin/class-wc-kledo-admin.php:471
+#: includes/admin/class-wc-kledo-admin.php:646
 msgid "Select Warehouse"
 msgstr "Pilih Gudang"
 
-#: includes/admin/class-wc-kledo-admin.php:473
+#: includes/admin/class-wc-kledo-admin.php:648
 msgid "The results could not be loaded."
 msgstr "Hasil tidak dapat dimuat."
 
-#: includes/admin/class-wc-kledo-admin.php:474
+#: includes/admin/class-wc-kledo-admin.php:649
 msgid "Loading more results..."
 msgstr "Memuat hasil lainnya..."
 
-#: includes/admin/class-wc-kledo-admin.php:475
+#: includes/admin/class-wc-kledo-admin.php:650
 msgid "No results found"
 msgstr "Tidak ada hasil yang ditemukan"
 
-#: includes/admin/class-wc-kledo-admin.php:476
+#: includes/admin/class-wc-kledo-admin.php:651
 msgid "Loading..."
 msgstr "Memuat..."
 
-#: includes/admin/class-wc-kledo-admin.php:477
+#: includes/admin/class-wc-kledo-admin.php:652
 msgid "Search"
 msgstr "Cari"
 
 #: includes/admin/screen/class-wc-kledo-configure.php:63
 #: includes/admin/screen/class-wc-kledo-configure.php:64
-#: includes/admin/screen/class-wc-kledo-configure.php:407
+#: includes/admin/screen/class-wc-kledo-configure.php:455
 msgid "Configure"
 msgstr "Konfigurasi"
 
@@ -501,9 +454,9 @@ msgid ""
 "this store uses. Create a new API key in Kledo and save it here if you want "
 "the two to match again."
 msgstr ""
-"Sinkronisasi tidak terpengaruh, tetapi mengelola kunci dari Kledo tidak akan "
-"mengubah kunci yang dipakai toko ini. Buat API Key baru di Kledo lalu simpan "
-"di sini kalau Anda ingin keduanya cocok lagi."
+"Sinkronisasi tidak terpengaruh, tetapi mengelola kunci dari Kledo tidak akan"
+" mengubah kunci yang dipakai toko ini. Buat API Key baru di Kledo lalu "
+"simpan di sini kalau Anda ingin keduanya cocok lagi."
 
 #: includes/admin/screen/class-wc-kledo-configure.php:278
 msgid "Name in Kledo"
@@ -547,86 +500,92 @@ msgstr[1] "%d hari"
 msgid "Last checked %s ago."
 msgstr "Terakhir diperiksa %s lalu."
 
-#. translators: 1: a date and time, 2: how far away it is, e.g. "26 days from now"
+#. translators: 1: a date and time, 2: how far away it is, e.g. "26 days from
+#. now"
 #: includes/admin/screen/class-wc-kledo-configure.php:373
 #, php-format
 msgid "%1$s (%2$s)"
 msgstr "%1$s (%2$s)"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:412
+#: includes/admin/screen/class-wc-kledo-configure.php:460
 msgid "Enable Integration"
 msgstr "Aktifkan Integrasi"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:420
-#: includes/class-wc-kledo.php:634
+#: includes/admin/screen/class-wc-kledo-configure.php:468
+#: includes/class-wc-kledo.php:691
 msgid "API Key"
 msgstr "API Key"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:426
-#: includes/class-wc-kledo.php:636
+#: includes/admin/screen/class-wc-kledo-configure.php:474
+#: includes/class-wc-kledo.php:693
 msgid "API Endpoint URL"
 msgstr "API Endpoint URL"
 
-#: includes/admin/screen/class-wc-kledo-configure.php:431
+#: includes/admin/screen/class-wc-kledo-configure.php:479
 msgid "API Key Status"
 msgstr "Status API Key"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:100
-#: includes/admin/screen/class-wc-kledo-invoice.php:101
-#: includes/admin/screen/class-wc-kledo-invoice.php:159
+#: includes/admin/screen/class-wc-kledo-invoice.php:111
+#: includes/admin/screen/class-wc-kledo-invoice.php:112
+#: includes/admin/screen/class-wc-kledo-invoice.php:170
+#: includes/admin/screen/class-wc-kledo-sync.php:552
+#: includes/class-wc-kledo-status-badge.php:154
 msgid "Invoice"
 msgstr "Tagihan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:165
+#: includes/admin/screen/class-wc-kledo-invoice.php:176
 msgid "Enable Create Invoice"
 msgstr "Aktifkan Pembuatan Tagihan"
 
-#. translators: %s: "Completed" order status label (may include <strong> markup).
-#: includes/admin/screen/class-wc-kledo-invoice.php:171
+#. translators: %s: "Completed" order status label (may include <strong>
+#. markup).
+#: includes/admin/screen/class-wc-kledo-invoice.php:182
 #, php-format
 msgid "Create new invoice on Kledo when order status is %s."
 msgstr "Buat tagihan baru di Kledo ketika status pesanan %s."
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:178
+#: includes/admin/screen/class-wc-kledo-invoice.php:189
 msgid "Invoice Prefix"
 msgstr "Awalan Nomor Tagihan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:186
+#: includes/admin/screen/class-wc-kledo-invoice.php:197
 msgid "Invoice Status on Created"
 msgstr "Status Tagihan Saat Dibuat"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:191
+#: includes/admin/screen/class-wc-kledo-invoice.php:202
+#: includes/admin/screen/class-wc-kledo-sync.php:353
 msgid "Paid"
 msgstr "Lunas"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:192
+#: includes/admin/screen/class-wc-kledo-invoice.php:203
+#: includes/admin/screen/class-wc-kledo-sync.php:353
 msgid "Unpaid"
 msgstr "Belum Dibayar"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:198
+#: includes/admin/screen/class-wc-kledo-invoice.php:209
 msgid "Payment Account"
 msgstr "Akun Pembayaran"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:205
+#: includes/admin/screen/class-wc-kledo-invoice.php:216
 #: includes/admin/screen/class-wc-kledo-order.php:114
 msgid "Warehouse"
 msgstr "Gudang"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:212
+#: includes/admin/screen/class-wc-kledo-invoice.php:223
 #: includes/admin/screen/class-wc-kledo-order.php:121
 msgid "Tags"
 msgstr "Tag"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:227
+#: includes/admin/screen/class-wc-kledo-invoice.php:238
 msgid "Sales Order Link"
 msgstr "Penautan Sales Order"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:229
+#: includes/admin/screen/class-wc-kledo-invoice.php:240
 msgid ""
 "How an invoice relates back to the Kledo sales order the same WooCommerce "
 "order already created. Both settings below are inert unless linking is on — "
-"closing is something Kledo does to a sales order the invoice is attached to, "
-"so there is nothing to close without the attachment."
+"closing is something Kledo does to a sales order the invoice is attached to,"
+" so there is nothing to close without the attachment."
 msgstr ""
 "Bagaimana sebuah invoice terhubung kembali ke sales order Kledo yang sudah "
 "dibuat oleh order WooCommerce yang sama. Kedua pengaturan di bawah tidak "
@@ -634,29 +593,32 @@ msgstr ""
 "Kledo terhadap sales order yang invoice-nya menempel padanya, jadi tanpa "
 "penautan tidak ada yang bisa ditutup."
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:234
-#: includes/admin/screen/class-wc-kledo-invoice.php:250
+#: includes/admin/screen/class-wc-kledo-help.php:281
+#: includes/admin/screen/class-wc-kledo-invoice.php:245
+#: includes/admin/screen/class-wc-kledo-invoice.php:261
 msgid "Link Invoice to Sales Order"
 msgstr "Tautkan Tagihan ke Pesanan Penjualan"
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:238
+#: includes/admin/screen/class-wc-kledo-invoice.php:249
 msgid ""
-"Record each invoice against the Kledo sales order it came from, so the sales "
-"order counts those quantities as billed. Turn it off and the invoice stands "
-"alone, leaving the sales order untouched — and the setting below stops "
+"Record each invoice against the Kledo sales order it came from, so the sales"
+" order counts those quantities as billed. Turn it off and the invoice stands"
+" alone, leaving the sales order untouched — and the setting below stops "
 "applying."
 msgstr ""
 "Catat setiap invoice ke sales order Kledo asalnya, sehingga sales order "
-"tersebut menghitung kuantitasnya sebagai sudah ditagih. Matikan, dan invoice "
-"berdiri sendiri tanpa menyentuh sales order — dan pengaturan di bawah "
+"tersebut menghitung kuantitasnya sebagai sudah ditagih. Matikan, dan invoice"
+" berdiri sendiri tanpa menyentuh sales order — dan pengaturan di bawah "
 "berhenti berlaku."
 
-#: includes/admin/screen/class-wc-kledo-invoice.php:243
+#: includes/admin/screen/class-wc-kledo-help.php:282
+#: includes/admin/screen/class-wc-kledo-invoice.php:254
 msgid "Close Sales Order When Invoiced"
 msgstr "Tutup Pesanan Penjualan Saat Ditagihkan"
 
-#. translators: %s: the name of the setting this one depends on, wrapped in <strong>.
-#: includes/admin/screen/class-wc-kledo-invoice.php:249
+#. translators: %s: the name of the setting this one depends on, wrapped in
+#. <strong>.
+#: includes/admin/screen/class-wc-kledo-invoice.php:260
 #, php-format
 msgid ""
 "Requires %s above to be on; without it this setting does nothing. Kledo "
@@ -670,18 +632,25 @@ msgstr ""
 "order di Kledo. Matikan ini kalau Anda ingin menutupnya sendiri, meskipun "
 "Kledo tetap akan menutupnya saat berikutnya menghitung ulang order tersebut."
 
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:104
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:206
 #: includes/admin/screen/class-wc-kledo-order.php:59
 #: includes/admin/screen/class-wc-kledo-order.php:60
 #: includes/admin/screen/class-wc-kledo-order.php:87
-#: includes/admin/screen/class-wc-kledo-transactions.php:745
+#: includes/admin/screen/class-wc-kledo-sync.php:550
+#: includes/admin/screen/class-wc-kledo-sync.php:564
+#: includes/admin/screen/class-wc-kledo-transactions.php:897
+#: includes/class-wc-kledo-diagnostics.php:297
 msgid "Order"
 msgstr "Pesanan"
 
+#: includes/admin/screen/class-wc-kledo-invoice.php:274
 #: includes/admin/screen/class-wc-kledo-order.php:93
 msgid "Enable Create Order"
 msgstr "Aktifkan Pembuatan Pesanan"
 
-#. translators: %s: "Processing" order status label (may include <strong> markup).
+#. translators: %s: "Processing" order status label (may include <strong>
+#. markup).
 #: includes/admin/screen/class-wc-kledo-order.php:99
 #, php-format
 msgid "Create new order on Kledo when order status is %s."
@@ -700,11 +669,11 @@ msgstr "Bantuan"
 msgid "Need help?"
 msgstr "Butuh bantuan?"
 
-#: includes/admin/screen/class-wc-kledo-support.php:50
+#: includes/admin/screen/class-wc-kledo-support.php:66
 msgid "Request Support"
 msgstr "Minta Bantuan"
 
-#: includes/admin/screen/class-wc-kledo-support.php:53
+#: includes/admin/screen/class-wc-kledo-support.php:69
 msgid ""
 "Still need help? Submit a message and one of our support experts will get "
 "back to you as soon as possible."
@@ -712,269 +681,79 @@ msgstr ""
 "Masih perlu bantuan? Kirim pesan dan salah satu pakar dukungan kami akan "
 "menghubungi anda sesegera mungkin."
 
+#: includes/admin/screen/class-wc-kledo-transactions.php:182
 #: includes/admin/screen/class-wc-kledo-transactions.php:183
-#: includes/admin/screen/class-wc-kledo-transactions.php:184
-msgid "Transactions"
-msgstr "Transaksi"
+msgid "Kledo Status"
+msgstr "Status Kledo"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:239
-#: includes/admin/screen/class-wc-kledo-transactions.php:369
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:158
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:535
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:576
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:620
+#: includes/admin/screen/class-wc-kledo-sync.php:655
+#: includes/admin/screen/class-wc-kledo-transactions.php:219
+#: includes/admin/screen/class-wc-kledo-transactions.php:308
 msgid "You do not have permission to perform this action."
 msgstr "Anda tidak memiliki izin untuk melakukan tindakan ini."
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:290
-msgid "Retry succeeded. The transaction was sent to Kledo successfully."
-msgstr "Retry berhasil. Transaksi berhasil dikirim ke Kledo."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:294
-msgid ""
-"Retry skipped: the transaction was already synced. The stale queue row has "
-"been removed."
-msgstr ""
-"Retry dilewati: transaksi sudah tersinkron. Data antrian lama telah dihapus."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:298
-msgid ""
-"Retry skipped: the associated WooCommerce order no longer exists. The queue "
-"row has been removed."
-msgstr ""
-"Retry dilewati: pesanan WooCommerce terkait sudah tidak ada. Data antrian "
-"telah dihapus."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:302
-msgid ""
-"Retry failed. The API returned an error. The transaction will be retried "
-"automatically by the next cron run."
-msgstr ""
-"Retry gagal. API mengembalikan error. Transaksi akan dicoba ulang otomatis "
-"pada cron berikutnya."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:306
-msgid ""
-"Retry rejected. Kledo refused the data itself, so retrying will keep failing "
-"until the order or invoice data is corrected. See the order notes for the "
-"exact validation message."
-msgstr ""
-"Percobaan ulang ditolak. Kledo menolak datanya sendiri, jadi mengulang akan "
-"terus gagal sampai data order atau tagihannya diperbaiki. Lihat catatan "
-"order untuk pesan validasi persisnya."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:312
-msgid ""
-"Retry skipped: the selected transaction row is no longer in the queue or has "
-"an invalid format."
-msgstr ""
-"Retry dilewati: data transaksi tidak ada di antrian atau format tidak valid."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:316
-msgid ""
-"An unexpected error occurred during retry. Please check the WooCommerce logs "
-"for details."
-msgstr ""
-"Terjadi error tak terduga saat retry. Periksa log WooCommerce untuk detail."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:384
-msgid "Choose the bulk action \"Retry selected\" before applying."
-msgstr "Pilih aksi massal \\\"Retry selected\\\" sebelum menerapkan."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:414
-msgid ""
-"No failed transactions were selected. Choose one or more rows and try again."
-msgstr ""
-"Tidak ada transaksi gagal yang dipilih. Pilih satu atau lebih lalu coba lagi."
-
-#. translators: 1: selected count, 2: succeeded count, 3: failed count, 4: invalid/skipped count
-#: includes/admin/screen/class-wc-kledo-transactions.php:476
-#, php-format
-msgid ""
-"Bulk retry finished. Selected: %1$d. Succeeded: %2$d. Failed: %3$d. Not "
-"processed (invalid or missing row): %4$d."
-msgstr ""
-"Retry massal selesai. Dipilih: %1$d. Berhasil: %2$d. Gagal: %3$d. Tidak "
-"diproses (invalid / hilang): %4$d."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:564
+#: includes/admin/screen/class-wc-kledo-transactions.php:575
 msgid "You do not have permission to view this page."
 msgstr "Anda tidak memiliki izin untuk melihat halaman ini."
 
-#. translators: %d: max number of recent orders scanned for success rows
-#: includes/admin/screen/class-wc-kledo-transactions.php:670
-#, php-format
-msgid ""
-"Success list is built from the %d most recently modified orders that have "
-"Kledo sync meta. Older successes may not appear; use filters or order search "
-"if you need a specific order."
-msgstr ""
-"Daftar sukses dibuat dari %d pesanan terbaru yang memiliki meta sinkronisasi "
-"Kledo. Data lama mungkin tidak muncul; gunakan filter atau pencarian pesanan."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:696
-#: includes/admin/screen/class-wc-kledo-transactions.php:698
+#: includes/admin/screen/class-wc-kledo-transactions.php:597
+#: includes/admin/screen/class-wc-kledo-transactions.php:599
 msgid "Bulk actions"
 msgstr "Aksi massal"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:699
-msgid "Retry selected"
-msgstr "Retry yang dipilih"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:701
+#: includes/admin/screen/class-wc-kledo-transactions.php:603
 msgid "Apply"
 msgstr "Terapkan"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:737
-msgid "Select all retryable rows"
-msgstr "Pilih semua baris yang bisa di-retry"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:755
-#: includes/admin/screen/class-wc-kledo-transactions.php:2120
-msgid "Type"
-msgstr "Tipe"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:761
-msgid "Status"
-msgstr "Status"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:770
-#: includes/admin/screen/class-wc-kledo-transactions.php:2121
+#: includes/admin/screen/class-wc-kledo-transactions.php:900
+#: includes/admin/screen/class-wc-kledo-transactions.php:1647
 msgid "Attempts"
 msgstr "Percobaan"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:780
-#: includes/admin/screen/class-wc-kledo-transactions.php:1282
-#: includes/admin/screen/class-wc-kledo-transactions.php:2122
-msgid "Created At"
-msgstr "Dibuat Pada"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:790
-#: includes/admin/screen/class-wc-kledo-transactions.php:1289
-#: includes/admin/screen/class-wc-kledo-transactions.php:2123
-msgid "Next Retry"
-msgstr "Retry Berikutnya"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:799
-#: includes/admin/screen/class-wc-kledo-transactions.php:2124
-msgid "Last Error"
-msgstr "Error Terakhir"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:804
-msgid "Actions"
-msgstr "Aksi"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:820
+#: includes/admin/screen/class-wc-kledo-transactions.php:1168
 msgid "No transactions match the current filter."
 msgstr "Tidak ada transaksi yang sesuai dengan filter."
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:929
-msgid "Retry now"
-msgstr "Retry sekarang"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1270
+#: includes/admin/screen/class-wc-kledo-transactions.php:1324
 msgid "Transaction type"
 msgstr "Tipe transaksi"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:1272
-msgid "All types"
-msgstr "Semua tipe"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1278
-msgid "Attempts (exact)"
-msgstr "Jumlah percobaan (tepat)"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1278
-msgid ""
-"Column Attempts: exact count for queue rows only. Leave empty to ignore."
-msgstr ""
-"Kolom Attempts: jumlah pasti untuk antrian saja. Kosongkan jika tidak "
-"digunakan."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1284
-msgid "Same column as the table: one calendar day in the site timezone."
-msgstr "Sama seperti tabel: satu hari kalender sesuai timezone situs."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1291
-msgid ""
-"Same column as the table: queue rows only, one calendar day in the site "
-"timezone."
-msgstr ""
-"Sama seperti tabel: hanya antrian, satu hari kalender sesuai timezone situs."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1294
-msgid "Last error contains…"
-msgstr "Error terakhir mengandung…"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1296
+#: includes/admin/screen/class-wc-kledo-sync.php:544
+#: includes/admin/screen/class-wc-kledo-transactions.php:1341
 msgid "Filter"
 msgstr "Filter"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:1704
+#: includes/admin/screen/class-wc-kledo-transactions.php:1374
 msgid "All"
 msgstr "Semua"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:1705
-#: includes/admin/screen/class-wc-kledo-transactions.php:1719
-#: includes/admin/screen/class-wc-kledo-transactions.php:1888
-msgid "Success"
-msgstr "Berhasil"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1706
-#: includes/admin/screen/class-wc-kledo-transactions.php:1893
-msgid "Failed"
-msgstr "Gagal"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1707
-#: includes/admin/screen/class-wc-kledo-transactions.php:1890
-msgid "Retrying"
-msgstr "Sedang retry"
-
-#. translators: %s: translated word "Success" when the success list may be truncated
-#: includes/admin/screen/class-wc-kledo-transactions.php:1718
-#, php-format
-msgid "%s+"
-msgstr "%s+"
-
 #. translators: %s: sort direction, ascending or descending
-#: includes/admin/screen/class-wc-kledo-transactions.php:1795
+#: includes/admin/screen/class-wc-kledo-transactions.php:1461
 #, php-format
 msgid "Sorted %s."
 msgstr "Diurutkan %s."
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:1796
+#: includes/admin/screen/class-wc-kledo-transactions.php:1462
 msgid "ascending"
 msgstr "naik"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:1796
+#: includes/admin/screen/class-wc-kledo-transactions.php:1462
 msgid "descending"
 msgstr "turun"
 
-#: includes/admin/screen/class-wc-kledo-transactions.php:1799
+#: includes/admin/screen/class-wc-kledo-transactions.php:1464
 msgid "Sort by this column."
 msgstr "Urutkan berdasarkan kolom ini."
 
-#. translators: %d: number of items
-#: includes/admin/screen/class-wc-kledo-transactions.php:1874
-#, php-format
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d item"
-msgstr[1] "%d item"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1989
-msgid "Order no longer exists."
-msgstr "Pesanan sudah tidak ada."
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:1990
-msgid "deleted"
-msgstr "dihapus"
-
-#: includes/admin/screen/class-wc-kledo-transactions.php:2055
-msgid "Transactions per page"
-msgstr "Transaksi per halaman"
-
 #. translators: %s: "order" or "invoice"
-#: includes/admin/screen/class-wc-kledo-transactions.php:2202
+#: includes/admin/screen/class-wc-kledo-transactions.php:1781
 #, php-format
-msgid "Kledo: manually resent %s to Kledo from Transactions screen."
-msgstr "Kledo: %s dikirim ulang secara manual dari halaman Transaksi."
+msgid "Kledo: manually resent %s to Kledo from the Kledo Status tab."
+msgstr "Kledo: %s dikirim ulang secara manual dari tab Status Kledo."
 
 #: includes/class-wc-kledo-ajax.php:31 includes/class-wc-kledo-ajax.php:89
 msgid "Unauthorized"
@@ -989,11 +768,11 @@ msgid "Invalid response from Kledo."
 msgstr "Respon dari Kledo tidak valid."
 
 #. translators: %s: link to the plugin Configure screen
-#: includes/class-wc-kledo-connection-status.php:414
+#: includes/class-wc-kledo-connection-status.php:421
 #, php-format
 msgid ""
-"Kledo: Kledo accepts this store's API key, but the account it belongs to has "
-"no access to that company, so nothing is syncing. The key itself is fine — "
+"Kledo: Kledo accepts this store's API key, but the account it belongs to has"
+" no access to that company, so nothing is syncing. The key itself is fine — "
 "pasting a new one from the same account will not help. Check that the "
 "account still belongs to the company, or save a key made for the right "
 "company in %s."
@@ -1005,7 +784,7 @@ msgstr ""
 "atau simpan kunci yang dibuat untuk perusahaan yang benar di %s."
 
 #. translators: %s: link to the plugin Configure screen
-#: includes/class-wc-kledo-connection-status.php:426
+#: includes/class-wc-kledo-connection-status.php:433
 #, php-format
 msgid ""
 "Kledo: this store's API key is no longer valid, so nothing is syncing to "
@@ -1016,13 +795,13 @@ msgstr ""
 "tersinkron ke Kledo. Kunci ini sudah kedaluwarsa atau digantikan oleh login "
 "yang lebih baru. Tempelkan API Key yang masih berlaku di %s."
 
-#: includes/class-wc-kledo-connection-status.php:444
-#: includes/class-wc-kledo.php:642
+#: includes/class-wc-kledo-connection-status.php:522
+#: includes/class-wc-kledo.php:699
 msgid "WooCommerce > Kledo > Configure"
 msgstr "WooCommerce > Kledo > Configure"
 
 #. translators: %s: link to the plugin Configure screen
-#: includes/class-wc-kledo-connection-status.php:480
+#: includes/class-wc-kledo-connection-status.php:558
 #, php-format
 msgid ""
 "Kledo normally renews this key by itself while the store keeps syncing, so "
@@ -1033,11 +812,11 @@ msgstr ""
 "Kledo biasanya memperbarui API Key ini secara otomatis selama toko masih "
 "rutin melakukan sinkronisasi, jadi tidak ada yang perlu dilakukan selama "
 "order masih sampai ke Kledo. Kalau tidak, masa berlaku API Key akan habis — "
-"dan begitu itu terjadi, order dan invoice berhenti dikirim otomatis ke Kledo "
-"sampai API Key yang masih berlaku disimpan di %s."
+"dan begitu itu terjadi, order dan invoice berhenti dikirim otomatis ke Kledo"
+" sampai API Key yang masih berlaku disimpan di %s."
 
 #. translators: %s: link to the plugin Configure screen
-#: includes/class-wc-kledo-connection-status.php:486
+#: includes/class-wc-kledo-connection-status.php:564
 #, php-format
 msgid ""
 "This key does not renew itself. Once it expires, orders and invoices will "
@@ -1045,12 +824,13 @@ msgid ""
 "until a current key is saved. Paste a current one in %s before then."
 msgstr ""
 "API Key ini tidak diperbarui secara otomatis. Begitu masa berlakunya habis, "
-"order dan invoice berhenti dikirim otomatis ke Kledo dan setiap sinkronisasi "
-"akan terus gagal sampai API Key yang masih berlaku disimpan. Tempelkan API "
+"order dan invoice berhenti dikirim otomatis ke Kledo dan setiap sinkronisasi"
+" akan terus gagal sampai API Key yang masih berlaku disimpan. Tempelkan API "
 "Key yang masih berlaku di %s sebelum tanggal tersebut."
 
-#. translators: 1: number of days, 2: expiry date sentence, 3: what to do about it
-#: includes/class-wc-kledo-connection-status.php:501
+#. translators: 1: number of days, 2: expiry date sentence, 3: what to do
+#. about it
+#: includes/class-wc-kledo-connection-status.php:579
 #, php-format
 msgid "Kledo: this store's API key expires in %1$d day. %2$s %3$s"
 msgid_plural "Kledo: this store's API key expires in %1$d days. %2$s %3$s"
@@ -1058,13 +838,13 @@ msgstr[0] "Kledo: API Key toko ini kedaluwarsa dalam %1$d hari. %2$s %3$s"
 msgstr[1] "Kledo: API Key toko ini kedaluwarsa dalam %1$d hari. %2$s %3$s"
 
 #. translators: %s: expiry date and time
-#: includes/class-wc-kledo-connection-status.php:535
+#: includes/class-wc-kledo-connection-status.php:613
 #, php-format
 msgid "It expires on %s."
 msgstr "Kedaluwarsa pada %s."
 
 #. translators: %s: WooCommerce product name HTML link.
-#: includes/class-wc-kledo-loader.php:289
+#: includes/class-wc-kledo-loader.php:321
 #, php-format
 msgid "WooCommerce Kledo requires %s to be installed and active."
 msgstr "Diperlukan %s untuk menggunakan WooCommerce Kledo."
@@ -1084,8 +864,8 @@ msgid ""
 "Kledo: stopped waiting for the Kledo order to close after %d checks. Check "
 "the order in Kledo manually."
 msgstr ""
-"Kledo: berhenti menunggu pesanan Kledo tertutup setelah %d kali pemeriksaan. "
-"Periksa pesanannya di Kledo secara manual."
+"Kledo: berhenti menunggu pesanan Kledo tertutup setelah %d kali pemeriksaan."
+" Periksa pesanannya di Kledo secara manual."
 
 #. translators: %d: HTTP status code
 #: includes/class-wc-kledo-order-closure.php:289
@@ -1097,17 +877,17 @@ msgstr ""
 "Kledo: berhenti menunggu pesanan Kledo tertutup — Kledo menolak permintaan "
 "statusnya (HTTP %d). Periksa pesanannya di Kledo secara manual."
 
-#: includes/class-wc-kledo-order-closure.php:313
+#: includes/class-wc-kledo-order-closure.php:312
 msgid ""
 "Kledo: the invoice exists in Kledo but there is no matching Kledo sales "
 "order, so there is nothing to close. This is expected when \"Enable Create "
 "Order\" is turned off."
 msgstr ""
-"Kledo: tagihannya ada di Kledo tetapi tidak ada pesanan penjualan Kledo yang "
-"cocok, jadi tidak ada yang perlu ditutup. Ini wajar ketika \"Enable Create "
+"Kledo: tagihannya ada di Kledo tetapi tidak ada pesanan penjualan Kledo yang"
+" cocok, jadi tidak ada yang perlu ditutup. Ini wajar ketika \"Enable Create "
 "Order\" dimatikan."
 
-#: includes/class-wc-kledo-order-closure.php:323
+#: includes/class-wc-kledo-order-closure.php:322
 msgid ""
 "Kledo: the Kledo invoice was created without a link to the Kledo order, so "
 "the order will not be closed automatically. This usually means the order "
@@ -1120,35 +900,36 @@ msgstr ""
 "bila perlu."
 
 #. translators: %s: Kledo sales order reference number
-#: includes/class-wc-kledo-order-closure.php:375
+#: includes/class-wc-kledo-order-closure.php:372
 #, php-format
 msgid "Kledo: sales order %s has been closed in Kledo (fully invoiced)."
 msgstr ""
 "Kledo: pesanan penjualan %s sudah ditutup di Kledo (seluruhnya tertagih)."
 
-#: includes/class-wc-kledo-woocommerce.php:170
+#: includes/class-wc-kledo-woocommerce.php:213
 msgid ""
-"Kledo: API connection is disabled in plugin settings; sync was not attempted."
+"Kledo: API connection is disabled in plugin settings; sync was not "
+"attempted."
 msgstr "Kledo: Koneksi API dinonaktifkan; sinkronisasi tidak dijalankan."
 
 #. translators: %s: transaction type (order/invoice)
-#: includes/class-wc-kledo-woocommerce.php:207
+#: includes/class-wc-kledo-woocommerce.php:250
 #, php-format
 msgid "Kledo: %s was already synced; removed stale entry from failed queue."
 msgstr "Kledo: %s sudah tersinkron; entri lama dihapus dari antrian gagal."
 
 #. translators: %s: order or invoice
-#: includes/class-wc-kledo-woocommerce.php:296
+#: includes/class-wc-kledo-woocommerce.php:345
 #, php-format
 msgid ""
-"Kledo: admin manually re-sent %s to Kledo (record was already marked synced; "
-"possible duplicate in Kledo)."
+"Kledo: admin manually re-sent %s to Kledo (record was already marked synced;"
+" possible duplicate in Kledo)."
 msgstr ""
 "Kledo: admin mengirim ulang %s secara manual (sudah tersinkron; kemungkinan "
 "duplikat di Kledo)."
 
 #. translators: %s: order or invoice
-#: includes/class-wc-kledo-woocommerce.php:304
+#: includes/class-wc-kledo-woocommerce.php:353
 #, php-format
 msgid ""
 "Kledo: admin manually sent %s to Kledo (first manual push; automatic sync "
@@ -1157,20 +938,22 @@ msgstr ""
 "Kledo: admin mengirim %s secara manual (pengiriman pertama; sinkronisasi "
 "otomatis tetap berdasarkan status pesanan)."
 
-#. translators: 1: transaction type (order/invoice), 2: HTTP status code, 3: API error message
-#: includes/class-wc-kledo-woocommerce.php:343
+#. translators: 1: transaction type (order/invoice), 2: HTTP status code, 3:
+#. API error message
+#: includes/class-wc-kledo-woocommerce.php:392
 #, php-format
 msgid ""
 "Kledo: %1$s was rejected by Kledo (HTTP %2$d): %3$s. This will not be "
 "retried automatically — correct the data, then resend it from WooCommerce > "
-"Kledo > Transactions."
+"Kledo > Kledo Status."
 msgstr ""
 "Kledo: %1$s ditolak oleh Kledo (HTTP %2$d): %3$s. Ini tidak akan dicoba "
 "ulang otomatis — perbaiki datanya, lalu kirim ulang dari WooCommerce > Kledo "
-"> Transactions."
+"> Status Kledo."
 
-#. translators: 1: transaction type (order/invoice), 2: HTTP status code, 3: API error message
-#: includes/class-wc-kledo-woocommerce.php:352
+#. translators: 1: transaction type (order/invoice), 2: HTTP status code, 3:
+#. API error message
+#: includes/class-wc-kledo-woocommerce.php:401
 #, php-format
 msgid ""
 "Kledo: admin manual push for %1$s was rejected by Kledo (HTTP %2$d): %3$s. "
@@ -1180,40 +963,40 @@ msgstr ""
 "%2$d): %3$s. Mengulang tidak akan menolong sampai datanya diperbaiki."
 
 #. translators: 1: transaction type (order/invoice), 2: HTTP status code
-#: includes/class-wc-kledo-woocommerce.php:361
+#: includes/class-wc-kledo-woocommerce.php:410
 #, php-format
 msgid ""
 "Kledo: failed to send %1$s to Kledo (HTTP %2$d). Will retry automatically."
 msgstr "Kledo: gagal mengirim %1$s (HTTP %2$d). Akan dicoba ulang otomatis."
 
 #. translators: 1: type, 2: HTTP code
-#: includes/class-wc-kledo-woocommerce.php:369
+#: includes/class-wc-kledo-woocommerce.php:418
 #, php-format
 msgid "Kledo: admin manual push failed for %1$s (HTTP %2$d)."
 msgstr "Kledo: pengiriman manual gagal untuk %1$s (HTTP %2$d)."
 
 #. translators: 1: type, 2: error detail
-#: includes/class-wc-kledo-woocommerce.php:407
+#: includes/class-wc-kledo-woocommerce.php:456
 #, php-format
 msgid ""
 "Kledo: error when sending %1$s to Kledo: %2$s. Will retry automatically."
 msgstr "Kledo: error saat mengirim %1$s: %2$s. Akan dicoba ulang otomatis."
 
 #. translators: 1: type, 2: error
-#: includes/class-wc-kledo-woocommerce.php:415
+#: includes/class-wc-kledo-woocommerce.php:464
 #, php-format
 msgid "Kledo: admin manual push error for %1$s: %2$s"
 msgstr "Kledo: error manual push untuk %1$s: %2$s"
 
-#: includes/class-wc-kledo-woocommerce.php:605
+#: includes/class-wc-kledo-woocommerce.php:675
 msgid "Waiting for Kledo to finish creating the sales order."
 msgstr "Menunggu Kledo selesai membuat sales order."
 
-#: includes/class-wc-kledo-woocommerce.php:606
+#: includes/class-wc-kledo-woocommerce.php:676
 msgid "Waiting for the Kledo sales order to be created first."
 msgstr "Menunggu sales order Kledo dibuat lebih dulu."
 
-#: includes/class-wc-kledo-woocommerce.php:616
+#: includes/class-wc-kledo-woocommerce.php:689
 msgid ""
 "Kledo: the invoice is waiting for Kledo to finish creating its sales order. "
 "Kledo accepted the sales order but has not processed it yet, and an invoice "
@@ -1225,7 +1008,7 @@ msgstr ""
 "yang dikirim sebelum sales order itu ada tidak akan pernah bisa ditautkan "
 "padanya. Invoice akan dikirim otomatis begitu sales order-nya tersedia."
 
-#: includes/class-wc-kledo-woocommerce.php:617
+#: includes/class-wc-kledo-woocommerce.php:690
 msgid ""
 "Kledo: the invoice was held back because its sales order could not be "
 "created in Kledo yet. Sending the invoice now would leave it permanently "
@@ -1236,61 +1019,62 @@ msgstr ""
 "selamanya. Keduanya akan dicoba ulang otomatis, sales order lebih dulu."
 
 #. translators: %s: transaction type (order/invoice)
-#: includes/class-wc-kledo.php:330
+#: includes/class-wc-kledo.php:377
 #, php-format
 msgid ""
 "Kledo: automatic retry for %s has stopped: maximum queue lifetime reached. "
-"Manual retry is still available from the Transactions screen."
+"Manual retry is still available from the Kledo Status tab."
 msgstr ""
 "Kledo: retry otomatis untuk %s dihentikan: batas waktu antrian tercapai. "
-"Retry manual masih tersedia."
+"Retry manual masih tersedia dari tab Status Kledo."
 
 #. translators: 1: transaction type (order/invoice), 2: attempts count
-#: includes/class-wc-kledo.php:355
+#: includes/class-wc-kledo.php:405
 #, php-format
 msgid ""
 "Kledo: automatic retry for %1$s has stopped after %2$d failed attempts. "
-"Manual retry is still available from the Transactions screen."
+"Manual retry is still available from the Kledo Status tab."
 msgstr ""
 "Kledo: retry otomatis untuk %1$s dihentikan setelah %2$d kali gagal. Retry "
-"manual masih tersedia."
+"manual masih tersedia dari tab Status Kledo."
 
 #. translators: 1: transaction type (order/invoice), 2: attempts count
-#: includes/class-wc-kledo.php:382
+#: includes/class-wc-kledo.php:435
 #, php-format
 msgid "Kledo: successfully resent %1$s to Kledo after %2$d attempt(s)."
 msgstr "Kledo: %1$s berhasil dikirim ulang setelah %2$d percobaan."
 
 #. translators: %d: number of checks made
-#: includes/class-wc-kledo.php:411
+#: includes/class-wc-kledo.php:464
 #, php-format
 msgid ""
 "Kledo: stopped waiting for the sales order after %d checks. The invoice has "
 "not been sent, because linking it now is no longer possible. Check the order "
-"in Kledo, then resend from WooCommerce > Kledo > Transactions."
+"in Kledo, then resend from WooCommerce > Kledo > Kledo Status."
 msgstr ""
 "Kledo: berhenti menunggu sales order setelah %d kali pemeriksaan. Invoice "
 "tidak dikirim, karena penautannya sudah tidak mungkin dilakukan sekarang. "
 "Periksa order tersebut di Kledo, lalu kirim ulang dari WooCommerce > Kledo > "
-"Transactions."
+"Status Kledo."
 
-#: includes/class-wc-kledo.php:417
+#: includes/class-wc-kledo.php:470
 msgid "The Kledo sales order never appeared, so the invoice was not sent."
-msgstr "Sales order Kledo tidak pernah muncul, sehingga invoice tidak dikirim."
+msgstr ""
+"Sales order Kledo tidak pernah muncul, sehingga invoice tidak dikirim."
 
 #. translators: 1: transaction type (order/invoice), 2: API error message
-#: includes/class-wc-kledo.php:450
+#: includes/class-wc-kledo.php:505
 #, php-format
 msgid ""
 "Kledo: automatic retry for %1$s has stopped because Kledo rejected the data: "
-"%2$s. Correct the data, then retry manually from the Transactions screen."
+"%2$s. Correct the data, then retry manually from the Kledo Status tab."
 msgstr ""
 "Kledo: percobaan ulang otomatis untuk %1$s dihentikan karena Kledo menolak "
-"datanya: %2$s. Perbaiki datanya, lalu coba ulang manual dari layar "
-"Transactions."
+"datanya: %2$s. Perbaiki datanya, lalu coba ulang manual dari tab Status "
+"Kledo."
 
 #. translators: 1,2: anchor tags for WooCommerce > Kledo.
-#: includes/class-wc-kledo.php:578
+#: includes/class-wc-kledo.php:635
 #, php-format
 msgid ""
 "For your convenience, the Kledo for WooCommerce settings are located under "
@@ -1299,19 +1083,20 @@ msgstr ""
 "Pengaturan WooCommerce Kledo terletak di dalam menu %1$sWooCommerce > "
 "Kledo%2$s."
 
-#: includes/class-wc-kledo.php:632
+#: includes/class-wc-kledo.php:689
 msgid "API Key and API Endpoint URL"
 msgstr "API Key dan API Endpoint URL"
 
-#. translators: 1,2: <strong> tags, 3: the setting names that are still empty, 4: anchor to the Configure screen.
-#: includes/class-wc-kledo.php:647
+#. translators: 1,2: <strong> tags, 3: the setting names that are still empty,
+#. 4: anchor to the Configure screen.
+#: includes/class-wc-kledo.php:704
 #, php-format
 msgid ""
 "%1$sWooCommerce Kledo is not connected yet.%2$s No order or invoice will be "
 "sent to Kledo until the %3$s is saved in %4$s."
 msgstr ""
-"%1$sWooCommerce Kledo belum terhubung.%2$s Tidak ada order atau invoice yang "
-"dikirim ke Kledo sampai %3$s disimpan di %4$s."
+"%1$sWooCommerce Kledo belum terhubung.%2$s Tidak ada order atau invoice yang"
+" dikirim ke Kledo sampai %3$s disimpan di %4$s."
 
 #. translators: %s: a length of time, e.g. "26 days"
 #: includes/helpers.php:269
@@ -1326,13 +1111,3083 @@ msgid "%s ago"
 msgstr "%s lalu"
 
 #. translators: %s: human-readable time difference, e.g. "30 minutes"
-#: includes/helpers.php:707
+#: includes/helpers.php:1569
 #, php-format
 msgid "(%s ago)"
 msgstr "(%s yang lalu)"
 
 #. translators: %s: human-readable time difference, e.g. "30 minutes"
-#: includes/helpers.php:719
+#: includes/helpers.php:1581
 #, php-format
 msgid "(in %s)"
 msgstr "(dalam %s)"
+
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:125
+msgid "Kledo: Send sales order"
+msgstr "Kledo: Kirim pesanan penjualan"
+
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:129
+msgid "Kledo: Send invoice"
+msgstr "Kledo: Kirim tagihan"
+
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:132
+msgid "Kledo: Check status in Kledo"
+msgstr "Kledo: Cek status di Kledo"
+
+#. translators: 1: transaction type label, 2: number accepted by Kledo
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:278
+#, php-format
+msgid ""
+"Kledo %1$s: %2$d accepted by Kledo (the plugin now checks they appear "
+"there)."
+msgstr ""
+"Kledo %1$s: %2$d diterima Kledo (plugin sekarang memeriksa apakah sudah "
+"terbentuk di sana)."
+
+#. translators: %d: number of invoices waiting
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:286
+#, php-format
+msgid "%d waiting for their sales order first."
+msgstr "%d menunggu pesanan penjualannya terbentuk dulu."
+
+#. translators: %d: number of failures
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:291
+#, php-format
+msgid "%d failed — see the order notes or WooCommerce > Kledo > Kledo Status."
+msgstr ""
+"%d gagal — lihat catatan pesanan atau WooCommerce > Kledo > Status Kledo."
+
+#. translators: %d: number skipped
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:296
+#, php-format
+msgid "%d skipped because they are already in Kledo or on their way there."
+msgstr "%d dilewati karena sudah ada di Kledo atau sedang diproses Kledo."
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:302
+#, php-format
+msgid ""
+"%d skipped because only Processing or Completed orders get a sales order."
+msgstr ""
+"%d dilewati karena pesanan penjualan hanya dibuat untuk pesanan berstatus "
+"Processing atau Completed."
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:304
+#, php-format
+msgid "%d skipped because only Completed orders get an invoice."
+msgstr ""
+"%d dilewati karena tagihan hanya dibuat untuk pesanan berstatus Completed."
+
+#. translators: 1: number not processed, 2: per-request limit
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:310
+#, php-format
+msgid ""
+"%1$d not processed: at most %2$d are sent at once. Select them again to "
+"continue."
+msgstr ""
+"%1$d belum diproses: maksimal %2$d dikirim sekaligus. Pilih lagi untuk "
+"melanjutkan."
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:330
+#, php-format
+msgid "Kledo status: %d order(s) found in Kledo."
+msgstr "Status Kledo: %d pesanan ditemukan di Kledo."
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:335
+#: includes/admin/screen/class-wc-kledo-transactions.php:508
+#, php-format
+msgid ""
+"%d not found yet; the plugin keeps checking and marks them \"Failed in "
+"Kledo\" if they never appear."
+msgstr ""
+"%d belum ditemukan; plugin terus memeriksa dan menandainya \"Gagal di "
+"Kledo\" jika tidak pernah muncul."
+
+#. translators: 1: number of orders, 2: per-request limit
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:341
+#, php-format
+msgid ""
+"%1$d queued to be checked in the background (at most %2$d are checked at "
+"once)."
+msgstr ""
+"%1$d dijadwalkan untuk diperiksa di latar belakang (maksimal %2$d diperiksa "
+"sekaligus)."
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:349
+#, php-format
+msgid "%d never sent and not in Kledo."
+msgstr "%d belum pernah dikirim dan tidak ada di Kledo."
+
+#: includes/admin/class-wc-kledo-admin-order-column.php:174
+msgid "Sales order closed"
+msgstr "Pesanan penjualan ditutup"
+
+#: includes/admin/class-wc-kledo-admin-order-column.php:184
+msgid "Waiting for closure"
+msgstr "Menunggu ditutup"
+
+#: includes/admin/class-wc-kledo-admin-order-column.php:192
+msgid "Closure: check Kledo"
+msgstr "Penutupan: cek di Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:242
+msgid "Any Kledo sales order"
+msgstr "Semua pesanan penjualan Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:243
+msgid "Any Kledo invoice"
+msgstr "Semua tagihan Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:254
+msgid "Filter by Kledo sales order"
+msgstr "Filter menurut pesanan penjualan Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:255
+msgid "Filter by Kledo invoice"
+msgstr "Filter menurut tagihan Kledo"
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:262
+msgid ""
+"\"Not sent\" also lists orders that are not due yet (Pending, On hold); "
+"combine it with the order status filter."
+msgstr ""
+"\"Belum dikirim\" juga menampilkan pesanan yang belum waktunya dikirim "
+"(Pending, On hold); gabungkan dengan filter status pesanan."
+
+#. translators: %s: Kledo reference number
+#: includes/admin/class-wc-kledo-admin-order-sync.php:250
+#: includes/admin/screen/class-wc-kledo-transactions.php:1050
+#, php-format
+msgid "Kledo: %s"
+msgstr "Kledo: %s"
+
+#. translators: %s: date and time of the last check
+#: includes/admin/class-wc-kledo-admin-order-sync.php:255
+#, php-format
+msgid "Checked %s"
+msgstr "Dicek %s"
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:377
+msgid "Kledo: the order was found in Kledo; its state has been updated."
+msgstr "Kledo: pesanan ditemukan di Kledo; statusnya sudah diperbarui."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:379
+msgid ""
+"Kledo: not found in Kledo yet. The plugin keeps checking and marks it "
+"\"Failed in Kledo\" if it never appears."
+msgstr ""
+"Kledo: belum ditemukan di Kledo. Plugin terus memeriksa dan menandainya "
+"\"Gagal di Kledo\" jika tidak pernah muncul."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:381
+msgid ""
+"Kledo: nothing for this order exists in Kledo, and nothing has been sent "
+"yet."
+msgstr ""
+"Kledo: belum ada transaksi untuk pesanan ini di Kledo, dan belum ada yang "
+"dikirim."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:418
+msgid "The Kledo sales order is closed."
+msgstr "Pesanan penjualan di Kledo sudah ditutup."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:422
+msgid ""
+"The sales order will not be closed automatically; see the order notes for "
+"the reason."
+msgstr ""
+"Pesanan penjualan tidak akan ditutup otomatis; lihat catatan pesanan untuk "
+"alasannya."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:425
+msgid ""
+"The Kledo sales order is not closed yet; the automatic check will keep "
+"trying."
+msgstr ""
+"Pesanan penjualan di Kledo belum ditutup; pemeriksaan otomatis akan terus "
+"mencoba."
+
+#: includes/admin/screen/class-wc-kledo-help.php:283
+#: includes/admin/screen/class-wc-kledo-invoice.php:267
+msgid "Create Sales Order First When an Order Skips Processing"
+msgstr "Buat Pesanan Penjualan Dulu Jika Pesanan Langsung Selesai"
+
+#. translators: %s: the name of the Order tab setting this one depends on,
+#. wrapped in <strong>.
+#: includes/admin/screen/class-wc-kledo-invoice.php:273
+#, php-format
+msgid ""
+"When an order is changed straight to Completed without going through "
+"Processing, create its sales order in Kledo first, then send the invoice "
+"once that sales order exists. Only applies while %s on the Order tab is on. "
+"Turn this off if those orders should get an invoice only — it is then sent "
+"without a link to a sales order."
+msgstr ""
+"Jika status pesanan langsung diubah ke Completed tanpa melewati Processing, "
+"plugin membuat pesanan penjualannya di Kledo terlebih dahulu, lalu mengirim "
+"tagihan setelah pesanan penjualan itu ada. Hanya berlaku jika %s di tab "
+"Pesanan aktif. Matikan jika pesanan seperti ini cukup dibuatkan tagihan saja"
+" — tagihan lalu dikirim tanpa ditautkan ke pesanan penjualan."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:354
+msgid ""
+"Resent. Kledo accepted the transaction; the plugin now checks that it "
+"appears in Kledo."
+msgstr ""
+"Terkirim ulang. Kledo menerima transaksinya; plugin sekarang memeriksa "
+"apakah sudah terbentuk di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:356
+msgid ""
+"Nothing to resend: the transaction was already sent. The stale queue row has"
+" been removed."
+msgstr ""
+"Tidak ada yang dikirim ulang: transaksi sudah terkirim. Baris antrean yang "
+"usang sudah dihapus."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:234
+#: includes/admin/screen/class-wc-kledo-transactions.php:358
+msgid ""
+"Not resent: the WooCommerce order no longer exists. The queue row has been "
+"removed."
+msgstr ""
+"Tidak dikirim ulang: pesanan WooCommerce sudah tidak ada. Baris antrean "
+"sudah dihapus."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:360
+msgid ""
+"The invoice is waiting for its sales order to exist in Kledo, and will be "
+"sent automatically once it does."
+msgstr ""
+"Tagihan menunggu pesanan penjualannya terbentuk di Kledo, dan akan dikirim "
+"otomatis setelah itu."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:362
+msgid ""
+"Resend failed: the request to Kledo did not succeed. See the Notes column "
+"for the error."
+msgstr ""
+"Kirim ulang gagal: permintaan ke Kledo tidak berhasil. Lihat kolom "
+"Keterangan untuk pesan errornya."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:364
+msgid ""
+"Kledo rejected the data again. Correct what the error names, then resend. "
+"The order notes hold the full validation message."
+msgstr ""
+"Kledo menolak datanya lagi. Perbaiki data yang disebut di pesan error, lalu "
+"kirim ulang. Pesan validasi lengkapnya ada di catatan pesanan."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:368
+msgid ""
+"Not resent: this transaction is not waiting to be resent. Refresh the page "
+"to see its current state."
+msgstr ""
+"Tidak dikirim ulang: transaksi ini tidak sedang menunggu dikirim ulang. Muat"
+" ulang halaman untuk melihat statusnya saat ini."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:371
+msgid ""
+"An unexpected error occurred during the resend. Please check the WooCommerce"
+" logs for details."
+msgstr ""
+"Terjadi error tak terduga saat mengirim ulang. Silakan cek log WooCommerce "
+"untuk detailnya."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:227
+#: includes/admin/screen/class-wc-kledo-transactions.php:386
+msgid "Not checked: the selected row is invalid."
+msgstr "Tidak dicek: baris yang dipilih tidak valid."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:414
+msgid "Choose a bulk action before applying."
+msgstr "Pilih aksi massal sebelum menerapkan."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:418
+msgid "No transactions were selected. Choose one or more rows and try again."
+msgstr ""
+"Belum ada transaksi yang dipilih. Pilih satu atau beberapa baris, lalu coba "
+"lagi."
+
+#. translators: 1: resent count, 2: failed count, 3: skipped count
+#: includes/admin/screen/class-wc-kledo-transactions.php:484
+#, php-format
+msgid ""
+"Resend finished. Accepted by Kledo: %1$d. Failed: %2$d. Skipped because they"
+" were not waiting to be resent: %3$d."
+msgstr ""
+"Kirim ulang selesai. Diterima Kledo: %1$d. Gagal: %2$d. Dilewati karena "
+"tidak sedang menunggu dikirim ulang: %3$d."
+
+#. translators: %d: number of orders
+#: includes/admin/screen/class-wc-kledo-transactions.php:503
+#, php-format
+msgid "Kledo status checked: %d order(s) found in Kledo."
+msgstr "Status Kledo sudah dicek: %d pesanan ditemukan di Kledo."
+
+#. translators: %d: number of orders
+#: includes/admin/screen/class-wc-kledo-transactions.php:513
+#, php-format
+msgid "%d queued to be checked in the background."
+msgstr "%d dijadwalkan untuk diperiksa di latar belakang."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:600
+msgid "Resend selected (failed only)"
+msgstr "Kirim ulang yang dipilih (hanya yang gagal)"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:601
+msgid "Check status in Kledo"
+msgstr "Cek status di Kledo"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:706
+#: includes/admin/screen/class-wc-kledo-transactions.php:1376
+#: includes/class-wc-kledo-status-badge.php:35
+#: includes/class-wc-kledo-status-badge.php:167
+msgid "In Kledo"
+msgstr "Ada di Kledo"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:707
+msgid "Confirmed to exist in Kledo."
+msgstr "Sudah dipastikan ada di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:713
+#: includes/admin/screen/class-wc-kledo-transactions.php:1375
+#: includes/class-wc-kledo-status-badge.php:45
+#: includes/class-wc-kledo-status-badge.php:166
+msgid "Waiting for Kledo"
+msgstr "Menunggu Kledo"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:714
+msgid "Sent, not confirmed yet. Checked automatically."
+msgstr "Sudah dikirim, belum terkonfirmasi. Dicek otomatis."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:720
+msgid "Needs attention"
+msgstr "Perlu tindakan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:721
+msgid "Send failed, rejected, or failed in Kledo."
+msgstr "Gagal kirim, ditolak, atau gagal di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:762
+#: includes/class-wc-kledo-status-badge.php:101
+#: includes/class-wc-kledo-status-badge.php:165
+msgid "Not sent"
+msgstr "Belum dikirim"
+
+#. translators: %s: number of orders
+#: includes/admin/screen/class-wc-kledo-transactions.php:765
+#, php-format
+msgid "%s sales orders"
+msgstr "%s pesanan penjualan"
+
+#. translators: %s: number of orders
+#: includes/admin/screen/class-wc-kledo-transactions.php:768
+#, php-format
+msgid "%s invoices"
+msgstr "%s tagihan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:808
+msgid "What do the statuses mean?"
+msgstr "Apa arti setiap status?"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:809
+msgid ""
+"Kledo answers a send as soon as it has queued the transaction, before "
+"creating it. The plugin then reads every transaction back from Kledo, so "
+"\"In Kledo\" means it was actually found there."
+msgstr ""
+"Kledo langsung menjawab pengiriman begitu transaksinya masuk antrean, "
+"sebelum transaksi itu dibuat. Plugin lalu memeriksa ulang setiap transaksi "
+"ke Kledo, jadi \"Ada di Kledo\" berarti transaksinya benar-benar ditemukan "
+"di sana."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:901
+#: includes/admin/screen/class-wc-kledo-transactions.php:1648
+msgid "Notes"
+msgstr "Keterangan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:845
+msgid "Select all rows"
+msgstr "Pilih semua baris"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1013
+msgid "Resend"
+msgstr "Kirim ulang"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1005
+msgid "Check status"
+msgstr "Cek status"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1017
+msgid "Open order"
+msgstr "Buka pesanan"
+
+#. translators: %s: date and time
+#: includes/admin/screen/class-wc-kledo-transactions.php:1077
+#, php-format
+msgid "Next retry: %s"
+msgstr "Percobaan berikutnya: %s"
+
+#. translators: %s: date and time
+#: includes/admin/screen/class-wc-kledo-transactions.php:1055
+#, php-format
+msgid "Checked: %s"
+msgstr "Dicek: %s"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1157
+msgid "Nothing is waiting for Kledo."
+msgstr "Tidak ada yang sedang menunggu Kledo."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1159
+msgid "No transaction has been confirmed in Kledo yet for the current filter."
+msgstr "Belum ada transaksi yang terkonfirmasi di Kledo untuk filter ini."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1161
+msgid "No failed sends. Every request reached Kledo."
+msgstr "Tidak ada pengiriman yang gagal. Semua permintaan sampai ke Kledo."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1163
+msgid "Kledo has not rejected any transaction."
+msgstr "Kledo belum menolak transaksi apa pun."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1165
+msgid "No transaction went missing in Kledo."
+msgstr "Tidak ada transaksi yang gagal terbentuk di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1326
+msgid "Sales orders and invoices"
+msgstr "Pesanan penjualan dan tagihan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1327
+msgid "Sales orders only"
+msgstr "Hanya pesanan penjualan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1328
+msgid "Invoices only"
+msgstr "Hanya tagihan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1338
+msgid "Order number"
+msgstr "Nomor pesanan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1339
+msgid "Order #"
+msgstr "No. pesanan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1377
+#: includes/class-wc-kledo-status-badge.php:77
+msgid "Send failed"
+msgstr "Gagal kirim"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1378
+#: includes/class-wc-kledo-status-badge.php:85
+msgid "Rejected by Kledo"
+msgstr "Ditolak Kledo"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1379
+#: includes/class-wc-kledo-status-badge.php:93
+msgid "Failed in Kledo"
+msgstr "Gagal di Kledo"
+
+#. translators: %s: number of orders
+#: includes/admin/screen/class-wc-kledo-transactions.php:1525
+#, php-format
+msgid "%s order"
+msgid_plural "%s orders"
+msgstr[0] "%s pesanan"
+msgstr[1] "%s pesanan"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1595
+msgid "Orders per page"
+msgstr "Pesanan per halaman"
+
+#: includes/class-wc-kledo-status-badge.php:37
+msgid "The sales order was read back from Kledo and exists there."
+msgstr "Pesanan penjualan sudah dicek ulang ke Kledo dan memang ada di sana."
+
+#: includes/class-wc-kledo-status-badge.php:38
+msgid "The invoice was read back from Kledo and exists there."
+msgstr "Tagihan sudah dicek ulang ke Kledo dan memang ada di sana."
+
+#: includes/class-wc-kledo-status-badge.php:46
+msgid ""
+"Kledo accepted the request and is still creating the transaction. The plugin"
+" checks again automatically."
+msgstr ""
+"Kledo sudah menerima permintaan dan masih membuat transaksinya. Plugin akan "
+"mengecek lagi secara otomatis."
+
+#: includes/class-wc-kledo-status-badge.php:53
+msgid "Waiting for sales order"
+msgstr "Menunggu pesanan penjualan"
+
+#: includes/class-wc-kledo-status-badge.php:54
+msgid ""
+"The invoice is held until its sales order exists in Kledo, so the two can be"
+" linked. It is sent automatically."
+msgstr ""
+"Tagihan ditahan sampai pesanan penjualannya ada di Kledo, supaya keduanya "
+"bisa ditautkan. Tagihan dikirim otomatis."
+
+#: includes/class-wc-kledo-status-badge.php:61
+msgid "Sent (not checked)"
+msgstr "Terkirim (belum dicek)"
+
+#: includes/class-wc-kledo-status-badge.php:62
+msgid ""
+"Sent before this version of the plugin, which never checked whether it "
+"exists in Kledo."
+msgstr ""
+"Dikirim sebelum versi plugin ini, yang belum pernah mengecek apakah "
+"transaksinya ada di Kledo."
+
+#: includes/class-wc-kledo-status-badge.php:64
+msgid "Run \"Check status in Kledo\" to confirm it."
+msgstr "Jalankan \"Cek status di Kledo\" untuk memastikannya."
+
+#: includes/class-wc-kledo-status-badge.php:69
+msgid "Send failed, retrying"
+msgstr "Gagal kirim, dicoba ulang"
+
+#: includes/class-wc-kledo-status-badge.php:70
+msgid "The request to Kledo failed. The plugin retries automatically."
+msgstr "Permintaan ke Kledo gagal. Plugin mencoba lagi secara otomatis."
+
+#: includes/class-wc-kledo-status-badge.php:72
+msgid "No action needed unless it keeps failing; you can also resend now."
+msgstr ""
+"Tidak perlu tindakan kecuali terus gagal; Anda juga bisa mengirim ulang "
+"sekarang."
+
+#: includes/class-wc-kledo-status-badge.php:78
+msgid "The request to Kledo kept failing and automatic retries have stopped."
+msgstr ""
+"Permintaan ke Kledo terus gagal dan percobaan otomatis sudah dihentikan."
+
+#: includes/class-wc-kledo-status-badge.php:80
+msgid "Check the connection settings, then resend."
+msgstr "Periksa pengaturan koneksi, lalu kirim ulang."
+
+#: includes/class-wc-kledo-status-badge.php:86
+msgid ""
+"Kledo refused the data. Sending the same data again will be refused again."
+msgstr "Kledo menolak datanya. Mengirim data yang sama akan ditolak lagi."
+
+#: includes/class-wc-kledo-status-badge.php:88
+msgid ""
+"Fix the data named in the error (product, customer, account), then resend."
+msgstr ""
+"Perbaiki data yang disebut di pesan error (produk, pelanggan, akun), lalu "
+"kirim ulang."
+
+#: includes/class-wc-kledo-status-badge.php:94 includes/helpers.php:1443
+msgid ""
+"Kledo accepted the request, but the transaction never appeared in Kledo."
+msgstr ""
+"Kledo menerima permintaan, tetapi transaksinya tidak pernah terbentuk di "
+"Kledo."
+
+#: includes/class-wc-kledo-status-badge.php:96
+msgid "Check it in Kledo, then resend."
+msgstr "Cek di Kledo, lalu kirim ulang."
+
+#: includes/class-wc-kledo-status-badge.php:103
+msgid "No sales order has been sent to Kledo for this order."
+msgstr "Belum ada pesanan penjualan yang dikirim ke Kledo untuk pesanan ini."
+
+#: includes/class-wc-kledo-status-badge.php:104
+msgid "No invoice has been sent to Kledo for this order."
+msgstr "Belum ada tagihan yang dikirim ke Kledo untuk pesanan ini."
+
+#. translators: 1: state explanation, 2: Kledo reference number
+#: includes/class-wc-kledo-status-badge.php:126
+#, php-format
+msgid "%1$s Kledo reference: %2$s."
+msgstr "%1$s Nomor Kledo: %2$s."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:551
+#: includes/class-wc-kledo-status-badge.php:154
+msgid "Sales order"
+msgstr "Pesanan penjualan"
+
+#: includes/class-wc-kledo-status-badge.php:168
+msgid "Failed (needs attention)"
+msgstr "Gagal (perlu tindakan)"
+
+#. translators: %s: Kledo reference number
+#: includes/class-wc-kledo-transaction-verifier.php:368
+#, php-format
+msgid "Kledo: sales order %s is confirmed in Kledo."
+msgstr "Kledo: pesanan penjualan %s sudah terkonfirmasi ada di Kledo."
+
+#. translators: %s: Kledo reference number
+#: includes/class-wc-kledo-transaction-verifier.php:371
+#, php-format
+msgid "Kledo: invoice %s is confirmed in Kledo."
+msgstr "Kledo: tagihan %s sudah terkonfirmasi ada di Kledo."
+
+#. translators: %d: number of checks made
+#: includes/class-wc-kledo-transaction-verifier.php:399
+#, php-format
+msgid ""
+"Kledo: the sales order was accepted by Kledo but still did not exist there "
+"after %d checks, so Kledo most likely failed to create it. It has not been "
+"resent automatically, to avoid a duplicate if Kledo is only slow. Check "
+"Kledo, then resend it from the order actions, the Orders bulk actions, or "
+"WooCommerce > Kledo > Kledo Status."
+msgstr ""
+"Kledo: pesanan penjualan sudah diterima Kledo tetapi masih belum ada di sana "
+"setelah %d kali pengecekan, kemungkinan besar Kledo gagal membuatnya. "
+"Pesanan penjualan tidak dikirim ulang otomatis untuk menghindari duplikat "
+"jika Kledo hanya lambat. Cek di Kledo, lalu kirim ulang lewat aksi pesanan, "
+"aksi massal di daftar Pesanan, atau WooCommerce > Kledo > Status Kledo."
+
+#. translators: %d: number of checks made
+#: includes/class-wc-kledo-transaction-verifier.php:402
+#, php-format
+msgid ""
+"Kledo: the invoice was accepted by Kledo but still did not exist there after "
+"%d checks, so Kledo most likely failed to create it. It has not been resent "
+"automatically, to avoid a duplicate if Kledo is only slow. Check Kledo, then "
+"resend it from the order actions, the Orders bulk actions, or WooCommerce > "
+"Kledo > Kledo Status."
+msgstr ""
+"Kledo: tagihan sudah diterima Kledo tetapi masih belum ada di sana setelah "
+"%d kali pengecekan, kemungkinan besar Kledo gagal membuatnya. Tagihan tidak "
+"dikirim ulang otomatis untuk menghindari duplikat jika Kledo hanya lambat. "
+"Cek di Kledo, lalu kirim ulang lewat aksi pesanan, aksi massal di daftar "
+"Pesanan, atau WooCommerce > Kledo > Status Kledo."
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:287
+msgid "Filling in dates here replaces the month chosen in \"All dates\"."
+msgstr "Mengisi tanggal di sini menggantikan bulan yang dipilih di \"All dates\"."
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:289
+msgid "From"
+msgstr "Dari"
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:292
+#: includes/admin/screen/class-wc-kledo-sync.php:380
+#: includes/admin/screen/class-wc-kledo-transactions.php:1334
+msgid "to"
+msgstr "sampai"
+
+#: includes/admin/class-wc-kledo-admin-order-filter.php:339
+msgid "Send all of them gradually with Sync →"
+msgstr "Kirim semuanya bertahap lewat Sinkronisasi →"
+
+#: includes/admin/class-wc-kledo-admin.php:599
+msgid "Kledo: Sync"
+msgstr "Kledo: Sinkronisasi"
+
+#: includes/admin/class-wc-kledo-admin.php:686
+#: includes/admin/class-wc-kledo-admin.php:722
+msgid "Checking…"
+msgstr "Mengecek…"
+
+#: includes/admin/class-wc-kledo-admin.php:687
+msgid "Resending…"
+msgstr "Mengirim ulang…"
+
+#: includes/admin/class-wc-kledo-admin.php:688
+#: includes/admin/class-wc-kledo-admin.php:726
+msgid "Could not reach the server. Try again."
+msgstr "Tidak bisa menghubungi server. Coba lagi."
+
+#: includes/admin/class-wc-kledo-admin.php:689
+msgid "Updated."
+msgstr "Diperbarui."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:132
+#: includes/admin/screen/class-wc-kledo-sync.php:133
+msgid "Sync"
+msgstr "Sinkronisasi"
+
+#. translators: %d: number of orders
+#: includes/admin/screen/class-wc-kledo-sync.php:208
+#, php-format
+msgid "%d order per minute"
+msgid_plural "%d orders per minute"
+msgstr[0] "%d pesanan per menit"
+msgstr[1] "%d pesanan per menit"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:213
+msgid "Sync Settings"
+msgstr "Pengaturan Sinkronisasi"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:215
+msgid ""
+"Sends orders that are not in Kledo yet — for example orders placed before "
+"this plugin was installed. Only Processing and Completed orders are sent, "
+"and only the parts switched on in the Order and Invoice tabs. Orders already"
+" in Kledo are skipped."
+msgstr ""
+"Mengirim pesanan yang belum ada di Kledo — misalnya pesanan yang dibuat "
+"sebelum plugin ini dipasang. Hanya pesanan Processing dan Completed yang "
+"dikirim, dan hanya bagian yang diaktifkan di tab Pesanan dan Tagihan. "
+"Pesanan yang sudah ada di Kledo dilewati."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:220
+msgid "Orders From"
+msgstr "Pesanan Dari Tanggal"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:224
+msgid "Leave empty to start 30 days before today."
+msgstr "Kosongkan untuk mulai dari 30 hari sebelum hari ini."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:229
+msgid "Orders Until"
+msgstr "Pesanan Sampai Tanggal"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:233
+msgid "Leave empty to include today."
+msgstr "Kosongkan untuk sampai hari ini."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:238
+msgid "Speed"
+msgstr "Kecepatan"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:243
+msgid ""
+"How many orders are sent each minute. The next ones are only sent after "
+"Kledo has finished creating these."
+msgstr ""
+"Berapa pesanan yang dikirim setiap menit. Pesanan berikutnya baru dikirim "
+"setelah Kledo selesai membuat pesanan-pesanan ini."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:251
+#: includes/admin/screen/class-wc-kledo-sync.php:258
+msgid "Send Automatically Every Day"
+msgstr "Kirim Otomatis Setiap Hari"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:253
+msgid ""
+"What happens when this is switched on: every night the plugin looks at the "
+"Processing and Completed orders of the last few days. Orders already in "
+"Kledo are skipped, so nothing is created twice. Orders that are missing are "
+"sent slowly, a few per minute. Invoices are created as paid or unpaid "
+"following the Invoice tab. You can see the results in the Kledo Status tab, "
+"and you will see a message if something failed."
+msgstr ""
+"Apa yang terjadi kalau ini dinyalakan? Setiap malam, plugin melihat pesanan "
+"Processing dan Completed dari beberapa hari terakhir. Pesanan yang sudah ada "
+"di Kledo dilewati, jadi tidak ada yang dibuat dua kali. Pesanan yang belum "
+"ada dikirim pelan-pelan, beberapa pesanan per menit. Tagihan dibuat lunas "
+"atau belum lunas mengikuti pengaturan di tab Tagihan. Hasilnya bisa dilihat "
+"di tab Status Kledo, dan Anda akan melihat pemberitahuan kalau ada yang "
+"gagal."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:262
+msgid ""
+"If ticked, every night the plugin looks for orders that are not in Kledo yet"
+" and sends them by itself, slowly. You do not need to press any button. "
+"Leave it unticked if you want to check first before anything is sent."
+msgstr ""
+"Kalau dicentang, setiap malam plugin akan mencari pesanan yang belum masuk "
+"ke Kledo, lalu mengirimkannya sendiri pelan-pelan. Anda tidak perlu menekan "
+"tombol apa pun. Biarkan tidak dicentang kalau Anda ingin memeriksa dulu "
+"sebelum ada yang dikirim."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:267
+msgid "Look Back"
+msgstr "Periksa ke Belakang"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:276
+msgid ""
+"days. Only orders from this many days back are checked each night. Older "
+"orders are not touched."
+msgstr ""
+"hari. Hanya pesanan dari sekian hari terakhir yang diperiksa setiap malam. "
+"Pesanan yang lebih lama tidak akan disentuh."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:281
+msgid "Start Time"
+msgstr "Jam Mulai"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:286
+msgid ""
+"What time the check starts, in your store's timezone. Choose a quiet time "
+"for your store."
+msgstr ""
+"Jam berapa pemeriksaan dimulai, menurut zona waktu toko Anda. Pilih jam saat"
+" toko sedang sepi."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:327
+msgid "Orders Missing From Kledo"
+msgstr "Pesanan yang Belum Ada di Kledo"
+
+#. translators: 1: number of orders, 2: orders per minute
+#: includes/admin/screen/class-wc-kledo-sync.php:360
+#, php-format
+msgid "Send %1$d order(s) to Kledo, %2$d per minute?"
+msgstr "Kirim %1$d pesanan ke Kledo, %2$d per menit?"
+
+#. translators: %s: Paid or Unpaid
+#: includes/admin/screen/class-wc-kledo-sync.php:365
+#, php-format
+msgid "Invoices will be created as: %s (following the Invoice tab)."
+msgstr ""
+"Tagihan akan dibuat sebagai: %s (mengikuti pengaturan di tab Tagihan)."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:366
+msgid ""
+"Each transaction is dated with its order date, so reports of earlier months "
+"in Kledo will change. Kledo does not refuse dates inside a period you have "
+"locked (closed books), so make sure the range does not reach into one."
+msgstr ""
+"Setiap transaksi memakai tanggal pesanannya, jadi laporan bulan-bulan "
+"sebelumnya di Kledo akan berubah. Kledo tidak menolak tanggal di periode "
+"yang sudah dikunci (tutup buku), jadi pastikan rentang tanggal tidak masuk "
+"ke periode itu."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:367
+msgid "Invoices reduce warehouse stock in Kledo on the order date."
+msgstr "Tagihan akan mengurangi stok gudang di Kledo pada tanggal pesanan."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:378
+msgid "Orders from"
+msgstr "Pesanan dari"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:383
+msgid "Count again"
+msgstr "Hitung ulang"
+
+#. translators: 1: number of orders, 2: number of sales orders, 3: number of
+#. invoices
+#: includes/admin/screen/class-wc-kledo-sync.php:390
+#, php-format
+msgid "%1$d order(s) need sending: %2$d sales order(s) and %3$d invoice(s)."
+msgstr "%1$d pesanan perlu dikirim: %2$d pesanan penjualan dan %3$d tagihan."
+
+#. translators: %d: minutes
+#: includes/admin/screen/class-wc-kledo-sync.php:399
+#, php-format
+msgid "About %d minute at the current speed."
+msgid_plural "About %d minutes at the current speed."
+msgstr[0] "Sekitar %d menit dengan kecepatan saat ini."
+msgstr[1] "Sekitar %d menit dengan kecepatan saat ini."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:406
+msgid "Process gradually"
+msgstr "Proses bertahap"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:432
+msgid "Running"
+msgstr "Berjalan"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:433
+msgid "Paused"
+msgstr "Dijeda"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:434
+msgid "Finished"
+msgstr "Selesai"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:435
+msgid "Cancelled"
+msgstr "Dibatalkan"
+
+#. translators: %d: job number
+#: includes/admin/screen/class-wc-kledo-sync.php:442
+#, php-format
+msgid "Synchronisation #%d"
+msgstr "Sinkronisasi #%d"
+
+#. translators: 1: first day, 2: last day
+#: includes/admin/screen/class-wc-kledo-sync.php:445
+#, php-format
+msgid "orders %1$s to %2$s"
+msgstr "pesanan %1$s s/d %2$s"
+
+#. translators: 1: processed, 2: total, 3: confirmed, 4: already in Kledo, 5:
+#. failed
+#: includes/admin/screen/class-wc-kledo-sync.php:459
+#, php-format
+msgid ""
+"%1$d of %2$d orders processed — %3$d confirmed in Kledo, %4$d were already "
+"there, %5$d failed."
+msgstr ""
+"%1$d dari %2$d pesanan diproses — %3$d terkonfirmasi di Kledo, %4$d sudah "
+"ada sebelumnya, %5$d gagal."
+
+#. translators: 1: batch number, 2: number of orders
+#: includes/admin/screen/class-wc-kledo-sync.php:472
+#, php-format
+msgid ""
+"Batch %1$d: waiting for Kledo to create %2$d order(s) before sending more."
+msgstr ""
+"Batch %1$d: menunggu Kledo membuat %2$d pesanan sebelum mengirim lagi."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:480
+msgid "Kledo asked to slow down; continuing in a few minutes."
+msgstr ""
+"Kledo meminta pengiriman diperlambat; dilanjutkan beberapa menit lagi."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:484
+msgid ""
+"Paused automatically: Kledo had not finished the last batch after 30 "
+"minutes. Check that Kledo is working, then resume."
+msgstr ""
+"Dijeda otomatis: Kledo belum menyelesaikan batch terakhir setelah 30 menit. "
+"Pastikan Kledo berjalan normal, lalu lanjutkan."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:492
+msgid "Pause"
+msgstr "Jeda"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:494
+msgid "Resume"
+msgstr "Lanjutkan"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:497
+msgid "Stop this synchronisation? Orders already sent stay in Kledo."
+msgstr ""
+"Hentikan sinkronisasi ini? Pesanan yang sudah terkirim tetap ada di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:497
+msgid "Cancel"
+msgstr "Batalkan"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:531
+msgid "Show"
+msgstr "Tampilkan"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:533
+msgid "Only orders that need sending"
+msgstr "Hanya pesanan yang perlu dikirim"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:534
+msgid "All Processing and Completed orders"
+msgstr "Semua pesanan Processing dan Completed"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:537
+msgid "Order status"
+msgstr "Status pesanan"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:539
+msgid "Processing and Completed"
+msgstr "Processing dan Completed"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:553
+#: includes/admin/screen/class-wc-kledo-sync.php:574
+msgid "Synchronisation"
+msgstr "Sinkronisasi"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:558
+msgid "No orders in this range need sending."
+msgstr "Tidak ada pesanan di rentang ini yang perlu dikirim."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:567
+#: includes/admin/screen/class-wc-kledo-transactions.php:1041
+msgid "Show more details"
+msgstr "Tampilkan detail"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:620
+msgid "Sent, waiting for Kledo"
+msgstr "Terkirim, menunggu Kledo"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:621
+msgid "Done"
+msgstr "Selesai"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:622
+msgid "Was already in Kledo"
+msgstr "Sudah ada di Kledo"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:623
+msgid "Nothing to send"
+msgstr "Tidak ada yang dikirim"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:624
+msgid "Failed — see the Kledo Status tab"
+msgstr "Gagal — lihat tab Status Kledo"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:634
+msgid "Waiting for its turn"
+msgstr "Menunggu giliran"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:677
+msgid ""
+"Synchronisation started. You can leave this page; it continues in the "
+"background."
+msgstr ""
+"Sinkronisasi dimulai. Anda boleh meninggalkan halaman ini; prosesnya tetap "
+"berjalan di latar belakang."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:683
+msgid "Synchronisation paused."
+msgstr "Sinkronisasi dijeda."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:688
+msgid "Synchronisation resumed."
+msgstr "Sinkronisasi dilanjutkan."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:693
+msgid "Synchronisation cancelled. Orders already sent stay in Kledo."
+msgstr ""
+"Sinkronisasi dibatalkan. Pesanan yang sudah terkirim tetap ada di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-sync.php:739
+msgid "Open Sync"
+msgstr "Buka Sinkronisasi"
+
+#. translators: 1: job number, 2: link to the Sync tab
+#: includes/admin/screen/class-wc-kledo-sync.php:746
+#, php-format
+msgid ""
+"Kledo: synchronisation #%1$d was paused because Kledo had not finished a "
+"batch after 30 minutes. %2$s"
+msgstr ""
+"Kledo: sinkronisasi #%1$d dijeda karena Kledo belum menyelesaikan satu batch"
+" setelah 30 menit. %2$s"
+
+#. translators: 1: confirmed count, 2: failed count, 3: link to the
+#. Kledo Status tab
+#: includes/admin/screen/class-wc-kledo-sync.php:762
+#, php-format
+msgid ""
+"Kledo: last night's automatic sync sent %1$d order(s); %2$d failed. %3$s"
+msgstr ""
+"Kledo: sinkronisasi otomatis semalam mengirim %1$d pesanan; %2$d gagal. %3$s"
+
+#: includes/admin/screen/class-wc-kledo-sync.php:768
+msgid "See what failed"
+msgstr "Lihat yang gagal"
+
+#. translators: 1: number of orders, 2: number of days, 3: sales orders, 4:
+#. invoices, 5: link to the Sync tab
+#: includes/admin/screen/class-wc-kledo-sync.php:793
+#, php-format
+msgid ""
+"Kledo: %1$d order(s) from the last %2$d days are not in Kledo yet (%3$d "
+"sales order(s), %4$d invoice(s)). Nothing is sent until you choose to. %5$s"
+msgstr ""
+"Kledo: ada %1$d pesanan dari %2$d hari terakhir yang belum ada di Kledo "
+"(%3$d pesanan penjualan, %4$d tagihan). Tidak ada yang dikirim sampai Anda "
+"memilih untuk mengirimnya. %5$s"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:898
+#: includes/admin/screen/class-wc-kledo-transactions.php:1646
+msgid "Transaction"
+msgstr "Status Kledo"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:899
+#: includes/class-wc-kledo-diagnostics.php:84
+msgid "Status in Kledo"
+msgstr "Status di Kledo"
+
+#. translators: %s: name of the tab the row now belongs to
+#: includes/admin/screen/class-wc-kledo-transactions.php:1062
+#, php-format
+msgid "Moved to: %s"
+msgstr "Pindah ke: %s"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1097
+msgid "Select row"
+msgstr "Pilih baris"
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1332
+msgid "Order date from"
+msgstr "Tanggal pesanan dari"
+
+#: includes/class-wc-kledo-sync-job.php:178
+msgid "A synchronisation is already running. Pause or cancel it first."
+msgstr "Sinkronisasi lain sedang berjalan. Jeda atau batalkan dulu."
+
+#: includes/class-wc-kledo-sync-job.php:182
+msgid ""
+"Both \"Enable Create Order\" and \"Enable Create Invoice\" are off, so there"
+" is nothing to send."
+msgstr ""
+"\"Aktifkan Pembuatan Pesanan\" dan \"Aktifkan Pembuatan Tagihan\" sama-sama "
+"mati, jadi tidak ada yang bisa dikirim."
+
+#. translators: 1: sync job number, 2: comma-separated transaction types
+#: includes/class-wc-kledo-sync-job.php:519
+#, php-format
+msgid "Kledo: sent by Synchronisation #%1$d (%2$s)."
+msgstr "Kledo: dikirim oleh Sinkronisasi #%1$d (%2$s)."
+
+#: includes/admin/class-wc-kledo-admin-order-sync.php:270
+msgid "Not in Kledo? Diagnose this order"
+msgstr "Tidak ada di Kledo? Diagnosa pesanan ini"
+
+#: includes/admin/class-wc-kledo-admin.php:600
+msgid "Kledo: Diagnostics"
+msgstr "Kledo: Diagnosa"
+
+#. translators: 1: attempt number, 2: number of attempts
+#: includes/admin/class-wc-kledo-admin.php:724
+#, php-format
+msgid "Waiting 20 seconds, then asking Kledo (%1$d of %2$d)…"
+msgstr "Menunggu 20 detik, lalu bertanya ke Kledo (%1$d dari %2$d)…"
+
+#: includes/admin/class-wc-kledo-admin.php:725
+msgid "Details"
+msgstr "Detail"
+
+#: includes/admin/class-wc-kledo-admin.php:727
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:208
+#: includes/class-wc-kledo-diagnostics.php:302
+msgid "Likely cause"
+msgstr "Kemungkinan penyebab"
+
+#: includes/admin/class-wc-kledo-admin.php:728
+msgid "What to do:"
+msgstr "Yang bisa dilakukan:"
+
+#. translators: %s: report code
+#: includes/admin/class-wc-kledo-admin.php:730
+#, php-format
+msgid "Report code: %s — mention it when you contact Kledo."
+msgstr "Kode laporan: %s — sebutkan kode ini saat menghubungi Kledo."
+
+#: includes/admin/class-wc-kledo-admin.php:731
+msgid "Download report"
+msgstr "Unduh laporan"
+
+#: includes/admin/class-wc-kledo-admin.php:732
+msgid "Download for developers (JSON)"
+msgstr "Unduh untuk tim developer (JSON)"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:60
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:61
+msgid "Diagnostics"
+msgstr "Diagnosa"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:123
+msgid "Also resend to Kledo and record what happens"
+msgstr "Sekalian kirim ulang ke Kledo dan rekam prosesnya"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:126
+msgid ""
+"Only what Kledo does not have yet is resent, so nothing is created twice. "
+"Leave this off to only check."
+msgstr ""
+"Hanya yang belum ada di Kledo yang dikirim ulang, jadi tidak ada yang dibuat"
+" dua kali. Biarkan tidak dicentang kalau Anda hanya ingin memeriksa."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:132
+msgid "Include full customer data in the report"
+msgstr "Sertakan data pelanggan lengkap di laporan"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:135
+msgid ""
+"Off by default: the customer's name, email, phone and address are partly "
+"hidden. Turn on only when Kledo rejects the customer data itself."
+msgstr ""
+"Default tidak dicentang: nama, email, telepon, dan alamat pelanggan "
+"disamarkan sebagian. Centang hanya kalau Kledo menolak data pelanggannya."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:139
+msgid "Run diagnosis"
+msgstr "Jalankan diagnosa"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:142
+msgid "The diagnosis needs JavaScript to run."
+msgstr "Diagnosa membutuhkan JavaScript untuk berjalan."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:165
+msgid "Problems that only happen sometimes"
+msgstr "Masalah yang hanya terjadi sesekali"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:167
+msgid ""
+"When orders only fail now and then, a diagnosis afterwards may find nothing "
+"wrong. Record every request to Kledo for 24 hours instead; diagnoses run "
+"during that time include what was recorded for the order. It switches itself"
+" off after 24 hours. Customer data in the recording is partly hidden and the"
+" API key is never recorded."
+msgstr ""
+"Kalau pesanan hanya gagal sesekali, diagnosa yang dijalankan belakangan bisa"
+" saja tidak menemukan apa-apa. Untuk kasus seperti ini, rekam semua "
+"pengiriman ke Kledo selama 24 jam; diagnosa yang dijalankan selama waktu itu"
+" ikut menyertakan rekaman untuk pesanan tersebut. Rekaman berhenti sendiri "
+"setelah 24 jam. Data pelanggan di rekaman disamarkan sebagian dan API key "
+"tidak pernah direkam."
+
+#. translators: %s: date and time
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:175
+#, php-format
+msgid "Recording until %s."
+msgstr "Merekam sampai %s."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:178
+msgid "Stop recording"
+msgstr "Hentikan rekaman"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:180
+msgid "Record for 24 hours"
+msgstr "Rekam selama 24 jam"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:200
+msgid "Recent diagnoses"
+msgstr "Diagnosa terakhir"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:201
+msgid "Reports are kept for 7 days."
+msgstr "Laporan disimpan selama 7 hari."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:205
+msgid "Report"
+msgstr "Laporan"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:207
+#: includes/class-wc-kledo-diagnostics.php:298
+msgid "Time"
+msgstr "Waktu"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:209
+msgid "Download"
+msgstr "Unduh"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:220
+msgid "Text"
+msgstr "Teks"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:544
+#: includes/class-wc-kledo-diagnostics.php:144
+#: includes/class-wc-kledo-diagnostics.php:205
+msgid "This diagnosis has expired. Start a new one."
+msgstr "Diagnosa ini sudah kedaluwarsa. Jalankan diagnosa baru."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:583
+msgid "Every request to Kledo is now recorded for 24 hours."
+msgstr "Semua pengiriman ke Kledo sekarang direkam selama 24 jam."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:586
+msgid "Recording stopped."
+msgstr "Rekaman dihentikan."
+
+#: includes/admin/screen/class-wc-kledo-support.php:58
+msgid "An order did not reach Kledo?"
+msgstr "Ada pesanan yang tidak masuk ke Kledo?"
+
+#: includes/admin/screen/class-wc-kledo-support.php:61
+msgid ""
+"Run a diagnosis first, in the Diagnostics tab. It tells you the most likely "
+"cause, and gives you a report to send us so we can help faster."
+msgstr ""
+"Jalankan diagnosa dulu di tab Diagnosa. Diagnosa memberi tahu kemungkinan "
+"penyebabnya, dan menghasilkan laporan yang bisa Anda kirim ke kami supaya "
+"kami bisa membantu lebih cepat."
+
+#: includes/admin/screen/class-wc-kledo-transactions.php:1023
+msgid "Diagnose"
+msgstr "Diagnosa"
+
+#: includes/class-wc-kledo-diagnostics.php:79
+msgid "Store environment"
+msgstr "Lingkungan toko"
+
+#: includes/class-wc-kledo-diagnostics.php:80
+msgid "Connection to Kledo"
+msgstr "Koneksi ke Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:81
+msgid "Plugin settings"
+msgstr "Pengaturan plugin"
+
+#: includes/class-wc-kledo-diagnostics.php:82
+msgid "The order"
+msgstr "Pesanan"
+
+#: includes/class-wc-kledo-diagnostics.php:83
+msgid "Data that would be sent"
+msgstr "Data yang akan dikirim"
+
+#: includes/class-wc-kledo-diagnostics.php:85
+msgid "Sending history"
+msgstr "Riwayat pengiriman"
+
+#: includes/class-wc-kledo-diagnostics.php:86
+msgid "Queues and scheduled tasks"
+msgstr "Antrean dan tugas terjadwal"
+
+#: includes/class-wc-kledo-diagnostics.php:87
+msgid "Resend and record"
+msgstr "Kirim ulang dan rekam"
+
+#: includes/class-wc-kledo-diagnostics.php:88
+msgid "Check Kledo again"
+msgstr "Cek ulang ke Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:108
+#: includes/class-wc-kledo-diagnostics.php:154
+msgid "Order not found. Check the order number and try again."
+msgstr "Pesanan tidak ditemukan. Periksa nomor pesanan lalu coba lagi."
+
+#: includes/class-wc-kledo-diagnostics.php:148
+msgid "Unknown step."
+msgstr "Langkah tidak dikenal."
+
+#. translators: %s: error message
+#: includes/class-wc-kledo-diagnostics.php:166
+#, php-format
+msgid "This step stopped with an error: %s"
+msgstr "Langkah ini berhenti karena error: %s"
+
+#. translators: 1: report code, 2: conclusion
+#: includes/class-wc-kledo-diagnostics.php:230
+#, php-format
+msgid "Kledo: diagnosis %1$s was run. Likely cause: %2$s"
+msgstr "Kledo: diagnosa %1$s dijalankan. Kemungkinan penyebab: %2$s"
+
+#: includes/admin/screen/class-wc-kledo-help.php:298
+#: includes/class-wc-kledo-diagnostics.php:304
+msgid "What to do"
+msgstr "Yang bisa dilakukan"
+
+#: includes/class-wc-kledo-diagnostics.php:323
+msgid "Requests to Kledo"
+msgstr "Pengiriman ke Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:338
+msgid "Response"
+msgstr "Respons"
+
+#: includes/class-wc-kledo-diagnostics.php:418
+msgid "The API connection is switched off in the Configure tab."
+msgstr "\"Aktifkan Integrasi\" dimatikan di tab Konfigurasi."
+
+#: includes/class-wc-kledo-diagnostics.php:422
+msgid "The API key or the API endpoint URL is empty."
+msgstr "API key atau URL endpoint API masih kosong."
+
+#: includes/class-wc-kledo-diagnostics.php:431
+msgid "Kledo refused the API key (HTTP 401)."
+msgstr "Kledo menolak API key (HTTP 401)."
+
+#: includes/class-wc-kledo-diagnostics.php:435
+msgid "Kledo could not be reached to check the API key."
+msgstr "Kledo tidak bisa dihubungi untuk mengecek API key."
+
+#: includes/class-wc-kledo-diagnostics.php:441
+msgid "Connected; Kledo accepts the API key."
+msgstr "Terhubung; Kledo menerima API key."
+
+#: includes/class-wc-kledo-diagnostics.php:470
+msgid "Both \"Enable Create Order\" and \"Enable Create Invoice\" are off."
+msgstr ""
+"\"Aktifkan Pembuatan Pesanan\" dan \"Aktifkan Pembuatan Tagihan\" sama-sama "
+"mati."
+
+#: includes/class-wc-kledo-diagnostics.php:474
+msgid ""
+"Invoices are created as paid, but no payment account is chosen in the "
+"Invoice tab."
+msgstr ""
+"Tagihan dibuat sebagai lunas, tetapi akun pembayaran belum dipilih di tab "
+"Tagihan."
+
+#. translators: 1: on/off, 2: on/off
+#. translators: 1: present/absent, 2: present/absent
+#: includes/class-wc-kledo-diagnostics.php:481
+#: includes/class-wc-kledo-diagnostics.php:682
+#, php-format
+msgid "Sales order: %1$s · Invoice: %2$s"
+msgstr "Pesanan penjualan: %1$s · Tagihan: %2$s"
+
+#: includes/class-wc-kledo-diagnostics.php:482
+#: includes/class-wc-kledo-diagnostics.php:483
+msgid "on"
+msgstr "aktif"
+
+#: includes/class-wc-kledo-diagnostics.php:482
+#: includes/class-wc-kledo-diagnostics.php:483
+msgid "off"
+msgstr "mati"
+
+#. translators: 1: order status, 2: date
+#: includes/class-wc-kledo-diagnostics.php:539
+#, php-format
+msgid "Status %1$s, created %2$s."
+msgstr "Status %1$s, dibuat %2$s."
+
+#: includes/class-wc-kledo-diagnostics.php:545
+msgid "Only Processing and Completed orders are sent to Kledo."
+msgstr "Hanya pesanan Processing dan Completed yang dikirim ke Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:551
+msgid ""
+"The plugin never tried to send it — it most likely reached this status "
+"before the plugin was installed or while it was inactive."
+msgstr ""
+"Plugin belum pernah mencoba mengirimnya — kemungkinan besar pesanan ini "
+"sudah berstatus begini sebelum plugin dipasang, atau saat plugin sedang "
+"nonaktif."
+
+#: includes/class-wc-kledo-diagnostics.php:584
+msgid ""
+"No product would be sent: the order has no products, or every product was "
+"deleted from the store."
+msgstr ""
+"Tidak ada produk yang akan dikirim: pesanan tidak punya produk, atau semua "
+"produknya sudah dihapus dari toko."
+
+#. translators: %d: number of order lines
+#: includes/class-wc-kledo-diagnostics.php:588
+#, php-format
+msgid ""
+"%d order line(s) are skipped because their product was deleted from the "
+"store."
+msgstr "%d baris pesanan dilewati karena produknya sudah dihapus dari toko."
+
+#. translators: %s: product name
+#: includes/class-wc-kledo-diagnostics.php:595
+#, php-format
+msgid "Product \"%s\" has no SKU."
+msgstr "Produk \"%s\" tidak punya SKU."
+
+#. translators: %s: product name
+#: includes/class-wc-kledo-diagnostics.php:600
+#, php-format
+msgid "Product \"%s\" has no regular price."
+msgstr "Produk \"%s\" tidak punya harga normal."
+
+#. translators: %d: number of products
+#: includes/class-wc-kledo-diagnostics.php:615
+#, php-format
+msgid "%d product, data looks complete."
+msgid_plural "%d products, data looks complete."
+msgstr[0] "%d produk, data terlihat lengkap."
+msgstr[1] "%d produk, data terlihat lengkap."
+
+#: includes/class-wc-kledo-diagnostics.php:632
+msgid "Skipped: the plugin is not connected."
+msgstr "Dilewati: plugin belum terhubung."
+
+#. translators: %d: HTTP status code
+#: includes/class-wc-kledo-diagnostics.php:646
+#, php-format
+msgid "Kledo did not answer the status request (HTTP %d)."
+msgstr "Kledo tidak menjawab permintaan status (HTTP %d)."
+
+#: includes/class-wc-kledo-diagnostics.php:683
+#: includes/class-wc-kledo-diagnostics.php:684
+msgid "not in Kledo"
+msgstr "tidak ada di Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:761
+msgid "No failed sends on record."
+msgstr "Tidak ada catatan pengiriman yang gagal."
+
+#: includes/class-wc-kledo-diagnostics.php:774
+msgid "A send is held or failed; see the details."
+msgstr "Ada pengiriman yang ditahan atau gagal; lihat detailnya."
+
+#. translators: %d: number of overdue tasks
+#: includes/class-wc-kledo-diagnostics.php:850
+#, php-format
+msgid ""
+"%d background task(s) are more than 15 minutes late — scheduled tasks are "
+"not running on this site."
+msgstr ""
+"%d tugas latar belakang terlambat lebih dari 15 menit — tugas terjadwal "
+"tidak berjalan di situs ini."
+
+#: includes/class-wc-kledo-diagnostics.php:856
+msgid "Background tasks are running on time."
+msgstr "Tugas latar belakang berjalan tepat waktu."
+
+#: includes/class-wc-kledo-diagnostics.php:873
+msgid "Skipped: resending was not selected."
+msgstr "Dilewati: kirim ulang tidak dipilih."
+
+#: includes/class-wc-kledo-diagnostics.php:879
+msgid "Skipped: Kledo could not be read, so it is not safe to resend."
+msgstr ""
+"Dilewati: data di Kledo tidak bisa dibaca, jadi tidak aman untuk mengirim "
+"ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:883
+msgid "Skipped: everything this order needs is already in Kledo."
+msgstr "Dilewati: semua yang dibutuhkan pesanan ini sudah ada di Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:931
+msgid "Kledo did not accept the resend; see the recorded request below."
+msgstr ""
+"Kledo tidak menerima kiriman ulang; lihat rekaman pengirimannya di bawah."
+
+#: includes/class-wc-kledo-diagnostics.php:934
+msgid ""
+"Kledo accepted the resend. The next step checks whether it was created."
+msgstr ""
+"Kledo menerima kiriman ulang. Langkah berikutnya mengecek apakah sudah "
+"dibuat."
+
+#: includes/class-wc-kledo-diagnostics.php:951
+msgid "Skipped: nothing was resent."
+msgstr "Dilewati: tidak ada yang dikirim ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:958
+msgid "Kledo has now created everything that was resent."
+msgstr "Kledo sudah membuat semua yang dikirim ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:963
+msgid ""
+"Kledo accepted the resend but has not created it yet. If it still is not "
+"there in a few minutes, the problem is on Kledo's side — send this report to"
+" Kledo."
+msgstr ""
+"Kledo menerima kiriman ulang tetapi belum membuatnya. Kalau beberapa menit "
+"lagi masih belum ada, masalahnya ada di sisi Kledo — kirim laporan ini ke "
+"Kledo."
+
+#. translators: 1: why it went missing, 2: explanation of that cause
+#: includes/class-wc-kledo-diagnostics.php:993
+#, php-format
+msgid "It is in Kledo now. Why it was missing: %1$s — %2$s"
+msgstr "Sekarang sudah ada di Kledo. Kenapa sebelumnya tidak ada: %1$s — %2$s"
+
+#: includes/class-wc-kledo-diagnostics.php:1046
+msgid "The connection to Kledo is switched off"
+msgstr "Koneksi ke Kledo dimatikan"
+
+#: includes/class-wc-kledo-diagnostics.php:1048
+msgid ""
+"Switch it on in WooCommerce > Kledo > Configure, then resend the order."
+msgstr ""
+"Nyalakan \"Aktifkan Integrasi\" di WooCommerce > Kledo > Konfigurasi, lalu "
+"kirim ulang pesanannya."
+
+#: includes/class-wc-kledo-diagnostics.php:1051
+msgid "The plugin is not connected to Kledo"
+msgstr "Plugin belum terhubung ke Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:1052
+msgid "The API key or the API endpoint URL is empty, so nothing can be sent."
+msgstr ""
+"API key atau URL endpoint API masih kosong, jadi tidak ada yang bisa "
+"dikirim."
+
+#: includes/class-wc-kledo-diagnostics.php:1053
+msgid ""
+"Fill in both in WooCommerce > Kledo > Configure, then resend the order."
+msgstr ""
+"Isi keduanya di WooCommerce > Kledo > Konfigurasi, lalu kirim ulang "
+"pesanannya."
+
+#: includes/class-wc-kledo-diagnostics.php:1056
+msgid "Kledo refuses the API key"
+msgstr "Kledo menolak API key"
+
+#: includes/class-wc-kledo-diagnostics.php:1057
+msgid ""
+"The saved API key has expired, was revoked, or belongs to an account that no"
+" longer has access to the company."
+msgstr ""
+"API key yang tersimpan sudah kedaluwarsa, sudah dicabut, atau milik akun "
+"yang tidak lagi punya akses ke perusahaan."
+
+#: includes/class-wc-kledo-diagnostics.php:1058
+msgid ""
+"Create a new API key in Kledo, save it in WooCommerce > Kledo > Configure, "
+"then resend."
+msgstr ""
+"Buat API key baru di Kledo, simpan di WooCommerce > Kledo > Konfigurasi, "
+"lalu kirim ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:1061
+msgid "Another plugin changes the requests to Kledo"
+msgstr "Plugin lain mengubah pengiriman ke Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:1062
+msgid ""
+"Kledo only accepts requests that identify themselves as this plugin, and "
+"another plugin or the server rewrote that identification (the User-Agent), "
+"so Kledo refuses them."
+msgstr ""
+"Kledo hanya menerima pengiriman yang mengenalkan diri sebagai plugin ini, "
+"tetapi plugin lain atau server mengubah identitas itu (User-Agent), sehingga"
+" Kledo menolaknya."
+
+#: includes/class-wc-kledo-diagnostics.php:1063
+msgid ""
+"Send this report to Kledo; it shows the changed value. Usually a security or"
+" performance plugin that rewrites outgoing requests has to be configured to "
+"leave them alone."
+msgstr ""
+"Kirim laporan ini ke Kledo; laporan menunjukkan nilai yang diubah. Biasanya "
+"plugin keamanan atau performa yang mengubah pengiriman keluar perlu diatur "
+"supaya tidak menyentuhnya."
+
+#: includes/class-wc-kledo-diagnostics.php:1066
+msgid "The store cannot reach Kledo"
+msgstr "Toko tidak bisa menghubungi Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:1067
+msgid ""
+"The request did not get an answer — the server may block outgoing "
+"connections, or there was a network, DNS or SSL problem."
+msgstr ""
+"Pengiriman tidak mendapat jawaban — server mungkin memblokir koneksi keluar,"
+" atau ada masalah jaringan, DNS, atau SSL."
+
+#: includes/class-wc-kledo-diagnostics.php:1068
+msgid ""
+"Ask your hosting provider whether outgoing connections to the Kledo API are "
+"allowed, then resend."
+msgstr ""
+"Tanyakan ke penyedia hosting Anda apakah koneksi keluar ke API Kledo "
+"diizinkan, lalu kirim ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:1071
+msgid "Creating transactions is switched off"
+msgstr "Pembuatan transaksi dimatikan"
+
+#: includes/class-wc-kledo-diagnostics.php:1072
+msgid ""
+"Both \"Enable Create Order\" and \"Enable Create Invoice\" are off, so "
+"nothing is sent."
+msgstr ""
+"\"Aktifkan Pembuatan Pesanan\" dan \"Aktifkan Pembuatan Tagihan\" sama-sama "
+"mati, jadi tidak ada yang dikirim."
+
+#: includes/class-wc-kledo-diagnostics.php:1073
+msgid "Switch on what you need in the Order and Invoice tabs."
+msgstr "Nyalakan yang Anda butuhkan di tab Pesanan dan Tagihan."
+
+#: includes/class-wc-kledo-diagnostics.php:1076
+msgid "The order status does not send anything"
+msgstr "Status pesanan ini tidak mengirim apa pun"
+
+#: includes/class-wc-kledo-diagnostics.php:1077
+msgid ""
+"Only Processing orders get a sales order and only Completed orders get an "
+"invoice. This order has another status."
+msgstr ""
+"Pesanan penjualan hanya dibuat untuk pesanan Processing, dan tagihan hanya "
+"untuk pesanan Completed. Pesanan ini statusnya lain."
+
+#: includes/class-wc-kledo-diagnostics.php:1078
+msgid "Change the order to Processing or Completed when it is ready."
+msgstr "Ubah status pesanan ke Processing atau Completed kalau sudah siap."
+
+#: includes/class-wc-kledo-diagnostics.php:1081
+msgid "The plugin never saw this order"
+msgstr "Plugin belum pernah melihat pesanan ini"
+
+#: includes/class-wc-kledo-diagnostics.php:1082
+msgid ""
+"The order reached Processing or Completed before the plugin was installed, "
+"or while it was inactive, so it was never sent."
+msgstr ""
+"Pesanan ini sudah berstatus Processing atau Completed sebelum plugin "
+"dipasang, atau saat plugin nonaktif, jadi belum pernah dikirim."
+
+#: includes/class-wc-kledo-diagnostics.php:1083
+msgid ""
+"Send it with \"Kledo: Send sales order / invoice\" in the order actions, or "
+"send many at once from the Sync tab."
+msgstr ""
+"Kirim lewat aksi pesanan \"Kledo: Kirim pesanan penjualan (manual pertama)\""
+" atau tagihan, atau kirim banyak sekaligus dari tab Sinkronisasi."
+
+#: includes/class-wc-kledo-diagnostics.php:1086
+msgid "Products are missing from the order"
+msgstr "Ada produk yang hilang dari pesanan"
+
+#: includes/class-wc-kledo-diagnostics.php:1087
+msgid ""
+"Some or all products of this order were deleted from the store, so they "
+"cannot be sent."
+msgstr ""
+"Sebagian atau semua produk pesanan ini sudah dihapus dari toko, jadi tidak "
+"bisa dikirim."
+
+#: includes/class-wc-kledo-diagnostics.php:1088
+msgid "Restore the products or create the transaction in Kledo manually."
+msgstr "Kembalikan produknya, atau buat transaksinya secara manual di Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:1091
+msgid "Kledo rejected the data"
+msgstr "Kledo menolak datanya"
+
+#: includes/class-wc-kledo-diagnostics.php:1092
+msgid ""
+"Kledo refused the order because something in it is not valid in Kledo — the "
+"error message in the report says what."
+msgstr ""
+"Kledo menolak pesanan karena ada data yang tidak valid di Kledo — pesan "
+"error di laporan menyebutkan apa."
+
+#: includes/class-wc-kledo-diagnostics.php:1093
+msgid ""
+"Correct what the error names (product, customer, account, warehouse), then "
+"resend."
+msgstr ""
+"Perbaiki yang disebut di pesan error (produk, pelanggan, akun, gudang), lalu"
+" kirim ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:1096
+msgid "Too many requests at once"
+msgstr "Terlalu banyak pengiriman sekaligus"
+
+#: includes/class-wc-kledo-diagnostics.php:1097
+msgid "Kledo asked the store to slow down."
+msgstr "Kledo meminta toko memperlambat pengiriman."
+
+#: includes/class-wc-kledo-diagnostics.php:1098
+msgid "Wait a few minutes; the plugin retries automatically."
+msgstr "Tunggu beberapa menit; plugin akan mencoba lagi secara otomatis."
+
+#: includes/class-wc-kledo-diagnostics.php:1101
+msgid "No payment account is chosen"
+msgstr "Akun pembayaran belum dipilih"
+
+#: includes/class-wc-kledo-diagnostics.php:1102
+msgid ""
+"Invoices are created as paid, but there is no account to record the payment "
+"on."
+msgstr ""
+"Tagihan dibuat sebagai lunas, tetapi tidak ada akun untuk mencatat "
+"pembayarannya."
+
+#: includes/class-wc-kledo-diagnostics.php:1103
+msgid "Choose a Payment Account in the Invoice tab, then resend."
+msgstr "Pilih Akun Pembayaran di tab Tagihan, lalu kirim ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:1106
+msgid "Scheduled tasks are not running on this site"
+msgstr "Tugas terjadwal tidak berjalan di situs ini"
+
+#: includes/class-wc-kledo-diagnostics.php:1107
+msgid ""
+"Retries and checks are done by WordPress scheduled tasks (WP-Cron), and they"
+" are not running, so failed sends are never retried."
+msgstr ""
+"Percobaan ulang dan pengecekan dijalankan oleh tugas terjadwal WordPress "
+"(WP-Cron), dan tugas itu tidak berjalan, sehingga pengiriman yang gagal "
+"tidak pernah dicoba lagi."
+
+#: includes/class-wc-kledo-diagnostics.php:1108
+msgid ""
+"Ask your hosting provider to enable WP-Cron or a real cron job for "
+"WordPress. Meanwhile, resend from the Kledo Status tab."
+msgstr ""
+"Minta penyedia hosting Anda menyalakan WP-Cron atau cron job untuk "
+"WordPress. Sementara itu, kirim ulang dari tab Status Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:1111
+msgid "Kledo accepted the order but could not create it"
+msgstr "Kledo menerima pesanan tetapi gagal membuatnya"
+
+#: includes/class-wc-kledo-diagnostics.php:1112
+msgid ""
+"The store sent it correctly, but creating it failed inside Kledo. The reason"
+" is only recorded on Kledo's side."
+msgstr ""
+"Toko sudah mengirimnya dengan benar, tetapi pembuatannya gagal di dalam "
+"Kledo. Alasannya hanya tercatat di sisi Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:1113
+msgid ""
+"Send this report to Kledo; it contains what the Kledo team needs to find the"
+" reason."
+msgstr ""
+"Kirim laporan ini ke Kledo; isinya sudah mencakup yang dibutuhkan tim Kledo "
+"untuk mencari penyebabnya."
+
+#: includes/class-wc-kledo-diagnostics.php:1116
+msgid "Sending failed"
+msgstr "Pengiriman gagal"
+
+#: includes/class-wc-kledo-diagnostics.php:1117
+msgid "The request to Kledo failed; the error message in the report says how."
+msgstr "Pengiriman ke Kledo gagal; pesan error di laporan menjelaskan kenapa."
+
+#: includes/class-wc-kledo-diagnostics.php:1118
+msgid ""
+"Resend from the Kledo Status tab. If it keeps failing, send this report to "
+"Kledo."
+msgstr ""
+"Kirim ulang dari tab Status Kledo. Kalau terus gagal, kirim laporan ini ke "
+"Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:1121
+msgid "The invoice is waiting for its sales order"
+msgstr "Tagihan menunggu pesanan penjualannya"
+
+#: includes/class-wc-kledo-diagnostics.php:1122
+msgid ""
+"The invoice is held until the sales order exists in Kledo, so the two can be"
+" linked. It is sent automatically."
+msgstr ""
+"Tagihan ditahan sampai pesanan penjualannya ada di Kledo, supaya keduanya "
+"bisa ditautkan. Tagihan dikirim otomatis."
+
+#: includes/class-wc-kledo-diagnostics.php:1123
+msgid ""
+"Nothing to do unless it is still waiting after an hour; then check the sales"
+" order."
+msgstr ""
+"Tidak perlu melakukan apa pun, kecuali masih menunggu setelah satu jam; "
+"kalau begitu, periksa pesanan penjualannya."
+
+#: includes/class-wc-kledo-diagnostics.php:1126
+msgid "Kledo is still creating it"
+msgstr "Kledo masih membuatnya"
+
+#: includes/class-wc-kledo-diagnostics.php:1127
+msgid "Kledo accepted the order and has not finished creating it yet."
+msgstr "Kledo sudah menerima pesanan dan belum selesai membuatnya."
+
+#: includes/class-wc-kledo-diagnostics.php:1128
+msgid ""
+"Check again in a few minutes. If it is still not there after an hour, send "
+"this report to Kledo."
+msgstr ""
+"Cek lagi beberapa menit lagi. Kalau setelah satu jam masih belum ada, kirim "
+"laporan ini ke Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:1131
+msgid "Fixed by resending"
+msgstr "Sudah diperbaiki dengan mengirim ulang"
+
+#: includes/class-wc-kledo-diagnostics.php:1132
+msgid "The order was missing in Kledo and is there now after the resend."
+msgstr ""
+"Pesanan sebelumnya tidak ada di Kledo, dan sekarang sudah ada setelah "
+"dikirim ulang."
+
+#: includes/class-wc-kledo-diagnostics.php:1133
+msgid ""
+"Nothing more to do. If this keeps happening, send this report to Kledo."
+msgstr ""
+"Tidak perlu melakukan apa-apa lagi. Kalau ini terus terjadi, kirim laporan "
+"ini ke Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:1136
+msgid "Everything is already in Kledo"
+msgstr "Semua sudah ada di Kledo"
+
+#: includes/class-wc-kledo-diagnostics.php:1137
+msgid "Kledo holds everything this order should have."
+msgstr "Semua yang seharusnya ada untuk pesanan ini sudah ada di Kledo."
+
+#: includes/class-wc-kledo-diagnostics.php:1138
+msgid ""
+"If you do not see it in Kledo, search for the reference numbers shown in "
+"step 6."
+msgstr ""
+"Kalau Anda tidak melihatnya di Kledo, cari nomor referensi yang ditampilkan "
+"di langkah 6."
+
+#: includes/class-wc-kledo-diagnostics.php:1141
+msgid "No cause could be found from the store"
+msgstr "Penyebab tidak ditemukan dari sisi toko"
+
+#: includes/class-wc-kledo-diagnostics.php:1142
+msgid "Every check on the store side passed."
+msgstr "Semua pemeriksaan di sisi toko lolos."
+
+#: includes/class-wc-kledo-diagnostics.php:1143
+msgid "Send this report to Kledo for investigation."
+msgstr "Kirim laporan ini ke Kledo untuk diselidiki."
+
+#: includes/class-wc-kledo-diagnostics.php:1169
+msgid ""
+"Log files are not available on this store (WooCommerce may be logging to the"
+" database)."
+msgstr ""
+"File log tidak tersedia di toko ini (WooCommerce mungkin menyimpan log di "
+"database)."
+
+#: includes/admin/screen/class-wc-kledo-configure.php:413
+msgid "Copy the new key."
+msgstr "Salin API key yang baru."
+
+#: includes/admin/screen/class-wc-kledo-configure.php:414
+msgid ""
+"Paste it into the API Key field below and click \"Save changes\". Orders "
+"keep syncing automatically from then on."
+msgstr ""
+"Tempel di kolom API Key di bawah, lalu klik \"Simpan perubahan\". Setelah "
+"itu pesanan tetap tersinkron otomatis."
+
+#: includes/admin/screen/class-wc-kledo-configure.php:418
+#: includes/admin/screen/class-wc-kledo-help.php:250
+#: includes/admin/screen/class-wc-kledo-help.php:506
+#: includes/class-wc-kledo-connection-status.php:453
+msgid "Create a new API key in Kledo"
+msgstr "Buat API key baru di Kledo"
+
+#: includes/admin/screen/class-wc-kledo-configure.php:419
+#: includes/admin/screen/class-wc-kledo-help.php:187
+msgid "(opens in a new tab)"
+msgstr "(terbuka di tab baru)"
+
+#: includes/admin/screen/class-wc-kledo-configure.php:421
+msgid "Go to the API Key field"
+msgstr "Ke kolom API Key"
+
+#: includes/class-wc-kledo-connection-status.php:477
+msgid ""
+"The API key's account has no access to this company — nothing is syncing"
+msgstr ""
+"Akun pemilik API key tidak punya akses ke perusahaan ini — tidak ada yang "
+"tersinkron"
+
+#: includes/class-wc-kledo-connection-status.php:478
+msgid ""
+"Kledo accepts the key, but the account it belongs to no longer has access to"
+" the company. Check the account in Kledo, or create a key while logged in to"
+" the right company."
+msgstr ""
+"Kledo menerima key-nya, tetapi akun pemiliknya sudah tidak punya akses ke "
+"perusahaan ini. Periksa akunnya di Kledo, atau buat key baru saat login di "
+"perusahaan yang benar."
+
+#: includes/class-wc-kledo-connection-status.php:484
+msgid "The API key is no longer valid — nothing is syncing"
+msgstr "API key sudah tidak berlaku — tidak ada yang tersinkron"
+
+#: includes/class-wc-kledo-connection-status.php:485
+msgid ""
+"Kledo refused the saved key: it has expired or was replaced. Orders and "
+"invoices are not reaching Kledo until a new key is saved."
+msgstr ""
+"Kledo menolak key yang tersimpan: sudah kedaluwarsa atau sudah diganti. "
+"Pesanan dan tagihan tidak akan masuk ke Kledo sampai key baru disimpan."
+
+#. translators: %d: number of days
+#: includes/class-wc-kledo-connection-status.php:501
+#, php-format
+msgid "The API key expires in %d day"
+msgid_plural "The API key expires in %d days"
+msgstr[0] "API key kedaluwarsa dalam %d hari"
+msgstr[1] "API key kedaluwarsa dalam %d hari"
+
+#: includes/class-wc-kledo-connection-status.php:506
+msgid ""
+"Kledo normally renews it by itself while orders keep syncing. If orders are "
+"not reaching Kledo, create a new key now so syncing does not stop."
+msgstr ""
+"Biasanya Kledo memperpanjang key ini sendiri selama pesanan terus "
+"tersinkron. Kalau pesanan tidak masuk ke Kledo, buat key baru sekarang "
+"supaya sinkronisasi tidak berhenti."
+
+#: includes/class-wc-kledo-connection-status.php:507
+msgid ""
+"This key does not renew itself. Create a new key before it expires, so "
+"orders and invoices keep reaching Kledo automatically."
+msgstr ""
+"Key ini tidak diperpanjang otomatis. Buat key baru sebelum kedaluwarsa, "
+"supaya pesanan dan tagihan tetap masuk ke Kledo otomatis."
+
+#: includes/admin/class-wc-kledo-admin.php:481
+msgid "Guide for this tab"
+msgstr "Panduan untuk tab ini"
+
+#: includes/admin/class-wc-kledo-admin.php:601
+msgid "Kledo: Guide & FAQ"
+msgstr "Kledo: Panduan & FAQ"
+
+#: includes/admin/screen/class-wc-kledo-help.php:36
+#: includes/admin/screen/class-wc-kledo-help.php:37
+msgid "Guide & FAQ"
+msgstr "Panduan & FAQ"
+
+#: includes/admin/screen/class-wc-kledo-help.php:77
+msgid ""
+"Everything about using this plugin, in the order you need it: connect to "
+"Kledo, choose what is created, see what reached Kledo, send what did not, "
+"and find out why an order is missing. Click a topic to open it, or search "
+"below."
+msgstr ""
+"Semua tentang cara memakai plugin ini, berurutan sesuai kebutuhan: "
+"menghubungkan ke Kledo, memilih apa yang dibuat, melihat apa yang sudah "
+"masuk ke Kledo, mengirim yang belum, dan mencari tahu kenapa sebuah pesanan "
+"tidak masuk. Klik topik untuk membukanya, atau cari di bawah."
+
+#: includes/admin/screen/class-wc-kledo-help.php:81
+msgid "Search the guide"
+msgstr "Cari di panduan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:82
+msgid "Search, e.g. API key, invoice, old orders…"
+msgstr "Cari, misalnya: API key, tagihan, pesanan lama…"
+
+#: includes/admin/screen/class-wc-kledo-help.php:83
+msgid "Nothing found. Try another word, or ask Kledo in the Support tab."
+msgstr ""
+"Tidak ditemukan. Coba kata lain, atau tanyakan ke Kledo lewat tab Bantuan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:86
+msgid "Guide contents"
+msgstr "Isi panduan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:90
+#: includes/admin/screen/class-wc-kledo-help.php:145
+msgid "Frequently asked questions"
+msgstr "Pertanyaan yang sering diajukan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:93
+msgid "Guide"
+msgstr "Panduan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:158
+msgid ""
+"Still stuck? Run a diagnosis in the Diagnostics tab and send the report to "
+"Kledo from the Support tab."
+msgstr ""
+"Masih bingung? Jalankan diagnosa di tab Diagnosa, lalu kirim laporannya ke "
+"Kledo lewat tab Bantuan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:218
+msgid "How the plugin works"
+msgstr "Cara kerja plugin"
+
+#: includes/admin/screen/class-wc-kledo-help.php:219
+msgid ""
+"The plugin creates transactions in Kledo from your WooCommerce orders, by "
+"itself, when an order reaches the right status:"
+msgstr ""
+"Plugin membuat transaksi di Kledo dari pesanan WooCommerce Anda, secara "
+"otomatis, saat pesanan mencapai status tertentu:"
+
+#: includes/admin/screen/class-wc-kledo-help.php:221
+msgid "Order status in WooCommerce"
+msgstr "Status pesanan di WooCommerce"
+
+#: includes/admin/screen/class-wc-kledo-help.php:221
+msgid "Created in Kledo"
+msgstr "Yang dibuat di Kledo"
+
+#: includes/admin/screen/class-wc-kledo-help.php:223
+msgid "Processing"
+msgstr "Processing"
+
+#: includes/admin/screen/class-wc-kledo-help.php:223
+msgid "A sales order (if \"Enable Create Order\" is on)"
+msgstr "Pesanan penjualan (kalau \"Aktifkan Pembuatan Pesanan\" menyala)"
+
+#: includes/admin/screen/class-wc-kledo-help.php:224
+msgid "Completed"
+msgstr "Completed"
+
+#: includes/admin/screen/class-wc-kledo-help.php:224
+msgid "An invoice (if \"Enable Create Invoice\" is on), linked to the sales order"
+msgstr ""
+"Tagihan (kalau \"Aktifkan Pembuatan Tagihan\" menyala), ditautkan ke pesanan"
+" penjualannya"
+
+#: includes/admin/screen/class-wc-kledo-help.php:225
+msgid "Any other status"
+msgstr "Status lainnya"
+
+#: includes/admin/screen/class-wc-kledo-help.php:225
+msgid "Nothing"
+msgstr "Tidak ada"
+
+#: includes/admin/screen/class-wc-kledo-help.php:229
+msgid ""
+"Kledo first queues what it receives and creates it a moment later, so the "
+"plugin checks back with Kledo until it finds the transaction. That is why "
+"you see \"Waiting for Kledo\" before \"In Kledo\"."
+msgstr ""
+"Kledo memasukkan dulu kiriman ke antrean dan baru membuatnya beberapa saat "
+"kemudian, jadi plugin mengecek ulang ke Kledo sampai transaksinya ditemukan."
+" Karena itu Anda akan melihat \"Menunggu Kledo\" sebelum \"Ada di Kledo\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:230
+msgid ""
+"If something fails, the plugin retries by itself. Anything that still did "
+"not arrive can be sent again from the order, the order list, the Kledo "
+"Status tab, or the Sync tab."
+msgstr ""
+"Kalau ada yang gagal, plugin mencoba lagi sendiri. Yang tetap belum masuk "
+"bisa dikirim ulang dari halaman pesanan, daftar pesanan, tab Status Kledo, "
+"atau tab Sinkronisasi."
+
+#: includes/admin/screen/class-wc-kledo-help.php:235
+msgid "Create an API key in Kledo and connect"
+msgstr "Buat API key di Kledo dan hubungkan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:236
+msgid ""
+"The API key is how this store logs in to your Kledo company. Without it "
+"nothing is sent."
+msgstr ""
+"API key adalah cara toko ini masuk ke perusahaan Anda di Kledo. Tanpa API "
+"key, tidak ada yang dikirim."
+
+#: includes/admin/screen/class-wc-kledo-help.php:238
+msgid ""
+"Log in to Kledo with an account that has access to the company you want to "
+"send orders to."
+msgstr ""
+"Login ke Kledo dengan akun yang punya akses ke perusahaan tujuan pengiriman "
+"pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:240
+msgid "Create a new API key for WooCommerce and copy it."
+msgstr "Buat API key baru untuk WooCommerce, lalu salin."
+
+#: includes/admin/screen/class-wc-kledo-help.php:241
+msgid "In this plugin, open the Configure tab and tick \"Enable Integration\"."
+msgstr "Di plugin ini, buka tab Konfigurasi dan centang \"Aktifkan Integrasi\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:242
+msgid ""
+"Paste the key into \"API Key\" and fill in \"API Endpoint URL\" with the API"
+" address Kledo gives for your company. Ask Kledo support if you do not know "
+"it."
+msgstr ""
+"Tempel key di kolom \"API Key\", lalu isi \"API Endpoint URL\" dengan alamat"
+" API perusahaan Anda dari Kledo. Tanyakan ke tim Kledo kalau Anda tidak tahu"
+" alamatnya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:243
+msgid ""
+"Click \"Save changes\". \"API Key Status\" then shows the key's name, when "
+"it was last used, and when it expires."
+msgstr ""
+"Klik \"Simpan perubahan\". \"Status API Key\" lalu menampilkan nama key, "
+"kapan terakhir dipakai, dan kapan kedaluwarsa."
+
+#: includes/admin/screen/class-wc-kledo-help.php:246
+msgid ""
+"After saving, the key is shown masked: only the company name and the last "
+"four characters. To replace it, paste a new key over it."
+msgstr ""
+"Setelah disimpan, key ditampilkan tersamar: hanya nama perusahaan dan empat "
+"karakter terakhir. Untuk menggantinya, tempel key baru di atasnya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:247
+msgid ""
+"From 30 days before the key expires, a message appears in the admin and a "
+"banner on the Configure tab with a button to create a new key. Replace it "
+"before it expires so syncing never stops."
+msgstr ""
+"Mulai 30 hari sebelum key kedaluwarsa, muncul pemberitahuan di admin dan "
+"banner di tab Konfigurasi dengan tombol untuk membuat key baru. Ganti "
+"sebelum kedaluwarsa supaya sinkronisasi tidak pernah berhenti."
+
+#: includes/admin/screen/class-wc-kledo-help.php:251
+#: includes/admin/screen/class-wc-kledo-help.php:507
+msgid "Open the Configure tab"
+msgstr "Buka tab Konfigurasi"
+
+#: includes/admin/screen/class-wc-kledo-help.php:256
+msgid "Set up sales orders"
+msgstr "Atur pesanan penjualan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:257
+msgid "A sales order is created in Kledo when an order becomes Processing."
+msgstr "Pesanan penjualan dibuat di Kledo saat pesanan berstatus Processing."
+
+#: includes/admin/screen/class-wc-kledo-help.php:259
+msgid "Open the Order tab."
+msgstr "Buka tab Pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:260
+msgid ""
+"Tick \"Enable Create Order\" if you want sales orders in Kledo. Leave it off"
+" if you only want invoices."
+msgstr ""
+"Centang \"Aktifkan Pembuatan Pesanan\" kalau Anda ingin pesanan penjualan "
+"dibuat di Kledo. Biarkan mati kalau Anda hanya butuh tagihan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:261
+msgid ""
+"Set the \"Order Prefix\" (the start of the Kledo number, for example "
+"WC/SO/), the \"Warehouse\" the stock comes from, and the \"Tags\" to put on "
+"each sales order."
+msgstr ""
+"Atur \"Awalan Nomor Pesanan\" (awal nomor di Kledo, misalnya WC/SO/), "
+"\"Gudang\" asal stok, dan \"Tag\" untuk setiap pesanan penjualan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:262
+#: includes/admin/screen/class-wc-kledo-help.php:383
+msgid "Click \"Save changes\"."
+msgstr "Klik \"Simpan perubahan\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:265
+msgid "Open the Order tab"
+msgstr "Buka tab Pesanan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:270
+msgid "Set up invoices"
+msgstr "Atur tagihan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:271
+msgid "An invoice is created in Kledo when an order becomes Completed."
+msgstr "Tagihan dibuat di Kledo saat pesanan berstatus Completed."
+
+#: includes/admin/screen/class-wc-kledo-help.php:273
+msgid "Open the Invoice tab and tick \"Enable Create Invoice\"."
+msgstr "Buka tab Tagihan dan centang \"Aktifkan Pembuatan Tagihan\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:274
+msgid ""
+"Set the \"Invoice Prefix\", and choose whether invoices are created as Paid "
+"or Unpaid. For Paid, also choose the \"Payment Account\" the payment is "
+"recorded on."
+msgstr ""
+"Atur \"Awalan Nomor Tagihan\", lalu pilih apakah tagihan dibuat Lunas atau "
+"Belum Dibayar. Kalau Lunas, pilih juga \"Akun Pembayaran\" untuk mencatat "
+"pembayarannya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:275
+msgid "Choose the \"Warehouse\" and the \"Tags\"."
+msgstr "Pilih \"Gudang\" dan \"Tag\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:276
+msgid ""
+"Check the sales order link settings below (all on by default), then click "
+"\"Save changes\"."
+msgstr ""
+"Periksa pengaturan tautan pesanan penjualan di bawahnya (semuanya menyala "
+"secara default), lalu klik \"Simpan perubahan\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:279
+msgid "Setting"
+msgstr "Pengaturan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:279
+msgid "What it does"
+msgstr "Fungsinya"
+
+#: includes/admin/screen/class-wc-kledo-help.php:281
+msgid ""
+"The invoice is attached to its sales order, so the sales order counts those "
+"items as invoiced."
+msgstr ""
+"Tagihan ditautkan ke pesanan penjualannya, sehingga pesanan penjualan "
+"menghitung barang-barang itu sebagai sudah ditagihkan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:282
+msgid "Kledo closes the sales order as soon as everything on it is invoiced."
+msgstr "Kledo menutup pesanan penjualan begitu semua isinya sudah ditagihkan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:283
+msgid ""
+"An order changed straight to Completed still gets its sales order first, "
+"then its invoice. Turn off to send only the invoice for such orders."
+msgstr ""
+"Pesanan yang langsung diubah ke Completed tetap dibuatkan pesanan penjualan "
+"dulu, lalu tagihannya. Matikan kalau pesanan seperti itu cukup dikirim "
+"tagihannya saja."
+
+#: includes/admin/screen/class-wc-kledo-help.php:287
+msgid ""
+"The invoice due date is the day the order was completed, or one month after "
+"the order date if it has no completion date."
+msgstr ""
+"Tanggal jatuh tempo tagihan adalah tanggal pesanan diselesaikan, atau satu "
+"bulan setelah tanggal pesanan kalau tidak ada tanggal selesai."
+
+#: includes/admin/screen/class-wc-kledo-help.php:290
+#: includes/admin/screen/class-wc-kledo-help.php:479
+msgid "Open the Invoice tab"
+msgstr "Buka tab Tagihan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:295
+msgid "Check what reached Kledo"
+msgstr "Cek apa yang sudah masuk ke Kledo"
+
+#: includes/admin/screen/class-wc-kledo-help.php:296
+msgid ""
+"The Kledo column in the WooCommerce order list shows two lines per order — "
+"the sales order and the invoice — each with one of these statuses:"
+msgstr ""
+"Kolom Kledo di daftar pesanan WooCommerce menampilkan dua baris per pesanan "
+"— pesanan penjualan dan tagihan — masing-masing dengan salah satu status "
+"ini:"
+
+#: includes/admin/screen/class-wc-kledo-help.php:298
+msgid "Status"
+msgstr "Status"
+
+#: includes/admin/screen/class-wc-kledo-help.php:298
+msgid "Meaning"
+msgstr "Arti"
+
+#: includes/admin/screen/class-wc-kledo-help.php:302
+msgid "Hover over a status to see the Kledo reference number."
+msgstr "Arahkan kursor ke status untuk melihat nomor transaksinya di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:303
+msgid ""
+"The same statuses are used in the Kledo Status tab, the Sync tab and the "
+"Kledo box on the order page."
+msgstr ""
+"Status yang sama dipakai di tab Status Kledo, tab Sinkronisasi, dan kotak "
+"Kledo di halaman pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:306
+#: includes/admin/screen/class-wc-kledo-help.php:336
+msgid "Open the order list"
+msgstr "Buka daftar pesanan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:311
+msgid "Send or check one order"
+msgstr "Kirim atau cek satu pesanan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:312
+msgid ""
+"Open the order in WooCommerce. The Kledo box on the right shows the status "
+"of its sales order and invoice in Kledo."
+msgstr ""
+"Buka pesanannya di WooCommerce. Kotak Kledo di sebelah kanan menampilkan "
+"status pesanan penjualan dan tagihannya di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:314
+msgid ""
+"To send it: in \"Order actions\", choose \"Kledo: Send sales order (first "
+"manual)\" or \"Kledo: Send invoice (first manual)\", then click the arrow "
+"button. The Kledo box also has send buttons."
+msgstr ""
+"Untuk mengirim: di \"Order actions\", pilih \"Kledo: Kirim pesanan penjualan"
+" (manual pertama)\" atau \"Kirim tagihan ke Kledo (manual pertama)\", lalu "
+"klik tombol panah. Kotak Kledo juga punya tombol kirim."
+
+#: includes/admin/screen/class-wc-kledo-help.php:315
+msgid ""
+"To check it: choose \"Kledo: Check Kledo status now\" in \"Order actions\". "
+"The result appears at the top of the page and in the order notes."
+msgstr ""
+"Untuk mengecek: pilih \"Kledo: Periksa status Kledo sekarang\" di \"Order "
+"actions\". Hasilnya muncul di atas halaman dan di catatan pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:316
+msgid ""
+"If it is still missing: click \"Not in Kledo? Diagnose this order\" in the "
+"Kledo box."
+msgstr ""
+"Kalau masih belum ada: klik \"Tidak ada di Kledo? Diagnosa pesanan ini\" di "
+"kotak Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:319
+msgid ""
+"\"Re-send\" appears for something already sent and may create a duplicate in"
+" Kledo — use it only if you are sure it is not in Kledo."
+msgstr ""
+"\"Kirim ulang\" muncul untuk yang sudah pernah dikirim dan bisa membuat "
+"duplikat di Kledo — pakai hanya kalau Anda yakin transaksinya tidak ada di "
+"Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:324
+msgid "Find and send many orders from the order list"
+msgstr "Cari dan kirim banyak pesanan dari daftar pesanan"
+
+#: includes/admin/screen/class-wc-kledo-help.php:326
+msgid "Open WooCommerce › Orders."
+msgstr "Buka WooCommerce › Pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:327
+msgid ""
+"Use the filters: \"Kledo sales order\" and \"Kledo invoice\" (Not sent, "
+"Waiting for Kledo, In Kledo, Failed) and the order date range \"From … to "
+"…\". You can combine them with the order status."
+msgstr ""
+"Pakai filternya: \"Pesanan penjualan Kledo\" dan \"Tagihan Kledo\" (Belum "
+"dikirim, Menunggu Kledo, Ada di Kledo, Gagal) serta rentang tanggal pesanan "
+"\"Dari … sampai …\". Bisa digabung dengan status pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:328
+msgid ""
+"Click \"Filter\", tick the orders (or all of them), choose \"Kledo: Send "
+"sales order\", \"Kledo: Send invoice\" or \"Kledo: Check status in Kledo\" "
+"in \"Bulk actions\", and click \"Apply\"."
+msgstr ""
+"Klik \"Filter\", centang pesanannya (atau semuanya), pilih \"Kledo: Kirim "
+"pesanan penjualan\", \"Kledo: Kirim tagihan\", atau \"Kledo: Cek status di "
+"Kledo\" di \"Aksi massal\", lalu klik \"Terapkan\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:331
+msgid ""
+"Example: status Completed, Kledo invoice \"Not sent\", dates 15 to 17 "
+"October → every completed order of those days whose invoice is not in Kledo."
+msgstr ""
+"Contoh: status Completed, Tagihan Kledo \"Belum dikirim\", tanggal 15 sampai"
+" 17 Oktober → semua pesanan selesai di tanggal itu yang tagihannya belum ada"
+" di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:332
+msgid ""
+"Up to 20 orders are sent per click, and anything already in Kledo is "
+"skipped. For more, use the \"Send all of them gradually with Sync\" button "
+"that appears next to the filters."
+msgstr ""
+"Maksimal 20 pesanan per klik, dan yang sudah ada di Kledo dilewati. Untuk "
+"lebih banyak, pakai tombol \"Kirim semuanya bertahap lewat Sinkronisasi\" "
+"yang muncul di samping filter."
+
+#: includes/admin/screen/class-wc-kledo-help.php:333
+msgid ""
+"The date range replaces the \"All dates\" month filter when you fill it in."
+msgstr "Rentang tanggal menggantikan filter bulan \"All dates\" kalau diisi."
+
+#: includes/admin/screen/class-wc-kledo-help.php:341
+msgid "The Kledo Status tab"
+msgstr "Tab Status Kledo"
+
+#: includes/admin/screen/class-wc-kledo-help.php:342
+msgid ""
+"Every sales order and invoice the plugin sent, with its status in Kledo."
+msgstr ""
+"Semua pesanan penjualan dan tagihan yang pernah dikirim plugin, beserta "
+"statusnya di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:344
+msgid ""
+"The cards at the top count what is in Kledo, waiting, needs attention, and "
+"was not sent. Click a card to see those orders."
+msgstr ""
+"Kartu di bagian atas menghitung yang sudah ada di Kledo, sedang menunggu, "
+"perlu tindakan, dan belum dikirim. Klik kartu untuk melihat pesanannya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:345
+msgid ""
+"Use the tabs (Waiting for Kledo, In Kledo, Send failed, Rejected by Kledo, "
+"Failed in Kledo) and the filters for type, order dates and order number."
+msgstr ""
+"Pakai tab statusnya (Menunggu Kledo, Ada di Kledo, Gagal kirim, Ditolak "
+"Kledo, Gagal di Kledo) dan filter jenis, tanggal pesanan, serta nomor "
+"pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:346
+msgid ""
+"Under each order number: \"Check status\" and \"Resend\" work without "
+"reloading the page; \"Diagnose\" opens the Diagnostics tab for that order."
+msgstr ""
+"Di bawah setiap nomor pesanan: \"Cek status\" dan \"Kirim ulang\" berjalan "
+"tanpa memuat ulang halaman; \"Diagnosa\" membuka tab Diagnosa untuk pesanan "
+"itu."
+
+#: includes/admin/screen/class-wc-kledo-help.php:347
+msgid ""
+"To act on many rows: tick them, choose \"Resend selected (failed only)\" or "
+"\"Check status in Kledo\", and click \"Apply\"."
+msgstr ""
+"Untuk banyak baris sekaligus: centang barisnya, pilih \"Kirim ulang yang "
+"dipilih (hanya yang gagal)\" atau \"Cek status di Kledo\", lalu klik "
+"\"Terapkan\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:350
+msgid ""
+"The \"Notes\" column says what went wrong and what to do. Open \"What do the"
+" statuses mean?\" for an explanation of every status."
+msgstr ""
+"Kolom \"Keterangan\" menjelaskan apa yang salah dan apa yang perlu "
+"dilakukan. Buka \"Apa arti setiap status?\" untuk penjelasan semua status."
+
+#: includes/admin/screen/class-wc-kledo-help.php:351
+msgid ""
+"Screen Options (top right) shows or hides the Transaction, Attempts and "
+"Notes columns."
+msgstr ""
+"Screen Options (kanan atas) bisa menampilkan atau menyembunyikan kolom "
+"Transaksi, Percobaan, dan Keterangan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:354
+msgid "Open the Kledo Status tab"
+msgstr "Buka tab Status Kledo"
+
+#: includes/admin/screen/class-wc-kledo-help.php:359
+msgid "Send old or missed orders (Sync tab)"
+msgstr "Kirim pesanan lama atau yang terlewat (tab Sinkronisasi)"
+
+#: includes/admin/screen/class-wc-kledo-help.php:360
+msgid ""
+"For orders that were placed before the plugin was installed, or that were "
+"missed. Nothing is sent until you start it."
+msgstr ""
+"Untuk pesanan dari sebelum plugin dipasang, atau yang terlewat. Tidak ada "
+"yang dikirim sampai Anda memulainya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:362
+msgid ""
+"Open the Sync tab. Choose the order dates (empty means the last 30 days) and"
+" click \"Count again\" to see how many orders need sending."
+msgstr ""
+"Buka tab Sinkronisasi. Pilih tanggal pesanannya (kosong = 30 hari terakhir),"
+" lalu klik \"Hitung ulang\" untuk melihat berapa pesanan yang perlu dikirim."
+
+#: includes/admin/screen/class-wc-kledo-help.php:363
+msgid ""
+"Check the list below: \"Only orders that need sending\" shows exactly what "
+"will be sent."
+msgstr ""
+"Periksa daftar di bawahnya: \"Hanya pesanan yang perlu dikirim\" menampilkan"
+" persis apa yang akan dikirim."
+
+#: includes/admin/screen/class-wc-kledo-help.php:364
+msgid "Click \"Process gradually\" and read the confirmation before accepting."
+msgstr "Klik \"Proses bertahap\" dan baca konfirmasinya sebelum menyetujui."
+
+#: includes/admin/screen/class-wc-kledo-help.php:365
+msgid ""
+"Watch the progress, or leave the page — it continues in the background. Use "
+"Pause, Resume or Cancel at any time."
+msgstr ""
+"Pantau prosesnya, atau tinggalkan halaman — prosesnya tetap berjalan di "
+"latar belakang. Gunakan Jeda, Lanjutkan, atau Batalkan kapan saja."
+
+#: includes/admin/screen/class-wc-kledo-help.php:368
+msgid ""
+"Orders are sent 5 to 10 per minute (\"Speed\"), and the next ones only after"
+" Kledo has created the previous ones. Orders already in Kledo are skipped."
+msgstr ""
+"Pesanan dikirim 5 sampai 10 per menit (\"Kecepatan\"), dan pesanan "
+"berikutnya baru dikirim setelah Kledo selesai membuat yang sebelumnya. "
+"Pesanan yang sudah ada di Kledo dilewati."
+
+#: includes/admin/screen/class-wc-kledo-help.php:369
+msgid ""
+"Each transaction gets its order date, so reports of earlier months in Kledo "
+"change, and invoices reduce warehouse stock on that date. Kledo does not "
+"refuse dates inside a period you closed (locked), so do not choose dates "
+"inside one."
+msgstr ""
+"Setiap transaksi memakai tanggal pesanannya, jadi laporan bulan-bulan "
+"sebelumnya di Kledo akan berubah, dan tagihan mengurangi stok gudang pada "
+"tanggal itu. Kledo tidak menolak tanggal di periode yang sudah ditutup "
+"(dikunci), jadi jangan memilih tanggal di periode tersebut."
+
+#: includes/admin/screen/class-wc-kledo-help.php:370
+msgid ""
+"If Kledo has not finished a batch after 30 minutes, the sync pauses itself; "
+"resume it once Kledo works normally again."
+msgstr ""
+"Kalau Kledo belum menyelesaikan satu batch setelah 30 menit, sinkronisasi "
+"dijeda otomatis; lanjutkan lagi setelah Kledo kembali normal."
+
+#: includes/admin/screen/class-wc-kledo-help.php:373
+#: includes/admin/screen/class-wc-kledo-help.php:389
+#: includes/admin/screen/class-wc-kledo-help.php:473
+msgid "Open the Sync tab"
+msgstr "Buka tab Sinkronisasi"
+
+#: includes/admin/screen/class-wc-kledo-help.php:378
+msgid "Send missed orders automatically every night"
+msgstr "Kirim pesanan yang terlewat secara otomatis setiap malam"
+
+#: includes/admin/screen/class-wc-kledo-help.php:379
+msgid ""
+"Optional, off by default. When on, every night the plugin looks for orders "
+"of the last few days that are not in Kledo yet, and sends them by itself, "
+"slowly."
+msgstr ""
+"Opsional, mati secara default. Kalau dinyalakan, setiap malam plugin mencari"
+" pesanan beberapa hari terakhir yang belum ada di Kledo, lalu mengirimkannya"
+" sendiri pelan-pelan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:381
+msgid "Open the Sync tab and tick \"Send Automatically Every Day\"."
+msgstr "Buka tab Sinkronisasi dan centang \"Kirim Otomatis Setiap Hari\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:382
+msgid ""
+"Choose how many days back to look (\"Look Back\", 7 by default) and the "
+"\"Start Time\" (a quiet hour for your store)."
+msgstr ""
+"Pilih berapa hari ke belakang (\"Periksa ke Belakang\", default 7) dan \"Jam"
+" Mulai\" (jam saat toko sepi)."
+
+#: includes/admin/screen/class-wc-kledo-help.php:386
+msgid ""
+"You see a message only if something failed. Results are in the Kledo Status "
+"tab."
+msgstr ""
+"Pemberitahuan hanya muncul kalau ada yang gagal. Hasilnya bisa dilihat di "
+"tab Status Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:394
+msgid "An order did not reach Kledo — find out why"
+msgstr "Pesanan tidak masuk ke Kledo — cari tahu penyebabnya"
+
+#: includes/admin/screen/class-wc-kledo-help.php:396
+msgid ""
+"Open the Diagnostics tab (or click \"Diagnose\" in the Kledo Status tab or "
+"on the order page)."
+msgstr ""
+"Buka tab Diagnosa (atau klik \"Diagnosa\" di tab Status Kledo atau di "
+"halaman pesanan)."
+
+#: includes/admin/screen/class-wc-kledo-help.php:398
+msgid "Read \"Likely cause\" and \"What to do\" at the end, and follow it."
+msgstr ""
+"Baca \"Kemungkinan penyebab\" dan \"Yang bisa dilakukan\" di bagian akhir, "
+"lalu ikuti."
+
+#: includes/admin/screen/class-wc-kledo-help.php:399
+msgid ""
+"To try again at once, tick \"Also resend to Kledo and record what happens\" "
+"before running. Only what Kledo does not have yet is resent."
+msgstr ""
+"Untuk langsung mencoba lagi, centang \"Sekalian kirim ulang ke Kledo dan "
+"rekam prosesnya\" sebelum menjalankan. Hanya yang belum ada di Kledo yang "
+"dikirim ulang."
+
+#: includes/admin/screen/class-wc-kledo-help.php:403
+msgid ""
+"For problems that only happen now and then, click \"Record for 24 hours\", "
+"wait until it happens again, then run a diagnosis for that order."
+msgstr ""
+"Untuk masalah yang hanya terjadi sesekali, klik \"Rekam selama 24 jam\", "
+"tunggu sampai terjadi lagi, lalu jalankan diagnosa untuk pesanan itu."
+
+#: includes/admin/screen/class-wc-kledo-help.php:404
+msgid ""
+"The report never contains your API key, and customer details are partly "
+"hidden unless you choose otherwise."
+msgstr ""
+"Laporan tidak pernah berisi API key Anda, dan data pelanggan disamarkan "
+"sebagian kecuali Anda memilih sebaliknya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:407
+#: includes/admin/screen/class-wc-kledo-help.php:452
+msgid "Open the Diagnostics tab"
+msgstr "Buka tab Diagnosa"
+
+#: includes/admin/screen/class-wc-kledo-help.php:412
+msgid "Automatic retries and scheduled tasks"
+msgstr "Percobaan ulang otomatis dan tugas terjadwal"
+
+#: includes/admin/screen/class-wc-kledo-help.php:414
+msgid ""
+"A failed send is retried by itself: after about 5 minutes, then less and "
+"less often up to every 8 hours, for up to two days."
+msgstr ""
+"Pengiriman yang gagal dicoba ulang sendiri: sekitar 5 menit kemudian, lalu "
+"makin jarang sampai setiap 8 jam, hingga dua hari."
+
+#: includes/admin/screen/class-wc-kledo-help.php:415
+msgid ""
+"Data that Kledo rejected is not retried, because it would be rejected again."
+" Fix the data, then resend."
+msgstr ""
+"Data yang ditolak Kledo tidak dicoba ulang, karena pasti ditolak lagi. "
+"Perbaiki datanya, lalu kirim ulang."
+
+#: includes/admin/screen/class-wc-kledo-help.php:416
+msgid ""
+"Retries, checks and the Sync tab run on WordPress scheduled tasks (WP-Cron)."
+" If your host blocks them, the work also runs when an administrator opens "
+"wp-admin, but a real cron job is better — ask your hosting provider."
+msgstr ""
+"Percobaan ulang, pengecekan, dan tab Sinkronisasi berjalan di tugas "
+"terjadwal WordPress (WP-Cron). Kalau hosting Anda memblokirnya, pekerjaannya"
+" tetap berjalan saat administrator membuka wp-admin, tetapi cron job "
+"sungguhan lebih baik — tanyakan ke penyedia hosting Anda."
+
+#: includes/admin/screen/class-wc-kledo-help.php:417
+msgid ""
+"Everything the plugin does is written to WooCommerce › Status › Logs, source"
+" \"wc-kledo\", and important results to the order notes."
+msgstr ""
+"Semua yang dilakukan plugin dicatat di WooCommerce › Status › Logs dengan "
+"source \"wc-kledo\", dan hasil pentingnya di catatan pesanan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:450
+msgid "An order is not in Kledo. What should I do?"
+msgstr "Ada pesanan yang tidak ada di Kledo. Apa yang harus saya lakukan?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:451
+msgid ""
+"Run a diagnosis for it in the Diagnostics tab. It tells you the likely cause"
+" and what to do, and can resend it. If that does not help, send the report "
+"to Kledo."
+msgstr ""
+"Jalankan diagnosa untuk pesanan itu di tab Diagnosa. Diagnosa memberi tahu "
+"kemungkinan penyebab dan yang perlu dilakukan, dan bisa sekalian mengirim "
+"ulang. Kalau tidak membantu, kirim laporannya ke Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:456
+msgid "What does \"Failed in Kledo\" mean?"
+msgstr "Apa arti \"Gagal di Kledo\"?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:457
+msgid ""
+"Kledo accepted the order but never created it — the problem happened inside "
+"Kledo. It is not resent by itself, so a slow Kledo cannot cause duplicates. "
+"Resend it; if it fails again, run a diagnosis and send the report to Kledo."
+msgstr ""
+"Kledo sudah menerima pesanan tetapi tidak pernah membuatnya — masalahnya "
+"terjadi di dalam Kledo. Pesanan ini tidak dikirim ulang otomatis, supaya "
+"Kledo yang lambat tidak menimbulkan duplikat. Kirim ulang; kalau gagal lagi,"
+" jalankan diagnosa dan kirim laporannya ke Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:461
+msgid "An order has been \"Waiting for Kledo\" for a long time. Is that normal?"
+msgstr "Pesanan sudah lama berstatus \"Menunggu Kledo\". Apakah itu normal?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:462
+msgid ""
+"Usually it turns into \"In Kledo\" within minutes. The plugin keeps checking"
+" for about 6 hours; if it never appears, the status becomes \"Failed in "
+"Kledo\". You can also click \"Check status\" to ask right away."
+msgstr ""
+"Biasanya berubah menjadi \"Ada di Kledo\" dalam beberapa menit. Plugin terus"
+" mengecek selama sekitar 6 jam; kalau tidak pernah muncul, statusnya menjadi"
+" \"Gagal di Kledo\". Anda juga bisa klik \"Cek status\" untuk langsung "
+"menanyakannya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:466
+msgid "Can an order be created twice in Kledo?"
+msgstr "Apakah pesanan bisa terbuat dua kali di Kledo?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:467
+msgid ""
+"The plugin avoids it: bulk actions, the Sync tab and the diagnosis only send"
+" what Kledo does not have yet, and Kledo recognises an order it already has "
+"by its WooCommerce order number. Only \"Re-send\" on the order page sends "
+"again on purpose. A transaction you created by hand in Kledo with a "
+"different number is not recognised."
+msgstr ""
+"Plugin mencegahnya: aksi massal, tab Sinkronisasi, dan diagnosa hanya "
+"mengirim yang belum ada di Kledo, dan Kledo mengenali pesanan yang sudah ada"
+" lewat nomor pesanan WooCommerce-nya. Hanya \"Kirim ulang\" di halaman "
+"pesanan yang sengaja mengirim lagi. Transaksi yang Anda buat manual di Kledo"
+" dengan nomor lain tidak dikenali."
+
+#: includes/admin/screen/class-wc-kledo-help.php:471
+msgid ""
+"Does the plugin send my old orders by itself after I install or update it?"
+msgstr ""
+"Apakah plugin mengirim pesanan lama saya secara otomatis setelah dipasang "
+"atau di-update?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:472
+msgid ""
+"No. It only counts the orders of the last 30 days that are not in Kledo and "
+"shows a message. Nothing is sent until you press \"Process gradually\" in "
+"the Sync tab, or switch on \"Send Automatically Every Day\"."
+msgstr ""
+"Tidak. Plugin hanya menghitung pesanan 30 hari terakhir yang belum ada di "
+"Kledo lalu menampilkan pemberitahuan. Tidak ada yang dikirim sampai Anda "
+"menekan \"Proses bertahap\" di tab Sinkronisasi, atau menyalakan \"Kirim "
+"Otomatis Setiap Hari\"."
+
+#: includes/admin/screen/class-wc-kledo-help.php:477
+msgid ""
+"I changed an order straight to Completed. Is the sales order still created?"
+msgstr ""
+"Saya mengubah pesanan langsung ke Completed. Apakah pesanan penjualannya "
+"tetap dibuat?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:478
+msgid ""
+"Yes, by default: the sales order is created first, and the invoice follows "
+"once the sales order is in Kledo. To send only the invoice for such orders, "
+"turn off \"Create Sales Order First When an Order Skips Processing\" in the "
+"Invoice tab."
+msgstr ""
+"Ya, secara default: pesanan penjualan dibuat dulu, lalu tagihannya menyusul "
+"setelah pesanan penjualan ada di Kledo. Untuk mengirim tagihannya saja, "
+"matikan \"Buat Pesanan Penjualan Dulu Jika Pesanan Langsung Selesai\" di tab"
+" Tagihan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:483
+msgid "Why is an invoice \"Waiting for sales order\"?"
+msgstr "Kenapa tagihan berstatus \"Menunggu pesanan penjualan\"?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:484
+msgid ""
+"With \"Link Invoice to Sales Order\" on, the invoice is only sent once its "
+"sales order exists in Kledo, so the two can be linked. It is sent by itself "
+"as soon as the sales order is there."
+msgstr ""
+"Kalau \"Tautkan Tagihan ke Pesanan Penjualan\" menyala, tagihan baru dikirim"
+" setelah pesanan penjualannya ada di Kledo, supaya keduanya bisa ditautkan. "
+"Tagihan dikirim sendiri begitu pesanan penjualannya ada."
+
+#: includes/admin/screen/class-wc-kledo-help.php:488
+msgid ""
+"I edited, cancelled or refunded an order after it was sent. Does Kledo "
+"update?"
+msgstr ""
+"Saya mengedit, membatalkan, atau me-refund pesanan setelah dikirim. Apakah "
+"Kledo ikut berubah?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:489
+msgid ""
+"No. The plugin only creates transactions when an order becomes Processing or"
+" Completed; it does not change or delete them afterwards. Adjust the "
+"transaction in Kledo yourself."
+msgstr ""
+"Tidak. Plugin hanya membuat transaksi saat pesanan menjadi Processing atau "
+"Completed; setelah itu plugin tidak mengubah atau menghapusnya. Sesuaikan "
+"transaksinya sendiri di Kledo."
+
+#: includes/admin/screen/class-wc-kledo-help.php:493
+msgid "What data is sent to Kledo?"
+msgstr "Data apa saja yang dikirim ke Kledo?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:494
+msgid ""
+"The customer's name, email, phone and address; the order number and date; "
+"each product's name, SKU, description, quantity, price and photo link; "
+"shipping cost, discount and whether tax applies; the warehouse, tags and "
+"payment settings you chose; and shipment tracking when WooCommerce Shipment "
+"Tracking is used."
+msgstr ""
+"Nama, email, telepon, dan alamat pelanggan; nomor dan tanggal pesanan; nama,"
+" SKU, deskripsi, jumlah, harga, dan link foto setiap produk; ongkos kirim, "
+"diskon, dan ada tidaknya pajak; gudang, tag, dan pengaturan pembayaran yang "
+"Anda pilih; serta data resi pengiriman kalau memakai WooCommerce Shipment "
+"Tracking."
+
+#: includes/admin/screen/class-wc-kledo-help.php:498
+msgid "How are my products matched in Kledo?"
+msgstr "Bagaimana produk saya dicocokkan di Kledo?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:499
+msgid ""
+"Each product is sent with its name and SKU. Give every product a SKU so "
+"Kledo can recognise it. Products deleted from the store cannot be sent; the "
+"diagnosis warns about missing SKUs and deleted products."
+msgstr ""
+"Setiap produk dikirim dengan nama dan SKU-nya. Beri setiap produk SKU supaya"
+" Kledo bisa mengenalinya. Produk yang sudah dihapus dari toko tidak bisa "
+"dikirim; diagnosa memberi peringatan untuk produk tanpa SKU dan produk yang "
+"terhapus."
+
+#: includes/admin/screen/class-wc-kledo-help.php:503
+msgid "My API key is about to expire. What now?"
+msgstr "API key saya akan kedaluwarsa. Apa yang harus dilakukan?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:504
+msgid ""
+"Click \"Create a new API key in Kledo\" in the message or on the Configure "
+"tab, create the key, paste it into \"API Key\" and click \"Save changes\". "
+"Do it before the expiry date; after it, nothing reaches Kledo until a new "
+"key is saved."
+msgstr ""
+"Klik \"Buat API key baru di Kledo\" di pemberitahuan atau di tab "
+"Konfigurasi, buat key-nya, tempel di \"API Key\", lalu klik \"Simpan "
+"perubahan\". Lakukan sebelum tanggal kedaluwarsa; setelah lewat, tidak ada "
+"yang masuk ke Kledo sampai key baru disimpan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:512
+msgid "The plugin says Kledo refuses my API key."
+msgstr "Plugin bilang Kledo menolak API key saya."
+
+#: includes/admin/screen/class-wc-kledo-help.php:513
+msgid ""
+"The key has expired or was replaced, or the account behind it lost access to"
+" the company. Create a new key while logged in to the right company in "
+"Kledo, and save it in the Configure tab."
+msgstr ""
+"Key-nya sudah kedaluwarsa atau sudah diganti, atau akun pemiliknya "
+"kehilangan akses ke perusahaan. Buat key baru saat login di perusahaan yang "
+"benar di Kledo, lalu simpan di tab Konfigurasi."
+
+#: includes/admin/screen/class-wc-kledo-help.php:517
+msgid "How do I stop sending to Kledo for a while?"
+msgstr "Bagaimana cara menghentikan pengiriman ke Kledo untuk sementara?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:518
+msgid ""
+"Untick \"Enable Integration\" in the Configure tab. Orders that change "
+"status meanwhile are not sent; send them later from the Sync tab."
+msgstr ""
+"Hapus centang \"Aktifkan Integrasi\" di tab Konfigurasi. Pesanan yang "
+"berubah status selama itu tidak dikirim; kirim nanti lewat tab Sinkronisasi."
+
+#: includes/admin/screen/class-wc-kledo-help.php:522
+msgid "What happens if I deactivate or delete the plugin?"
+msgstr "Apa yang terjadi kalau plugin dinonaktifkan atau dihapus?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:523
+msgid ""
+"Deactivating stops sending and pauses a running sync; your settings and "
+"history stay, and everything continues when you activate it again. "
+"Transactions already in Kledo are never removed."
+msgstr ""
+"Menonaktifkan plugin menghentikan pengiriman dan menjeda sinkronisasi yang "
+"sedang berjalan; pengaturan dan riwayat tetap tersimpan, dan semuanya "
+"berlanjut saat plugin diaktifkan lagi. Transaksi yang sudah ada di Kledo "
+"tidak pernah dihapus."
+
+#: includes/admin/screen/class-wc-kledo-help.php:527
+msgid "Retries never seem to happen."
+msgstr "Percobaan ulang sepertinya tidak pernah berjalan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:528
+msgid ""
+"WordPress scheduled tasks (WP-Cron) are probably not running on your host. "
+"The diagnosis checks this (\"Queues and scheduled tasks\"). Ask your hosting"
+" provider to enable WP-Cron or a real cron job."
+msgstr ""
+"Kemungkinan tugas terjadwal WordPress (WP-Cron) tidak berjalan di hosting "
+"Anda. Diagnosa memeriksa hal ini (\"Antrean dan tugas terjadwal\"). Minta "
+"penyedia hosting menyalakan WP-Cron atau cron job sungguhan."
+
+#: includes/admin/screen/class-wc-kledo-help.php:532
+msgid "Where can I see what the plugin did?"
+msgstr "Di mana saya bisa melihat apa yang dilakukan plugin?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:533
+msgid ""
+"In the order notes of each order, in the Kledo Status tab, and in "
+"WooCommerce › Status › Logs (source \"wc-kledo\"; \"wc-kledo-debug\" while "
+"recording for 24 hours)."
+msgstr ""
+"Di catatan setiap pesanan, di tab Status Kledo, dan di WooCommerce › Status "
+"› Logs (source \"wc-kledo\"; \"wc-kledo-debug\" selama perekaman 24 jam)."
+
+#: includes/admin/screen/class-wc-kledo-help.php:534
+msgid "Open the logs"
+msgstr "Buka log"
+
+#: includes/admin/screen/class-wc-kledo-help.php:538
+msgid "Is there a faster way to open these tabs?"
+msgstr "Apakah ada cara cepat membuka tab-tab ini?"
+
+#: includes/admin/screen/class-wc-kledo-help.php:539
+msgid ""
+"Yes. On WordPress 6.9 and later, press Ctrl+K (Cmd+K on a Mac) anywhere in "
+"wp-admin and type \"kledo\". The Plugins screen also has a \"Settings\" link"
+" under Kledo."
+msgstr ""
+"Ada. Di WordPress 6.9 ke atas, tekan Ctrl+K (Cmd+K di Mac) di halaman wp-"
+"admin mana saja lalu ketik \"kledo\". Halaman Plugins juga punya link "
+"\"Settings\" di bawah Kledo."
+
+#: includes/admin/screen/class-wc-kledo-support.php:50
+msgid "How do I use the plugin?"
+msgstr "Bagaimana cara memakai plugin ini?"
+
+#: includes/admin/screen/class-wc-kledo-support.php:53
+msgid ""
+"The Guide & FAQ tab explains everything step by step, from creating the API "
+"key to sending old orders and finding a missing one."
+msgstr ""
+"Tab Panduan & FAQ menjelaskan semuanya langkah demi langkah, mulai dari "
+"membuat API key sampai mengirim pesanan lama dan mencari pesanan yang tidak "
+"masuk."
+
+#: includes/class-wc-kledo-diagnostics.php:1047
+msgid "The plugin does not send anything while \"Enable Integration\" is off."
+msgstr "Plugin tidak mengirim apa pun selama \"Aktifkan Integrasi\" mati."
+
+#: includes/admin/class-wc-kledo-admin.php:733
+msgid "Choose an order or type its number…"
+msgstr "Pilih pesanan atau ketik nomornya…"
+
+#. translators: %s: what the user typed
+#: includes/admin/class-wc-kledo-admin.php:735
+#, php-format
+msgid "Use order number %s"
+msgstr "Pakai nomor pesanan %s"
+
+#: includes/admin/class-wc-kledo-admin.php:736
+msgid "Choose an order first."
+msgstr "Pilih pesanan terlebih dahulu."
+
+#: includes/admin/class-wc-kledo-admin.php:737
+msgid "Searching…"
+msgstr "Mencari…"
+
+#: includes/admin/class-wc-kledo-admin.php:738
+msgid "No order found. Type the order number to use it anyway."
+msgstr ""
+"Pesanan tidak ditemukan. Ketik nomor pesanannya untuk tetap memakainya."
+
+#: includes/admin/class-wc-kledo-admin.php:739
+msgid "The list could not be loaded. Type the order number instead."
+msgstr "Daftar tidak bisa dimuat. Ketik nomor pesanannya saja."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:99
+msgid ""
+"An order did not reach Kledo? Choose it below and run a diagnosis. The "
+"plugin checks, step by step, everything that decides whether an order is "
+"sent, and tells you the most likely cause. You can then download the report "
+"and send it to the Kledo team."
+msgstr ""
+"Ada pesanan yang tidak masuk ke Kledo? Pilih pesanannya di bawah lalu "
+"jalankan diagnosa. Plugin akan memeriksa satu per satu semua hal yang "
+"menentukan apakah pesanan dikirim, lalu memberi tahu kemungkinan "
+"penyebabnya. Setelah itu Anda bisa mengunduh laporannya dan mengirimkannya "
+"ke tim Kledo."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:117
+msgid ""
+"Pick from the list — orders with a problem in Kledo come first — or search "
+"by order number, customer name or email. You can also type an order number "
+"that is not listed."
+msgstr ""
+"Pilih dari daftar — pesanan yang bermasalah di Kledo tampil paling atas — "
+"atau cari berdasarkan nomor pesanan, nama, atau email pelanggan. Anda juga "
+"bisa mengetik nomor pesanan yang tidak ada di daftar."
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:314
+msgid "Not in Kledo or failed"
+msgstr "Belum ada di Kledo atau gagal"
+
+#: includes/admin/screen/class-wc-kledo-diagnostics.php:315
+msgid "Recent orders"
+msgstr "Pesanan terbaru"
+
+#: includes/admin/screen/class-wc-kledo-help.php:397
+msgid ""
+"Choose the order from the list — orders with a problem in Kledo are at the "
+"top, and you can search by number, customer name or email, or type an order "
+"number — then click \"Run diagnosis\". Eight checks run one by one: ✔ "
+"passed, ⚠ warning, ✖ problem. Open \"Details\" on any of them to see more."
+msgstr ""
+"Pilih pesanan dari daftar — pesanan yang bermasalah di Kledo ada di paling "
+"atas, dan Anda bisa mencari berdasarkan nomor, nama, atau email pelanggan, "
+"atau mengetik nomor pesanan — lalu klik \"Jalankan diagnosa\". Delapan "
+"pemeriksaan berjalan satu per satu: ✔ lolos, ⚠ peringatan, ✖ masalah. Buka "
+"\"Detail\" di salah satunya untuk melihat lebih lengkap."
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin.php:272
+#, php-format
+msgid "%d order needs checking in Kledo"
+msgid_plural "%d orders need checking in Kledo"
+msgstr[0] "%d pesanan perlu dicek di Kledo"
+msgstr[1] "%d pesanan perlu dicek di Kledo"
+
+#: includes/admin/screen/class-wc-kledo-configure.php:412
+msgid ""
+"Open the API key page in Kledo with the button below (in Kledo: Settings › "
+"Integrations › Developer & Security › API Key), and create a new API key for"
+" WooCommerce."
+msgstr ""
+"Buka halaman API key di Kledo dengan tombol di bawah (di Kledo: Pengaturan ›"
+" Integrasi › Developer & Keamanan › API Key), lalu buat API key baru untuk "
+"WooCommerce."
+
+#: includes/admin/screen/class-wc-kledo-help.php:239
+msgid ""
+"In Kledo, open Settings › Integrations, then choose \"API Key\" in the "
+"Developer & Security section. The button below opens that page directly."
+msgstr ""
+"Di Kledo, buka Pengaturan › Integrasi, lalu di bagian Developer & Keamanan "
+"pilih \"API Key\". Tombol di bawah langsung membuka halaman tersebut."
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin.php:294
+#, php-format
+msgid "%d order not sent to Kledo yet"
+msgid_plural "%d orders not sent to Kledo yet"
+msgstr[0] "%d pesanan belum dikirim ke Kledo"
+msgstr[1] "%d pesanan belum dikirim ke Kledo"
+
+#. translators: %d: number of orders
+#: includes/admin/class-wc-kledo-admin.php:296
+#, php-format
+msgid "%d order failed in Kledo"
+msgid_plural "%d orders failed in Kledo"
+msgstr[0] "%d pesanan gagal di Kledo"
+msgstr[1] "%d pesanan gagal di Kledo"
+
+#: includes/admin/screen/class-wc-kledo-help.php:400
+msgid ""
+"If it is still not solved, click \"Download report\" and send the file to "
+"Kledo, mentioning the report code (DIAG-…)."
+msgstr ""
+"Kalau masih belum beres, klik \"Unduh laporan\" lalu kirim file-nya ke Kledo"
+" dengan menyebutkan kode laporannya (DIAG-…)."
