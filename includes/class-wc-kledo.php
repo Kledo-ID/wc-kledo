@@ -83,6 +83,22 @@ final class WC_Kledo {
 	private WC_Kledo_Order_Closure $order_closure;
 
 	/**
+	 * Read-back loop confirming accepted transactions exist in Kledo.
+	 *
+	 * @var \WC_Kledo_Transaction_Verifier
+	 * @since 1.8.0
+	 */
+	private WC_Kledo_Transaction_Verifier $transaction_verifier;
+
+	/**
+	 * Gradual sending of orders missing from Kledo.
+	 *
+	 * @var \WC_Kledo_Sync_Job
+	 * @since 1.8.0
+	 */
+	private WC_Kledo_Sync_Job $sync_job;
+
+	/**
 	 * Kledo API key expiry tracker.
 	 *
 	 * @var \WC_Kledo_Connection_Status
@@ -190,6 +206,17 @@ final class WC_Kledo {
 		$this->order_closure = new WC_Kledo_Order_Closure();
 		$this->order_closure->init();
 
+		// Read-back loop that confirms each accepted transaction really exists in Kledo.
+		$this->transaction_verifier = new WC_Kledo_Transaction_Verifier();
+		$this->transaction_verifier->init();
+
+		// Temporary detailed log of every request to Kledo, while an admin has it switched on.
+		WC_Kledo_Debug_Trace::maybe_start_detailed_log();
+
+		// Gradual sending of orders that are missing from Kledo (Sync tab, nightly run).
+		$this->sync_job = new WC_Kledo_Sync_Job();
+		$this->sync_job->init();
+
 		// API key expiry tracking and its admin warnings.
 		$this->connection_status = new WC_Kledo_Connection_Status();
 		$this->connection_status->init();
@@ -213,6 +240,26 @@ final class WC_Kledo {
 	 */
 	public function get_order_closure(): WC_Kledo_Order_Closure {
 		return $this->order_closure;
+	}
+
+	/**
+	 * The sync job runner.
+	 *
+	 * @return \WC_Kledo_Sync_Job
+	 * @since 1.8.0
+	 */
+	public function get_sync_job(): WC_Kledo_Sync_Job {
+		return $this->sync_job;
+	}
+
+	/**
+	 * The transaction read-back loop.
+	 *
+	 * @return \WC_Kledo_Transaction_Verifier
+	 * @since 1.8.0
+	 */
+	public function get_transaction_verifier(): WC_Kledo_Transaction_Verifier {
+		return $this->transaction_verifier;
 	}
 
 	/**
@@ -327,7 +374,7 @@ final class WC_Kledo {
 					$order->add_order_note(
 						sprintf(
 							/* translators: %s: transaction type (order/invoice) */
-							__( 'Kledo: automatic retry for %s has stopped: maximum queue lifetime reached. Manual retry is still available from the Transactions screen.', 'wc-kledo' ),
+							__( 'Kledo: automatic retry for %s has stopped: maximum queue lifetime reached. Manual retry is still available from the Kledo Status tab.', 'wc-kledo' ),
 							$type
 						)
 					);
@@ -336,6 +383,9 @@ final class WC_Kledo {
 				// Keep as terminal failure so it is visible in the Transactions screen.
 				$item['status']        = 'failed';
 				$updated_queue[ $key ] = $item;
+
+				wc_kledo_set_remote_state_by_id( $order_id, $type, 'failed' );
+
 				continue;
 			}
 
@@ -352,7 +402,7 @@ final class WC_Kledo {
 				$order->add_order_note(
 					sprintf(
 						/* translators: 1: transaction type (order/invoice), 2: attempts count */
-						__( 'Kledo: automatic retry for %1$s has stopped after %2$d failed attempts. Manual retry is still available from the Transactions screen.', 'wc-kledo' ),
+						__( 'Kledo: automatic retry for %1$s has stopped after %2$d failed attempts. Manual retry is still available from the Kledo Status tab.', 'wc-kledo' ),
 						$type,
 						$attempts
 					)
@@ -361,6 +411,9 @@ final class WC_Kledo {
 				// Keep as terminal failure so it is visible in the Transactions screen.
 				$item['status']        = 'failed';
 				$updated_queue[ $key ] = $item;
+
+				wc_kledo_set_remote_state( $order, $type, 'failed' );
+
 				continue;
 			}
 
@@ -408,7 +461,7 @@ final class WC_Kledo {
 					$order->add_order_note(
 						sprintf(
 							/* translators: %d: number of checks made */
-							__( 'Kledo: stopped waiting for the sales order after %d checks. The invoice has not been sent, because linking it now is no longer possible. Check the order in Kledo, then resend from WooCommerce > Kledo > Transactions.', 'wc-kledo' ),
+							__( 'Kledo: stopped waiting for the sales order after %d checks. The invoice has not been sent, because linking it now is no longer possible. Check the order in Kledo, then resend from WooCommerce > Kledo > Kledo Status.', 'wc-kledo' ),
 							$waits
 						)
 					);
@@ -416,6 +469,8 @@ final class WC_Kledo {
 					$item['status']        = 'failed';
 					$item['last_error']    = __( 'The Kledo sales order never appeared, so the invoice was not sent.', 'wc-kledo' );
 					$updated_queue[ $key ] = $item;
+
+					wc_kledo_set_remote_state( $order, $type, 'failed' );
 
 					continue;
 				}
@@ -447,7 +502,7 @@ final class WC_Kledo {
 				$order->add_order_note(
 					sprintf(
 						/* translators: 1: transaction type (order/invoice), 2: API error message */
-						__( 'Kledo: automatic retry for %1$s has stopped because Kledo rejected the data: %2$s. Correct the data, then retry manually from the Transactions screen.', 'wc-kledo' ),
+						__( 'Kledo: automatic retry for %1$s has stopped because Kledo rejected the data: %2$s. Correct the data, then retry manually from the Kledo Status tab.', 'wc-kledo' ),
 						$type,
 						$last_error
 					)
@@ -460,6 +515,8 @@ final class WC_Kledo {
 				unset( $item['next_run_at'] );
 
 				$updated_queue[ $key ] = $item;
+
+				wc_kledo_set_remote_state( $order, $type, 'rejected' );
 
 				continue;
 			}

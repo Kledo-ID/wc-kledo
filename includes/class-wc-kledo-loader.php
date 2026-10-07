@@ -20,7 +20,7 @@ class WC_Kledo_Loader {
 	 * @var string
 	 * @since 1.0.0
 	 */
-	public const VERSION = '1.7.4';
+	public const VERSION = '1.8.0';
 
 	/**
 	 * Minimum PHP version.
@@ -144,6 +144,7 @@ class WC_Kledo_Loader {
 	 */
 	private function setup(): void {
 		register_activation_hook( WC_KLEDO_PLUGIN_FILE, array( $this, 'activation_check' ) );
+		register_deactivation_hook( WC_KLEDO_PLUGIN_FILE, array( $this, 'clear_scheduled_events' ) );
 
 		add_action( 'admin_init', array( $this, 'check_environment' ) );
 		add_action( 'admin_init', array( $this, 'plugin_notices' ) );
@@ -155,12 +156,43 @@ class WC_Kledo_Loader {
 	}
 
 	/**
+	 * Drop the plugin's cron events on deactivation.
+	 *
+	 * The queues themselves are kept: reactivating schedules each loop again from the first
+	 * delivery or admin page load that finds a due row, so nothing queued is lost.
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	public function clear_scheduled_events(): void {
+		foreach ( array( 'wc_kledo_retry_failed_transactions', 'wc_kledo_check_order_closure', 'wc_kledo_verify_transactions', 'wc_kledo_sync_tick', 'wc_kledo_sync_daily' ) as $hook ) {
+			wp_clear_scheduled_hook( $hook );
+
+			if ( function_exists( 'as_unschedule_all_actions' ) ) {
+				as_unschedule_all_actions( $hook, array(), 'wc-kledo' );
+			}
+		}
+
+		// A running sync job is paused, not lost: reactivating shows it paused, ready to resume.
+		$sync_job = get_option( 'wc_kledo_sync_job' );
+
+		if ( is_array( $sync_job ) && 'running' === ( $sync_job['status'] ?? '' ) ) {
+			$sync_job['status']       = 'paused';
+			$sync_job['pause_reason'] = '';
+			update_option( 'wc_kledo_sync_job', $sync_job, false );
+		}
+	}
+
+	/**
 	 * Checks the server environment and other factors and deactivates plugins as necessary.
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
 	public function activation_check(): void {
+		// Recount the orders missing from Kledo on the next admin page load; nothing is sent.
+		delete_option( 'wc_kledo_sync_counted_version' );
+
 		if ( ! $this->is_environment_compatible() ) {
 			$this->deactivate_plugin();
 

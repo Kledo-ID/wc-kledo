@@ -92,7 +92,41 @@ abstract class WC_Kledo_Request {
 		array $additional_body = array()
 	) {
 		$this->set_method( 'POST' );
+		$this->set_body( $this->build_transaction_body( $order, $ref_number_prefix, $warehouse, $tags, $additional_body ) );
 
+		$this->do_request();
+
+		$response = $this->get_response();
+
+		if ( ( isset( $response['success'] ) && false === $response['success'] ) ) {
+			return false;
+		}
+
+		return $response;
+	}
+
+	/**
+	 * The body of a sales order or invoice request, built without sending it.
+	 *
+	 * Split from `create_transaction()` so the Diagnostics tab can show and check exactly what
+	 * would be sent for an order, without sending it.
+	 *
+	 * @param  \WC_Order    $order
+	 * @param  string       $ref_number_prefix
+	 * @param  string|null  $warehouse
+	 * @param  array        $tags
+	 * @param  array        $additional_body
+	 *
+	 * @return array
+	 * @since 1.8.0
+	 */
+	protected function build_transaction_body(
+		WC_Order $order,
+		string $ref_number_prefix,
+		?string $warehouse,
+		array $tags,
+		array $additional_body = array()
+	): array {
 		$body = array(
 			'contact_name'               => $this->get_customer_name( $order ),
 			'contact_email'              => $order->get_billing_email(),
@@ -123,17 +157,7 @@ abstract class WC_Kledo_Request {
 			$body = array_merge( $body, $additional_body );
 		}
 
-		$this->set_body( $body );
-
-		$this->do_request();
-
-		$response = $this->get_response();
-
-		if ( ( isset( $response['success'] ) && false === $response['success'] ) ) {
-			return false;
-		}
-
-		return $response;
+		return $body;
 	}
 
 	/**
@@ -233,29 +257,57 @@ abstract class WC_Kledo_Request {
 			throw new RuntimeException( esc_html( __( "Can't do API request because the api key & endpoint url has not been configured.", 'wc-kledo' ) ) );
 		}
 
-		// Do the request.
-		$this->response = wp_remote_request(
-			$this->get_url(),
-			array(
-				'method'     => $this->get_method(),
-				'timeout'    => 10,
-				'user-agent' => $this->get_request_user_agent(),
-				'headers'    => array(
-					'Authorization' => 'Bearer ' . wc_kledo()->get_connection_handler()->get_api_key(),
-					'Accept'        => 'application/json',
-				),
-				'body'       => $this->get_body(),
-				/**
-				 * Whether to verify SSL for outbound Kledo requests.
-				 * Default false for backward compatibility with legacy stacks; set to true in production when possible.
-				 *
-				 * @param  bool  $sslverify
-				 *
-				 * @since 1.5.0
-				 */
-				'sslverify'  => (bool) apply_filters( 'wc_kledo_http_sslverify', false ),
-			)
+		$url  = $this->get_url();
+		$args = array(
+			'method'     => $this->get_method(),
+			'timeout'    => 10,
+			'user-agent' => $this->get_request_user_agent(),
+			'headers'    => array(
+				'Authorization' => 'Bearer ' . wc_kledo()->get_connection_handler()->get_api_key(),
+				'Accept'        => 'application/json',
+			),
+			'body'       => $this->get_body(),
+			/**
+			 * Whether to verify SSL for outbound Kledo requests.
+			 * Default false for backward compatibility with legacy stacks; set to true in production when possible.
+			 *
+			 * @param  bool  $sslverify
+			 *
+			 * @since 1.5.0
+			 */
+			'sslverify'  => (bool) apply_filters( 'wc_kledo_http_sslverify', false ),
 		);
+
+		/**
+		 * Fires right before a request to Kledo is sent.
+		 *
+		 * Used by the Diagnostics tab and the temporary detailed log to record what is sent. The
+		 * arguments include the Authorization header; listeners must mask it.
+		 *
+		 * @param  string  $method
+		 * @param  string  $url
+		 * @param  array   $args  The `wp_remote_request()` arguments.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'wc_kledo_http_request', $this->get_method(), $url, $args );
+
+		$started = microtime( true );
+
+		// Do the request.
+		$this->response = wp_remote_request( $url, $args );
+
+		/**
+		 * Fires right after a request to Kledo returns, successful or not.
+		 *
+		 * @param  array|\WP_Error  $response     The `wp_remote_request()` result.
+		 * @param  int              $duration_ms
+		 * @param  string           $method
+		 * @param  string           $url
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'wc_kledo_http_response', $this->response, (int) round( ( microtime( true ) - $started ) * 1000 ), $this->get_method(), $url );
 
 		// Check if request is an error.
 		if ( is_wp_error( $this->response ) ) {

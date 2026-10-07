@@ -68,7 +68,7 @@ class WC_Kledo_WooCommerce {
 		// reach Kledo as an invoice with no sales order behind it. `deliver()` creates the missing
 		// one ahead of the invoice; this hook exists so the sales order is still created when
 		// invoicing itself is switched off.
-		add_action( 'woocommerce_order_status_completed', array( $this, 'create_order' ), 5, 2 );
+		add_action( 'woocommerce_order_status_completed', array( $this, 'create_order_on_completed' ), 5, 2 );
 	}
 
 	/**
@@ -110,6 +110,48 @@ class WC_Kledo_WooCommerce {
 	}
 
 	/**
+	 * Send the sales order of an order that reached Completed (automatic: completed).
+	 *
+	 * An order that went through Processing already has its sales order and costs nothing here —
+	 * `deliver()` answers `already_synced`. For one that skipped Processing, the shop decides
+	 * through "Create Sales Order First When an Order Skips Processing" whether it gets one.
+	 *
+	 * @param  int       $order_id
+	 * @param  \WC_Order $order
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	public function create_order_on_completed( int $order_id, WC_Order $order ): void {
+		if ( $this->skips_sales_order( $order ) ) {
+			wc_kledo_log_info(
+				sprintf( 'Sales order skipped for order %d: it went straight to Completed and the setting is off.', $order_id )
+			);
+
+			return;
+		}
+
+		$this->create_order( $order_id, $order );
+	}
+
+	/**
+	 * Whether this order is one the shop chose not to create a sales order for.
+	 *
+	 * Only an order whose sales order was never attempted qualifies. One that was attempted and
+	 * failed is still owed its sales order, and its invoice keeps waiting for it.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return bool
+	 * @since 1.8.0
+	 */
+	private function skips_sales_order( WC_Order $order ): bool {
+		return 'no' === wc_kledo_create_order_on_completed()
+			&& 'not_sent' === wc_kledo_get_remote_state( $order, 'order' )
+			&& ! isset( $this->sales_order_attempted[ $order->get_id() ] );
+	}
+
+	/**
 	 * Shared delivery pipeline for Kledo sales order or invoice.
 	 *
 	 * @param  \WC_Order $order
@@ -119,6 +161,7 @@ class WC_Kledo_WooCommerce {
 	 *     @type bool   $force_if_synced  When true, call the API even if the order is already marked synced (explicit admin intent; may duplicate in Kledo).
 	 *     @type bool   $enqueue_on_failure  When false, do not add/update the failed-transactions queue (retry handlers update the queue themselves).
 	 *     @type string $manual_mode  Optional. `first` or `resend` when trigger is `manual_admin` (for notes/logging).
+	 *     @type string $link_order   Optional. `no` to send this invoice unlinked whatever the setting says. Set by the pipeline itself.
 	 * }
 	 *
 	 * @return array{
@@ -236,13 +279,19 @@ class WC_Kledo_WooCommerce {
 			return $out;
 		}
 
+		// Kledo matches a linked invoice to its sales order by reference, and this order has none
+		// by the shop's own choice — asking for a link would only describe one that cannot exist.
+		if ( 'invoice' === $type && 'yes' === wc_kledo_link_invoice_to_order() && $this->skips_sales_order( $order ) ) {
+			$context['link_order'] = 'no';
+		}
+
 		try {
 			// Fire integration hook inside try/catch so any hooked callback that throws
 			// is caught and treated as a delivery failure instead of propagating.
 			if ( 'invoice' === $type ) {
 				do_action( 'wc_kledo_create_invoice', $order->get_id(), $order );
 				$request = new WC_Kledo_Request_Invoice();
-				$result  = $request->create_invoice( $order );
+				$result  = $request->create_invoice( $order, $context['link_order'] ?? null );
 			} else {
 				do_action( 'wc_kledo_create_order', $order->get_id() );
 				$request = new WC_Kledo_Request_Order();
@@ -261,8 +310,8 @@ class WC_Kledo_WooCommerce {
 				// Queue a confirmation so the closure can be reflected here when it actually happens.
 				// Invoice only: the sales order alone can never close anything.
 				if ( 'invoice' === $type ) {
-					$link_order  = wc_kledo_link_invoice_to_order();
-					$close_order = wc_kledo_close_order_on_invoice();
+					$link_order  = $context['link_order'] ?? wc_kledo_link_invoice_to_order();
+					$close_order = 'yes' === $link_order ? wc_kledo_close_order_on_invoice() : 'no';
 
 					wc_kledo_record_invoice_link_settings( $order, $link_order, $close_order );
 
@@ -340,7 +389,7 @@ class WC_Kledo_WooCommerce {
 			if ( $is_permanent ) {
 				$error_message = sprintf(
 					/* translators: 1: transaction type (order/invoice), 2: HTTP status code, 3: API error message */
-					__( 'Kledo: %1$s was rejected by Kledo (HTTP %2$d): %3$s. This will not be retried automatically — correct the data, then resend it from WooCommerce > Kledo > Transactions.', 'wc-kledo' ),
+					__( 'Kledo: %1$s was rejected by Kledo (HTTP %2$d): %3$s. This will not be retried automatically — correct the data, then resend it from WooCommerce > Kledo > Kledo Status.', 'wc-kledo' ),
 					$type,
 					$response_code,
 					$out['error']
@@ -478,6 +527,12 @@ class WC_Kledo_WooCommerce {
 			return true;
 		}
 
+		// No sales order is coming for this order, by the shop's choice; the invoice goes out
+		// unlinked instead of waiting for one. See `deliver()`.
+		if ( $this->skips_sales_order( $order ) ) {
+			return true;
+		}
+
 		if ( ! wc_kledo_is_delivery_synced( $order, 'order' ) ) {
 			// Already tried in this request — by the Completed hook, most likely — and it did not
 			// stick, or `wc_kledo_is_delivery_synced()` above would have answered. Trying again now
@@ -539,6 +594,12 @@ class WC_Kledo_WooCommerce {
 			return $this->sales_order_confirmed[ $order_id ];
 		}
 
+		if ( 'confirmed' === wc_kledo_get_remote_state( $order, 'order' ) ) {
+			$this->sales_order_confirmed[ $order_id ] = true;
+
+			return true;
+		}
+
 		$request  = new WC_Kledo_Request_Transaction_Status();
 		$response = false;
 
@@ -554,12 +615,21 @@ class WC_Kledo_WooCommerce {
 			);
 		}
 
-		$exists = false;
+		$status = wc_kledo_read_transaction_status( $response );
+		$exists = null !== $status['order'];
 
-		if ( is_array( $response ) ) {
-			$data        = isset( $response['data'] ) && is_array( $response['data'] ) ? $response['data'] : array();
-			$kledo_order = isset( $data['order'] ) && is_array( $data['order'] ) ? $data['order'] : array();
-			$exists      = ! empty( $kledo_order['id'] );
+		// The answer is already in hand, so the read-back loop need not ask for it again.
+		if ( $exists ) {
+			wc_kledo_set_remote_state(
+				$order,
+				'order',
+				'confirmed',
+				array(
+					'ref'     => wc_kledo_get_kledo_reference( $status['order'] ),
+					'checked' => true,
+				)
+			);
+			wc_kledo_remove_verification( $order_id, 'order' );
 		}
 
 		$this->sales_order_confirmed[ $order_id ] = $exists;
@@ -608,6 +678,9 @@ class WC_Kledo_WooCommerce {
 		if ( ! empty( $context['enqueue_on_failure'] ) ) {
 			wc_kledo_add_failed_transaction_to_queue( $order->get_id(), 'invoice', $queue_note );
 		}
+
+		// After the queue write above, which would otherwise leave it reading as a failed send.
+		wc_kledo_set_remote_state( $order, 'invoice', 'waiting_sales_order' );
 
 		// The retry loop is noisy enough without a note on every pass.
 		if ( 'retry' !== $context['trigger'] ) {
