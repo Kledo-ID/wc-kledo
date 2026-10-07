@@ -121,6 +121,8 @@ class WC_Kledo_Admin_Order_Sync {
 		$post_url            = admin_url( 'admin-post.php' );
 		$confirm_order       = __( 'Re-sending may create a duplicate sales order in Kledo. Continue?', 'wc-kledo' );
 		$confirm_invoice     = __( 'Re-sending may create a duplicate invoice in Kledo. Continue?', 'wc-kledo' );
+
+		$this->render_state_summary( $order );
 		?>
 		<p class="description">
 			<?php
@@ -224,6 +226,52 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
+	 * Show where each transaction of this order stands in Kledo.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return void
+	 * @since 1.8.0
+	 */
+	private function render_state_summary( WC_Order $order ): void {
+		echo '<table class="wc-kledo-state-summary" style="width:100%;margin:0 0 10px;border-collapse:collapse;">';
+
+		foreach ( array( 'order', 'invoice' ) as $type ) {
+			$state      = wc_kledo_get_remote_state( $order, $type );
+			$reference  = wc_kledo_get_remote_ref( $order, $type );
+			$checked_at = wc_kledo_get_remote_checked_at( $order, $type );
+			$badge      = WC_Kledo_Status_Badge::describe( $state, $type );
+
+			echo '<tr><th scope="row" style="text-align:left;vertical-align:top;padding:4px 6px 4px 0;font-weight:600;">' . esc_html( WC_Kledo_Status_Badge::type_label( $type ) ) . '</th><td style="padding:4px 0;">';
+			echo WC_Kledo_Status_Badge::render( $state, $type, $reference ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside render().
+
+			if ( '' !== $reference ) {
+				/* translators: %s: Kledo reference number */
+				echo '<br><small>' . esc_html( sprintf( __( 'Kledo: %s', 'wc-kledo' ), $reference ) ) . '</small>';
+			}
+
+			if ( $checked_at > 0 ) {
+				/* translators: %s: date and time of the last check */
+				echo '<br><small>' . esc_html( sprintf( __( 'Checked %s', 'wc-kledo' ), wc_kledo_format_admin_timestamp( $checked_at, 'past' ) ) ) . '</small>';
+			}
+
+			if ( '' !== $badge['action'] ) {
+				echo '<br><small>' . esc_html( $badge['action'] ) . '</small>';
+			}
+
+			echo '</td></tr>';
+		}
+
+		echo '</table>';
+
+		printf(
+			'<p><a class="button button-small" href="%1$s">%2$s</a></p>',
+			esc_url( WC_Kledo_Diagnostics_Screen::get_url_for_order( $order->get_id() ) ),
+			esc_html__( 'Not in Kledo? Diagnose this order', 'wc-kledo' )
+		);
+	}
+
+	/**
 	 * @param  array          $actions
 	 * @param  \WC_Order|null $order
 	 *
@@ -253,9 +301,11 @@ class WC_Kledo_Admin_Order_Sync {
 			}
 		}
 
-		// Only worth offering once the invoice is on its way to Kledo and the closure has not
-		// already been confirmed — there is nothing to poll for otherwise.
-		if ( wc_kledo_is_delivery_synced( $order, 'invoice' ) && ! wc_kledo_is_order_closed_in_kledo( $order ) ) {
+		// Worth offering whenever there is something to read back: a transaction that was sent,
+		// or an order Kledo may already hold without this plugin having recorded it.
+		if ( wc_kledo_order_status_allows_manual_sales_order( $order )
+			|| 'not_sent' !== wc_kledo_get_remote_state( $order, 'order' )
+			|| 'not_sent' !== wc_kledo_get_remote_state( $order, 'invoice' ) ) {
 			$actions['wc_kledo_check_closure'] = __( 'Kledo: Check Kledo status now', 'wc-kledo' );
 		}
 
@@ -296,15 +346,18 @@ class WC_Kledo_Admin_Order_Sync {
 	}
 
 	/**
-	 * Order action: ask Kledo right now whether its sales order has been closed.
+	 * Order action: read this order back from Kledo right now.
 	 *
-	 * Runs the same confirmation the cron loop runs, for this one order, so an admin does not have
-	 * to wait out the backoff schedule.
+	 * Runs the same read-back the verification loop runs — and, once the invoice is in Kledo, the
+	 * closure confirmation too — for this one order, so an admin does not have to wait out the
+	 * backoff schedule. The action key keeps its 1.7.4 name so existing bookmarks and integrations
+	 * that trigger it keep working.
 	 *
 	 * @param  mixed $order
 	 *
 	 * @return void
 	 * @since 1.7.4
+	 * @since 1.8.0 Also verifies that the sales order and invoice exist in Kledo.
 	 */
 	public function order_action_check_closure( $order ): void {
 		if ( ! $order instanceof WC_Order ) {
@@ -315,43 +368,61 @@ class WC_Kledo_Admin_Order_Sync {
 			return;
 		}
 
+		$messages = array();
+
 		try {
-			$outcome = wc_kledo()->get_order_closure()->check_single_order( $order );
+			$summary = wc_kledo()->get_transaction_verifier()->check_orders_now( array( $order->get_id() ) );
+
+			if ( $summary['confirmed'] > 0 ) {
+				$messages[] = __( 'Kledo: the order was found in Kledo; its state has been updated.', 'wc-kledo' );
+			} elseif ( $summary['pending'] > 0 ) {
+				$messages[] = __( 'Kledo: not found in Kledo yet. The plugin keeps checking and marks it "Failed in Kledo" if it never appears.', 'wc-kledo' );
+			} else {
+				$messages[] = __( 'Kledo: nothing for this order exists in Kledo, and nothing has been sent yet.', 'wc-kledo' );
+			}
+
+			$order = wc_get_order( $order->get_id() );
+
+			if ( $order instanceof WC_Order
+				&& 'confirmed' === wc_kledo_get_remote_state( $order, 'invoice' )
+				&& ! wc_kledo_is_order_closed_in_kledo( $order ) ) {
+				$messages[] = $this->describe_closure_outcome( wc_kledo()->get_order_closure()->check_single_order( $order ) );
+			}
 		} catch ( Throwable $exception ) {
 			wc_kledo_log_warning(
 				sprintf(
-					'Kledo manual closure check error for order %d: %s',
+					'Kledo manual status check error for order %d: %s',
 					$order->get_id(),
 					wc_kledo_sanitize_api_error_message( $exception->getMessage() )
 				)
 			);
 
-			$this->set_flash_notice(
-				__( 'Kledo: could not read the order status from Kledo. Check the WooCommerce logs for details.', 'wc-kledo' )
+			$messages = array(
+				__( 'Kledo: could not read the order status from Kledo. Check the WooCommerce logs for details.', 'wc-kledo' ),
 			);
-
-			return;
 		}
 
-		if ( 'closed' === $outcome['result'] ) {
-			$this->set_flash_notice(
-				__( 'Kledo: the Kledo sales order is closed. The order has been updated.', 'wc-kledo' )
-			);
+		$this->set_flash_notice( implode( ' ', $messages ) );
+	}
 
-			return;
+	/**
+	 * Notice text for the outcome of a manual closure check.
+	 *
+	 * @param  array{result: string, note: string} $outcome
+	 *
+	 * @return string
+	 * @since 1.8.0
+	 */
+	private function describe_closure_outcome( array $outcome ): string {
+		if ( 'closed' === $outcome['result'] ) {
+			return __( 'The Kledo sales order is closed.', 'wc-kledo' );
 		}
 
 		if ( 'gave_up' === $outcome['result'] ) {
-			$this->set_flash_notice(
-				__( 'Kledo: this order will not be closed automatically. See the order notes for the reason.', 'wc-kledo' )
-			);
-
-			return;
+			return __( 'The sales order will not be closed automatically; see the order notes for the reason.', 'wc-kledo' );
 		}
 
-		$this->set_flash_notice(
-			__( 'Kledo: the Kledo sales order is not closed yet. The automatic check will keep trying.', 'wc-kledo' )
-		);
+		return __( 'The Kledo sales order is not closed yet; the automatic check will keep trying.', 'wc-kledo' );
 	}
 
 	/**

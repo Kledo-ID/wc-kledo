@@ -38,6 +38,27 @@ class WC_Kledo_Admin_Table_Filter_Handler {
 	public const PARAM_LAST_ERROR = 'wc_kledo_tbl_last_error';
 
 	/**
+	 * Query param: first order day of a range (Y-m-d), site timezone.
+	 *
+	 * @since 1.8.0
+	 */
+	public const PARAM_DATE_FROM = 'wc_kledo_tbl_date_from';
+
+	/**
+	 * Query param: last order day of a range (Y-m-d), site timezone.
+	 *
+	 * @since 1.8.0
+	 */
+	public const PARAM_DATE_TO = 'wc_kledo_tbl_date_to';
+
+	/**
+	 * Query param: exact WooCommerce order id.
+	 *
+	 * @since 1.8.0
+	 */
+	public const PARAM_ORDER_ID = 'wc_kledo_tbl_order_id';
+
+	/**
 	 * Query param: sort column key.
 	 */
 	public const PARAM_ORDERBY = 'wc_kledo_tbl_orderby';
@@ -181,6 +202,22 @@ class WC_Kledo_Admin_Table_Filter_Handler {
 			$next_retry_date = $this->parse_date_param( $raw, self::PARAM_NEXT_RETRY_DATE );
 			if ( null !== $next_retry_date ) {
 				$filters['next_retry_date'] = $next_retry_date;
+			}
+
+			// Order date range; either end may be open, and a reversed pair is swapped.
+			$range = wc_kledo_get_date_range( $raw[ self::PARAM_DATE_FROM ] ?? '', $raw[ self::PARAM_DATE_TO ] ?? '' );
+
+			if ( '' !== $range['from'] ) {
+				$filters['date_from'] = $range['from'];
+			}
+
+			if ( '' !== $range['to'] ) {
+				$filters['date_to'] = $range['to'];
+			}
+
+			// Exact order id.
+			if ( isset( $raw[ self::PARAM_ORDER_ID ] ) && absint( $raw[ self::PARAM_ORDER_ID ] ) > 0 ) {
+				$filters['order_id'] = absint( $raw[ self::PARAM_ORDER_ID ] );
 			}
 
 			// Last error: narrow search string, no HTML.
