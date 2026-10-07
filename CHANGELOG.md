@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.8.0 (belum dirilis)
+## 1.8.0 (2026-10-07)
 
 ### Fitur baru
 
