@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 Requires PHP: 7.4
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -38,7 +38,7 @@ Kledo answers a send as soon as it has queued it, before it creates anything. Th
 * Filters by transaction type, order date range and order number; a "What do the statuses mean?" panel explains each status in plain words.
 
 = Sync tab: orders that are not in Kledo yet =
-* Sends Processing and Completed orders that are missing from Kledo — for example orders placed before the plugin was installed — 5 to 10 per minute. The next batch is only sent once Kledo has created the previous one.
+* Sends Processing and Completed orders that are missing from Kledo — for example orders placed before the plugin was installed — 5 to 10 per minute. The next batch is only sent once Kledo has created the previous one, or after 30 minutes, when the orders Kledo is slow with keep being checked in the background. It pauses itself only when Kledo cannot be reached.
 * Never runs on its own after an install or update: the plugin only counts the orders of the last 30 days that are missing and shows a notice. You start it with "Process gradually", and can pause, resume or cancel it.
 * Optional "Send Automatically Every Day" (off by default) sends the missed orders of the last few days every night.
 
@@ -117,6 +117,15 @@ The Configure tab masks a saved key for display, showing only the company it bel
 = What do the API Key Status warnings on the Configure tab mean? =
 The Configure tab reads how much life the saved key has left and warns 30 and 7 days before it expires. If Kledo has already rejected the key, or if Kledo's own automatic renewal replaced it with a different key, the tab says so directly instead of letting syncs fail silently.
 
+= The sync stopped by itself. What should I do? =
+The sync only stops by itself when Kledo cannot be reached. Check the connection in the Configure tab, then click "Resume" in the Sync tab. A sync paused by version 1.8.0 while it waited for one order is safe to resume. "Cancel" is safe too: orders already sent stay in Kledo.
+
+= Why is the number on the Kledo menu smaller than the Sync and Kledo Status numbers added up? =
+Because some orders are on both lists, and the menu counts each order only once. For example: 20 orders are not in Kledo yet (Sync tab) and 11 failed in Kledo (Kledo Status tab). If 4 of them are on both lists, the menu shows 20 + 11 − 4 = 27. An order is on both lists when it failed in Kledo within the last 30 days, because the Sync tab can send it again too. The Sync and Kledo Status tabs show this sum whenever it applies.
+
+= Can I turn off the plugin's messages? =
+Click ✕ to hide a message for 7 days; messages only appear on WooCommerce pages. Reminders — orders missing from Kledo, a nightly sync with failures — can be turned off with "Show Reminders" in the Configure tab. Warnings about a stopped synchronisation or a refused API key always show, because nothing reaches Kledo until they are dealt with.
+
 = I don't see a "kledo" command in the WordPress command palette =
 The command palette integration needs WordPress 6.9 or later — earlier versions only expose the palette inside the block and site editors — and the `manage_woocommerce` capability. Confirm both your WordPress version and your user role.
 
@@ -129,6 +138,16 @@ The command palette integration needs WordPress 6.9 or later — earlier version
 5. Kledo status, actions and diagnosis on the order screen
 
 == Changelog ==
+
+= 1.8.1 =
+* fix: one order Kledo is slow with no longer stops the whole sync. After 30 minutes the sync leaves that order to the background check, which keeps following it, and moves on to the next orders. It only pauses itself when Kledo cannot be reached at all
+* fix: an invoice whose sales order was sent before 1.8.0 is no longer held for days waiting for it. Kledo cannot find sales orders sent before 1.8.0, so the invoice is now sent right away, without a link to the sales order — as 1.7.x did — and the order note says so
+* fix: the Diagnostics tab no longer reports a transaction sent before 1.8.0 as "not in Kledo"; it says it cannot be checked, and how to look for it in Kledo
+* feat: the Sync tab names the orders a batch is waiting for, with links, and counts the orders handed to the background check
+* feat: plugin messages appear on WooCommerce pages only, and closing one hides it for 7 days. The "orders not in Kledo yet" reminder no longer comes back every time the number changes
+* feat: new "Show Reminders" setting on the Configure tab to turn off the reminder messages. Warnings about a stopped sync or a refused API key always show
+* feat: the Sync and Kledo Status tabs, and the tooltip on the Kledo menu number, explain how the menu number adds up when some orders are on both lists (for example 20 + 11 − 4 = 27)
+* docs: Guide & FAQ updated for the new sync behaviour, with a new "Messages from the plugin" section and three new questions
 
 = 1.8.0 =
 * feat: check every sales order and invoice back in Kledo after sending it. Kledo answers a send as soon as it has queued it, so a transaction Kledo then failed to create used to show as sent forever; it now reads "Waiting for Kledo" until it is found, and "Failed in Kledo" if it never appears, which makes it resendable. Nothing is resent automatically, so a slow Kledo cannot cause duplicates
@@ -221,6 +240,9 @@ Upgrading from 1.5.0 goes straight to this release. Versions 1.6.0 through 1.7.3
 * Launched the Kledo plugin!
 
 == Upgrade Notice ==
+
+= 1.8.1 =
+Stops one slow order from pausing the whole sync, sends invoices of orders from before 1.8.0 without waiting, and makes the plugin's messages quieter, with a "Show Reminders" setting. A sync paused by 1.8.0 is safe to resume.
 
 = 1.8.0 =
 Checks every sent sales order and invoice back in Kledo and flags the ones Kledo failed to create; adds order-list filters and bulk actions, a clearer Transactions screen renamed Kledo Status, a Sync tab to send orders missing from Kledo gradually, and a Diagnostics tab to find out why an order did not arrive.
