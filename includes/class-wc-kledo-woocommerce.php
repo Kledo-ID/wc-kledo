@@ -152,6 +152,24 @@ class WC_Kledo_WooCommerce {
 	}
 
 	/**
+	 * Whether this order's sales order was sent before 1.8.0.
+	 *
+	 * Kledo started recording which WooCommerce order each transaction came from in 1.8.0, and it
+	 * did not record the older ones. For such a sales order the read endpoint answers "not there"
+	 * whether it exists or not, and Kledo cannot link an invoice to it either: it creates the
+	 * invoice unlinked, as 1.7.x did. Waiting for it to appear would hold the invoice for days and
+	 * then give up without sending it.
+	 *
+	 * @param  \WC_Order $order
+	 *
+	 * @return bool
+	 * @since 1.8.1
+	 */
+	private function has_legacy_sales_order( WC_Order $order ): bool {
+		return 'legacy_synced' === wc_kledo_get_remote_state( $order, 'order' );
+	}
+
+	/**
 	 * Shared delivery pipeline for Kledo sales order or invoice.
 	 *
 	 * @param  \WC_Order $order
@@ -285,6 +303,13 @@ class WC_Kledo_WooCommerce {
 			$context['link_order'] = 'no';
 		}
 
+		// Same for a sales order sent before 1.8.0: Kledo has no reference to link it by.
+		$legacy_sales_order = 'invoice' === $type && 'yes' === wc_kledo_link_invoice_to_order() && $this->has_legacy_sales_order( $order );
+
+		if ( $legacy_sales_order ) {
+			$context['link_order'] = 'no';
+		}
+
 		try {
 			// Fire integration hook inside try/catch so any hooked callback that throws
 			// is caught and treated as a delivery failure instead of propagating.
@@ -333,6 +358,12 @@ class WC_Kledo_WooCommerce {
 							)
 						);
 					}
+				}
+
+				if ( $legacy_sales_order ) {
+					$order->add_order_note(
+						__( 'Kledo: the sales order was sent before version 1.8.0, so the invoice was sent without waiting for it and without a link to it. Link the two in Kledo by hand if you need to.', 'wc-kledo' )
+					);
 				}
 
 				if ( 'manual_admin' === $context['trigger'] ) {
@@ -556,6 +587,12 @@ class WC_Kledo_WooCommerce {
 			if ( empty( $order_result['success'] ) && empty( $order_result['skipped'] ) ) {
 				return $this->hold_invoice_for_sales_order( $order, $context, $out, $order_result['error'], 'send_failed' );
 			}
+		}
+
+		// Sent before 1.8.0, so it cannot be checked, and too long ago for the race below. `deliver()`
+		// sends the invoice unlinked. See `has_legacy_sales_order()`.
+		if ( $this->has_legacy_sales_order( $order ) ) {
+			return true;
 		}
 
 		// Marked synced only means Kledo answered 200, and 200 on these endpoints means the write

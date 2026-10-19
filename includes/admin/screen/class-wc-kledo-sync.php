@@ -118,6 +118,22 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 	private const PER_PAGE = 25;
 
 	/**
+	 * How long a dismissed Sync notice stays away.
+	 *
+	 * @var int
+	 * @since 1.8.1
+	 */
+	public const NOTICE_SNOOZE = 7 * DAY_IN_SECONDS;
+
+	/**
+	 * Most orders the progress panel names while a batch waits.
+	 *
+	 * @var int
+	 * @since 1.8.1
+	 */
+	private const MAX_ORDER_LINKS = 5;
+
+	/**
 	 * The class constructor.
 	 *
 	 * @return void
@@ -250,7 +266,7 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 			'daily_title'       => array(
 				'title' => __( 'Send Automatically Every Day', 'wc-kledo' ),
 				'type'  => 'title',
-				'desc'  => __( 'What happens when this is switched on: every night the plugin looks at the Processing and Completed orders of the last few days. Orders already in Kledo are skipped, so nothing is created twice. Orders that are missing are sent slowly, a few per minute. Invoices are created as paid or unpaid following the Invoice tab. You can see the results in the Kledo Status tab, and you will see a message if something failed.', 'wc-kledo' ),
+				'desc'  => __( 'What happens when this is switched on: every night the plugin looks at the Processing and Completed orders of the last few days. Orders already in Kledo are skipped, so nothing is created twice. Orders that are missing are sent slowly, a few per minute. Invoices are created as paid or unpaid following the Invoice tab. You can see the results in the Kledo Status tab, and you will see a message if something failed (unless "Show Reminders" is off in the Configure tab).', 'wc-kledo' ),
 			),
 
 			'daily_enabled'     => array(
@@ -455,23 +471,25 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 
 		echo '<p>' . esc_html(
 			sprintf(
-				/* translators: 1: processed, 2: total, 3: confirmed, 4: already in Kledo, 5: failed */
-				__( '%1$d of %2$d orders processed — %3$d confirmed in Kledo, %4$d were already there, %5$d failed.', 'wc-kledo' ),
+				/* translators: 1: processed, 2: total, 3: confirmed, 4: already in Kledo, 5: still being checked, 6: failed */
+				__( '%1$d of %2$d orders processed — %3$d confirmed in Kledo, %4$d were already there, %5$d still being checked in the background, %6$d failed.', 'wc-kledo' ),
 				$counts['processed'],
 				$job['total'],
 				$counts['confirmed'],
 				$counts['adopted'],
+				(int) ( $counts['waiting'] ?? 0 ),
 				$counts['failed']
 			)
 		) . '</p>';
 
 		if ( 'running' === $job['status'] && ! empty( $job['batch']['orders'] ) ) {
-			echo '<p class="description">' . esc_html(
+			echo '<p class="description">' . wp_kses_post(
 				sprintf(
-					/* translators: 1: batch number, 2: number of orders */
-					__( 'Batch %1$d: waiting for Kledo to create %2$d order(s) before sending more.', 'wc-kledo' ),
+					/* translators: 1: batch number, 2: number of orders, 3: comma-separated order links */
+					esc_html__( 'Batch %1$d: waiting for Kledo to create %2$d order(s) before sending more: %3$s', 'wc-kledo' ),
 					$job['batches'],
-					count( $job['batch']['orders'] )
+					count( $job['batch']['orders'] ),
+					$this->get_order_links( array_keys( $job['batch']['orders'] ) )
 				)
 			) . '</p>';
 		}
@@ -480,8 +498,12 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 			echo '<p class="description">' . esc_html__( 'Kledo asked to slow down; continuing in a few minutes.', 'wc-kledo' ) . '</p>';
 		}
 
-		if ( 'paused' === $job['status'] && 'kledo_slow' === $job['pause_reason'] ) {
-			echo '<p class="wc-kledo-sync-warning">' . esc_html__( 'Paused automatically: Kledo had not finished the last batch after 30 minutes. Check that Kledo is working, then resume.', 'wc-kledo' ) . '</p>';
+		if ( 'paused' === $job['status'] && WC_Kledo_Sync_Job::PAUSE_UNREACHABLE === $job['pause_reason'] ) {
+			echo '<p class="wc-kledo-sync-warning">' . esc_html__( 'Paused automatically: Kledo could not be reached for 30 minutes. Check the connection in the Configure tab, then resume.', 'wc-kledo' ) . '</p>';
+		}
+
+		if ( 'paused' === $job['status'] && WC_Kledo_Sync_Job::PAUSE_SLOW_LEGACY === $job['pause_reason'] ) {
+			echo '<p class="wc-kledo-sync-warning">' . esc_html__( 'Paused by an earlier version of the plugin while it waited for an order. It is safe to resume now: an order Kledo is slow with is checked in the background and no longer stops the others.', 'wc-kledo' ) . '</p>';
 		}
 
 		if ( $active ) {
@@ -604,6 +626,35 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
+	 * Links to the first few orders of a list, for the progress panel.
+	 *
+	 * @param  int[] $order_ids
+	 *
+	 * @return string Escaped HTML.
+	 * @since 1.8.1
+	 */
+	private function get_order_links( array $order_ids ): string {
+		$links = array();
+
+		foreach ( array_slice( $order_ids, 0, self::MAX_ORDER_LINKS ) as $order_id ) {
+			$order = wc_get_order( (int) $order_id );
+
+			if ( $order instanceof WC_Order ) {
+				$links[] = sprintf( '<a href="%1$s">#%2$s</a>', esc_url( $order->get_edit_order_url() ), esc_html( $order->get_order_number() ) );
+			}
+		}
+
+		$more = count( $order_ids ) - count( $links );
+
+		if ( $more > 0 ) {
+			/* translators: %d: number of orders not listed */
+			$links[] = esc_html( sprintf( _n( 'and %d more', 'and %d more', $more, 'wc-kledo' ), $more ) );
+		}
+
+		return implode( ', ', $links );
+	}
+
+	/**
 	 * What the last job did with one order, in words.
 	 *
 	 * @param  \WC_Order  $order
@@ -621,6 +672,7 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 				'confirmed' => __( 'Done', 'wc-kledo' ),
 				'adopted'   => __( 'Was already in Kledo', 'wc-kledo' ),
 				'skipped'   => __( 'Nothing to send', 'wc-kledo' ),
+				'waiting'   => __( 'Kledo took too long — still being checked in the background', 'wc-kledo' ),
 				'failed'    => __( 'Failed — see the Kledo Status tab', 'wc-kledo' ),
 			);
 
@@ -723,13 +775,17 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 	}
 
 	/**
-	 * Notices: orders missing from Kledo, a job paused for a slow Kledo, a nightly run that failed.
+	 * Notices: a job that paused itself, a nightly run that failed, orders missing from Kledo.
+	 *
+	 * Shown on WooCommerce screens only — elsewhere the count on the Kledo menu is enough — and a
+	 * dismissed one stays away for `NOTICE_SNOOZE`. The last two are reminders, which the shop can
+	 * turn off; a paused job cannot be turned off, because nothing reaches Kledo until it resumes.
 	 *
 	 * @return void
 	 * @since 1.8.0
 	 */
 	public function add_notices(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) || ! $this->is_woocommerce_screen() ) {
 			return;
 		}
 
@@ -738,21 +794,27 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 		$on_sync    = $this->is_current_screen_page();
 		$sync_link  = sprintf( '<a href="%1$s">%2$s</a>', esc_url( $this->get_screen_url() ), esc_html__( 'Open Sync', 'wc-kledo' ) );
 		$job_active = null !== $job && in_array( $job['status'], array( 'running', 'paused' ), true );
+		$params     = array(
+			'dismissible'             => true,
+			'always_show_on_settings' => false,
+			'snooze'                  => self::NOTICE_SNOOZE,
+			'notice_class'            => 'notice-warning',
+		);
 
-		if ( null !== $job && 'paused' === $job['status'] && 'kledo_slow' === $job['pause_reason'] ) {
+		$paused_message = null !== $job && 'paused' === $job['status'] ? $this->get_paused_message( $job ) : '';
+
+		if ( '' !== $paused_message ) {
 			$handler->add_admin_notice(
-				sprintf(
-					/* translators: 1: job number, 2: link to the Sync tab */
-					esc_html__( 'Kledo: synchronisation #%1$d was paused because Kledo had not finished a batch after 30 minutes. %2$s', 'wc-kledo' ),
-					(int) $job['number'],
-					$on_sync ? '' : $sync_link
-				),
+				$paused_message . ( $on_sync ? '' : ' ' . $sync_link ),
+				// Per job: a dismissed pause stays dismissed for that job, but a later job that
+				// pauses is a new problem and says so.
 				'sync_paused_' . $job['id'],
-				array(
-					'dismissible'  => true,
-					'notice_class' => 'notice-warning',
-				)
+				$params
 			);
+		}
+
+		if ( ! self::shows_reminders() ) {
+			return;
 		}
 
 		if ( null !== $job && 'daily' === $job['source'] && 'done' === $job['status'] && (int) $job['counts']['failed'] > 0 ) {
@@ -768,11 +830,8 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 						esc_html__( 'See what failed', 'wc-kledo' )
 					)
 				),
-				'sync_daily_' . $job['id'],
-				array(
-					'dismissible'  => true,
-					'notice_class' => 'notice-warning',
-				)
+				'sync_daily_failed',
+				$params
 			);
 		}
 
@@ -797,13 +856,67 @@ class WC_Kledo_Sync_Screen extends WC_Kledo_Settings_Screen {
 				(int) ( $cached['invoice'] ?? 0 ),
 				$sync_link
 			),
-			// Keyed on the count, so a dismissed notice comes back when more orders go missing.
-			'sync_candidates_' . $count,
-			array(
-				'dismissible'  => true,
-				'notice_class' => 'notice-info',
-			)
+			// Not keyed on the count: a new order going missing is no reason to bring back a
+			// reminder that was just dismissed.
+			'sync_candidates',
+			array_merge( $params, array( 'notice_class' => 'notice-info' ) )
 		);
+	}
+
+	/**
+	 * Why a paused job paused, as an escaped notice, or empty when an admin paused it.
+	 *
+	 * @param  array $job
+	 *
+	 * @return string
+	 * @since 1.8.1
+	 */
+	private function get_paused_message( array $job ): string {
+		if ( WC_Kledo_Sync_Job::PAUSE_UNREACHABLE === $job['pause_reason'] ) {
+			return sprintf(
+				/* translators: %d: job number */
+				esc_html__( 'Kledo: synchronisation #%d was paused because Kledo could not be reached for 30 minutes. Check the connection in the Configure tab, then resume it.', 'wc-kledo' ),
+				(int) $job['number']
+			);
+		}
+
+		if ( WC_Kledo_Sync_Job::PAUSE_SLOW_LEGACY === $job['pause_reason'] ) {
+			return sprintf(
+				/* translators: %d: job number */
+				esc_html__( 'Kledo: synchronisation #%d was paused by an earlier version of the plugin while it waited for an order. It is safe to resume it now: an order Kledo is slow with no longer stops the others.', 'wc-kledo' ),
+				(int) $job['number']
+			);
+		}
+
+		return '';
+	}
+
+	/**
+	 * Whether the current admin screen is one of WooCommerce's, or this plugin's own.
+	 *
+	 * @return bool
+	 * @since 1.8.1
+	 */
+	private function is_woocommerce_screen(): bool {
+		if ( wc_kledo()->is_plugin_settings() ) {
+			return true;
+		}
+
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		return null !== $screen
+			&& function_exists( 'wc_get_screen_ids' )
+			&& in_array( $screen->id, wc_get_screen_ids(), true );
+	}
+
+	/**
+	 * Whether the shop wants reminder notices.
+	 *
+	 * @return bool
+	 * @since 1.8.1
+	 */
+	public static function shows_reminders(): bool {
+		return wc_string_to_bool( get_option( WC_Kledo_Configure_Screen::SETTING_SHOW_REMINDERS, 'yes' ) );
 	}
 
 	/**

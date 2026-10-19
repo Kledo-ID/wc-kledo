@@ -665,27 +665,41 @@ class WC_Kledo_Diagnostics {
 			}
 		}
 
-		$missing = array();
+		$missing      = array();
+		$unverifiable = array();
 
 		foreach ( WC_Kledo_Sync_Candidates::get_enabled_types() as $type ) {
 			$expected = 'invoice' === $type ? $order->has_status( 'completed' ) : $order->has_status( array( 'processing', 'completed' ) );
 
-			if ( $expected && null === $status[ $type ] && ! ( 'order' === $type && $order->has_status( 'completed' ) && 'no' === wc_kledo_create_order_on_completed() ) ) {
-				$missing[] = $type;
+			if ( ! $expected || null !== $status[ $type ] || ( 'order' === $type && $order->has_status( 'completed' ) && 'no' === wc_kledo_create_order_on_completed() ) ) {
+				continue;
 			}
+
+			// Kledo only records which WooCommerce order a transaction came from since 1.8.0, so
+			// one sent earlier reads as absent whether it is there or not.
+			if ( 'legacy_synced' === wc_kledo_get_remote_state( $order, $type ) ) {
+				$unverifiable[] = $type;
+
+				continue;
+			}
+
+			$missing[] = $type;
 		}
 
-		$details['missing'] = $missing;
+		$details['missing']      = $missing;
+		$details['unverifiable'] = $unverifiable;
 
 		$summary = sprintf(
 			/* translators: 1: present/absent, 2: present/absent */
 			__( 'Sales order: %1$s · Invoice: %2$s', 'wc-kledo' ),
-			null !== $status['order'] ? wc_kledo_get_kledo_reference( $status['order'] ) : __( 'not in Kledo', 'wc-kledo' ),
-			null !== $status['invoice'] ? wc_kledo_get_kledo_reference( $status['invoice'] ) : __( 'not in Kledo', 'wc-kledo' )
+			$this->describe_presence( $status['order'], in_array( 'order', $unverifiable, true ) ),
+			$this->describe_presence( $status['invoice'], in_array( 'invoice', $unverifiable, true ) )
 		);
 
 		if ( empty( $missing ) ) {
-			return $this->result( 'ok', $summary, $details, array( 'in_kledo' ) );
+			return empty( $unverifiable )
+				? $this->result( 'ok', $summary, $details, array( 'in_kledo' ) )
+				: $this->result( 'info', $summary, $details, array( 'sent_before_checks' ) );
 		}
 
 		$causes = array();
@@ -701,6 +715,25 @@ class WC_Kledo_Diagnostics {
 		}
 
 		return $this->result( 'fail', $summary, $details, $causes );
+	}
+
+	/**
+	 * One transaction's presence in Kledo, for the step summary.
+	 *
+	 * @param  array|null $transaction   `data.order` or `data.invoice`.
+	 * @param  bool       $unverifiable  Sent before 1.8.0, so Kledo cannot say.
+	 *
+	 * @return string
+	 * @since 1.8.1
+	 */
+	private function describe_presence( ?array $transaction, bool $unverifiable ): string {
+		if ( null !== $transaction ) {
+			return wc_kledo_get_kledo_reference( $transaction );
+		}
+
+		return $unverifiable
+			? __( 'sent before version 1.8.0, cannot be checked', 'wc-kledo' )
+			: __( 'not in Kledo', 'wc-kledo' );
 	}
 
 	/**
@@ -1020,6 +1053,7 @@ class WC_Kledo_Diagnostics {
 			'waiting_sales_order',
 			'pending_in_kledo',
 			'fixed_by_resend',
+			'sent_before_checks',
 			'in_kledo',
 		);
 
@@ -1131,6 +1165,11 @@ class WC_Kledo_Diagnostics {
 				__( 'Fixed by resending', 'wc-kledo' ),
 				__( 'The order was missing in Kledo and is there now after the resend.', 'wc-kledo' ),
 				__( 'Nothing more to do. If this keeps happening, send this report to Kledo.', 'wc-kledo' ),
+			),
+			'sent_before_checks'      => array(
+				__( 'Sent before version 1.8.0', 'wc-kledo' ),
+				__( 'Kledo accepted it when it was sent, but transactions sent before version 1.8.0 cannot be checked from the store.', 'wc-kledo' ),
+				__( 'Search Kledo for the order number. If it is not there, resend it from the order page.', 'wc-kledo' ),
 			),
 			'in_kledo'                => array(
 				__( 'Everything is already in Kledo', 'wc-kledo' ),

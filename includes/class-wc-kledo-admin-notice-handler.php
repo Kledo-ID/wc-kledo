@@ -95,6 +95,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 *      @type bool $always_show_on_settings If the notice should be forced to display on the
 	 *                                          plugin settings page, regardless of `$dismissible`.
 	 *      @type string $notice_class Additional classes for the notice.
+	 *      @type int $snooze Seconds a dismissal lasts; 0 keeps it dismissed for good.
 	 * }
 	 *
 	 * @return void
@@ -107,6 +108,7 @@ class WC_Kledo_Admin_Notice_Handler {
 				'dismissible'             => true,
 				'always_show_on_settings' => true,
 				'notice_class'            => 'updated',
+				'snooze'                  => 0,
 			)
 		);
 
@@ -130,6 +132,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 *      @type bool $dismissible If the notice should be dismissible
 	 *      @type bool $always_show_on_settings If the notice should be forced to display on the
 	 *                                          plugin settings page, regardless of `$dismissible`.
+	 *      @type int $snooze Seconds a dismissal lasts; 0 keeps it dismissed for good.
 	 * }
 	 *
 	 * @return bool
@@ -146,6 +149,7 @@ class WC_Kledo_Admin_Notice_Handler {
 			array(
 				'dismissible'             => true,
 				'always_show_on_settings' => true,
+				'snooze'                  => 0,
 			)
 		);
 
@@ -160,7 +164,7 @@ class WC_Kledo_Admin_Notice_Handler {
 		}
 
 		// Dismissible: display if notice has not been dismissed.
-		return ! $this->is_notice_dismissed( $message_id );
+		return ! $this->is_notice_dismissed( $message_id, null, (int) $params['snooze'] );
 	}
 
 	/**
@@ -378,7 +382,9 @@ class WC_Kledo_Admin_Notice_Handler {
 
 		$dismissed_notices = $this->get_dismissed_notices( $user_id );
 
-		$dismissed_notices[ $message_id ] = true;
+		// The time rather than `true`, so a notice shown with `snooze` can come back. Still truthy,
+		// so a notice without one stays dismissed for good, as before.
+		$dismissed_notices[ $message_id ] = time();
 
 		update_user_meta( $user_id, $this->get_plugin()->get_id() . '_dismissed_messages', $dismissed_notices );
 
@@ -422,14 +428,25 @@ class WC_Kledo_Admin_Notice_Handler {
 	 *
 	 * @param  string   $message_id  the message identifier
 	 * @param  int|null $user_id  optional user identifier, defaults to current user
+	 * @param  int      $snooze  seconds a dismissal lasts; 0 keeps it dismissed for good
 	 *
 	 * @return boolean true if the message has been dismissed by the admin user
 	 * @since 1.0.0
 	 */
-	public function is_notice_dismissed( string $message_id, ?int $user_id = null ): bool {
+	public function is_notice_dismissed( string $message_id, ?int $user_id = null, int $snooze = 0 ): bool {
 		$dismissed_notices = $this->get_dismissed_notices( $user_id );
+		$dismissed         = $dismissed_notices[ $message_id ] ?? false;
 
-		return isset( $dismissed_notices[ $message_id ] ) && $dismissed_notices[ $message_id ];
+		if ( ! $dismissed ) {
+			return false;
+		}
+
+		// `true` is a dismissal stored before 1.8.1, with no time to measure from: it stays.
+		if ( $snooze <= 0 || true === $dismissed ) {
+			return true;
+		}
+
+		return (int) $dismissed + $snooze > time();
 	}
 
 	/**
@@ -438,7 +455,7 @@ class WC_Kledo_Admin_Notice_Handler {
 	 *
 	 * @param  int|null $user_id  optional user identifier, defaults to current user
 	 *
-	 * @return array of message id to dismissed status (true or false)
+	 * @return array of message id to the time it was dismissed (`true` for one dismissed before 1.8.1, `false` for one undismissed)
 	 * @since 1.0.0
 	 */
 	public function get_dismissed_notices( ?int $user_id = null ): array {

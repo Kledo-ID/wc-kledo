@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.8.1 (2026-10-19)
+
+### Perbaikan
+
+- Satu pesanan yang lambat diproses Kledo tidak lagi menghentikan seluruh Sinkronisasi. Setelah 30 menit, pesanan itu diserahkan ke pengecekan otomatis di latar belakang dan Sinkronisasi lanjut ke pesanan berikutnya. Sinkronisasi hanya berhenti sendiri kalau Kledo sama sekali tidak bisa dihubungi.
+- Tagihan yang pesanan penjualannya dikirim sebelum versi 1.8.0 tidak lagi tertahan berhari-hari. Kledo tidak bisa menemukan pesanan penjualan yang dikirim sebelum 1.8.0, jadi tagihannya sekarang langsung dikirim tanpa tautan ke pesanan penjualan (sama seperti 1.7.x), dan catatan pesanan menjelaskannya.
+- Tab Diagnosa tidak lagi melaporkan transaksi yang dikirim sebelum 1.8.0 sebagai "tidak ada di Kledo". Sekarang tertulis transaksi itu tidak bisa dicek, beserta cara mencarinya di Kledo.
+
+### Peningkatan
+
+- Tab Sinkronisasi menyebut nomor pesanan yang sedang ditunggu (dengan link) dan jumlah pesanan yang diserahkan ke pengecekan di latar belakang.
+- Notifikasi plugin hanya tampil di halaman WooCommerce, dan tombol ✕ menyembunyikannya selama 7 hari. Pengingat "pesanan belum ada di Kledo" tidak lagi muncul ulang setiap kali jumlahnya berubah.
+- Setting baru **Tampilkan Pengingat** (Show Reminders) di tab Konfigurasi untuk mematikan notifikasi pengingat. Peringatan tentang Sinkronisasi yang berhenti atau API key yang ditolak tetap selalu tampil.
+- Tab Sinkronisasi dan Status Kledo, serta tooltip angka di menu Kledo, menjelaskan asal angka di menu saat ada pesanan yang masuk di kedua daftar (misalnya 20 + 11 − 4 = 27).
+- Panduan & FAQ diperbarui untuk perilaku Sinkronisasi yang baru, dengan bagian baru "Pesan dari plugin" dan tiga pertanyaan baru.
+
 ## 1.8.0 (2026-10-07)
 
 ### Fitur baru
