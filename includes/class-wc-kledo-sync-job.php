@@ -8,9 +8,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * One job walks the candidates of a date range (see `WC_Kledo_Sync_Candidates`). Every minute it
  * either starts a batch of 5–10 orders or checks the batch it already started; the next batch only
- * starts once every transaction of the current one is in Kledo or has clearly failed. Kledo answers
- * a send before it has created anything, so pacing on the HTTP answer alone would let a slow Kledo
- * pile up hundreds of queued writes; pacing on confirmation does not.
+ * starts once every transaction of the current one is in Kledo or has clearly failed, or after
+ * 30 minutes, when the stragglers are left to the read-back loop. Kledo answers a send before it
+ * has created anything, so pacing on the HTTP answer alone would let a slow Kledo pile up hundreds
+ * of queued writes; pacing on confirmation does not.
  *
  * Runs on Action Scheduler, which WooCommerce ships, falling back to WP-Cron. Only one job exists
  * at a time; it is started by an admin or, when the shop switched it on, by the daily schedule.
@@ -75,12 +76,30 @@ class WC_Kledo_Sync_Job {
 	public const TICK_INTERVAL = MINUTE_IN_SECONDS;
 
 	/**
-	 * How long a batch may wait for Kledo before the job pauses itself.
+	 * How long a batch may wait for Kledo before the job moves on without it, or pauses itself
+	 * when Kledo did not answer at all.
 	 *
 	 * @var int
 	 * @since 1.8.0
 	 */
 	public const BATCH_TIMEOUT = 30 * MINUTE_IN_SECONDS;
+
+	/**
+	 * Pause reason when Kledo did not answer at all for a whole batch.
+	 *
+	 * @var string
+	 * @since 1.8.1
+	 */
+	public const PAUSE_UNREACHABLE = 'kledo_unreachable';
+
+	/**
+	 * Pause reason left by 1.8.0, which paused when one batch took too long. 1.8.1 no longer sets
+	 * it, but a job paused that way is still waiting to be resumed.
+	 *
+	 * @var string
+	 * @since 1.8.1
+	 */
+	public const PAUSE_SLOW_LEGACY = 'kledo_slow';
 
 	/**
 	 * Pause after Kledo answers 429 (too many requests). Kledo sends no Retry-After.
@@ -201,6 +220,7 @@ class WC_Kledo_Sync_Job {
 				'adopted'   => 0,
 				'sent'      => 0,
 				'confirmed' => 0,
+				'waiting'   => 0,
 				'failed'    => 0,
 			),
 			'backoff_until' => 0,
@@ -224,7 +244,7 @@ class WC_Kledo_Sync_Job {
 	/**
 	 * Pause the job.
 	 *
-	 * @param  string $reason  Empty for an admin's pause, `kledo_slow` when the batch timed out.
+	 * @param  string $reason  Empty for an admin's pause, `PAUSE_UNREACHABLE` when Kledo did not answer.
 	 *
 	 * @return void
 	 * @since 1.8.0
@@ -244,7 +264,7 @@ class WC_Kledo_Sync_Job {
 	}
 
 	/**
-	 * Resume a paused job. A batch that timed out gets a fresh 30 minutes.
+	 * Resume a paused job. A batch that was waiting gets a fresh 30 minutes.
 	 *
 	 * @return void
 	 * @since 1.8.0
@@ -362,14 +382,23 @@ class WC_Kledo_Sync_Job {
 			$job = $this->advance_batch( $job );
 
 			if ( ! empty( $job['batch']['orders'] ) ) {
-				if ( $now - (int) $job['batch']['started_at'] >= self::BATCH_TIMEOUT ) {
-					$job['status']       = 'paused';
-					$job['pause_reason'] = 'kledo_slow';
-
-					wc_kledo_log_warning( sprintf( 'Kledo sync #%d paused: batch %d still waiting for Kledo after 30 minutes.', $job['number'], $job['batches'] ) );
+				if ( $now - (int) $job['batch']['started_at'] < self::BATCH_TIMEOUT ) {
+					return $job;
 				}
 
-				return $job;
+				// Kledo answering, just not with these orders, is a problem with these orders — they
+				// are left to the read-back loop and the retry queue, and the job moves on. Only a
+				// Kledo that never answered during the whole batch stops the job.
+				if ( (int) ( $job['batch']['read_at'] ?? 0 ) < (int) $job['batch']['started_at'] ) {
+					$job['status']       = 'paused';
+					$job['pause_reason'] = self::PAUSE_UNREACHABLE;
+
+					wc_kledo_log_warning( sprintf( 'Kledo sync #%d paused: Kledo did not answer during batch %d for 30 minutes.', $job['number'], $job['batches'] ) );
+
+					return $job;
+				}
+
+				$job = $this->release_batch( $job );
 			}
 		}
 
@@ -442,6 +471,7 @@ class WC_Kledo_Sync_Job {
 		$job['batch'] = empty( $batch ) ? array() : array(
 			'orders'     => $batch,
 			'started_at' => time(),
+			'read_at'    => 0,
 		);
 
 		++$job['batches'];
@@ -588,12 +618,17 @@ class WC_Kledo_Sync_Job {
 				continue;
 			}
 
-			$verifier->refresh_order( $order );
+			if ( $verifier->refresh_order( $order )['readable'] ) {
+				$job['batch']['read_at'] = time();
+			}
+
 			$order = wc_get_order( (int) $order_id );
 
+			// `legacy_synced`: an invoice held by 1.8.0 for a sales order sent before 1.8.0, which
+			// can never read as confirmed. `deliver()` now sends it unlinked.
 			if ( in_array( 'invoice', $entry['types'], true )
 				&& 'waiting_sales_order' === wc_kledo_get_remote_state( $order, 'invoice' )
-				&& 'confirmed' === wc_kledo_get_remote_state( $order, 'order' ) ) {
+				&& in_array( wc_kledo_get_remote_state( $order, 'order' ), array( 'confirmed', 'legacy_synced' ), true ) ) {
 				$bridge->deliver( $order, 'invoice', array( 'trigger' => 'sync_job' ) );
 				$order = wc_get_order( (int) $order_id );
 			}
@@ -623,6 +658,84 @@ class WC_Kledo_Sync_Job {
 		}
 
 		return $job;
+	}
+
+	/**
+	 * Hand the orders a batch is still waiting for to the loops that already own them, and empty it.
+	 *
+	 * A `verifying` transaction belongs to the read-back loop, which records it as missing once
+	 * waiting stops being plausible; a `waiting_sales_order` invoice belongs to the retry queue.
+	 * Holding the whole job for them only repeats what those loops do, and one order Kledo never
+	 * creates would otherwise stop every order after it.
+	 *
+	 * @param  array $job
+	 *
+	 * @return array
+	 * @since 1.8.1
+	 */
+	private function release_batch( array $job ): array {
+		$released = array();
+
+		foreach ( $job['batch']['orders'] as $order_id => $entry ) {
+			$order = wc_get_order( (int) $order_id );
+
+			if ( ! $order instanceof WC_Order ) {
+				continue;
+			}
+
+			foreach ( $entry['types'] as $type ) {
+				$this->ensure_owned( $order, $type );
+			}
+
+			$order->update_meta_data( self::ORDER_RESULT_META, 'waiting' );
+			$order->save();
+
+			$job['counts']['waiting'] = (int) ( $job['counts']['waiting'] ?? 0 ) + 1;
+			$released[]               = $order->get_order_number();
+		}
+
+		wc_kledo_log_warning(
+			sprintf( 'Kledo sync #%d: batch %d still waiting for Kledo after 30 minutes; left to the background check and moving on: %s.', $job['number'], $job['batches'], implode( ', ', $released ) )
+		);
+
+		$job['batch'] = array();
+
+		return $job;
+	}
+
+	/**
+	 * Make sure a transaction left behind by a batch is still followed by one of the loops.
+	 *
+	 * Both queues normally already hold it — `deliver()` puts it there. Only a missing row is added,
+	 * because adding one resets the row's budget.
+	 *
+	 * @param  \WC_Order $order
+	 * @param  string    $type
+	 *
+	 * @return void
+	 * @since 1.8.1
+	 */
+	private function ensure_owned( WC_Order $order, string $type ): void {
+		$key   = $type . ':' . $order->get_id();
+		$state = wc_kledo_get_remote_state( $order, $type );
+
+		if ( 'verifying' === $state ) {
+			$queue = get_option( wc_kledo_get_verification_queue_option_name(), array() );
+
+			if ( ! is_array( $queue ) || ! isset( $queue[ $key ] ) ) {
+				wc_kledo_enqueue_verification( $order->get_id(), $type );
+			}
+
+			return;
+		}
+
+		if ( 'waiting_sales_order' === $state ) {
+			$queue = get_option( 'wc_kledo_failed_transactions', array() );
+
+			if ( ! is_array( $queue ) || ! isset( $queue[ $key ] ) ) {
+				wc_kledo_add_failed_transaction_to_queue( $order->get_id(), $type, __( 'Waiting for the Kledo sales order to be created first.', 'wc-kledo' ) );
+			}
+		}
 	}
 
 	/**
