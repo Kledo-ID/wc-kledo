@@ -367,7 +367,8 @@ class WC_Kledo_Help_Screen extends WC_Kledo_Settings_Screen {
 				'notes' => array(
 					__( 'Orders are sent 5 to 10 per minute ("Speed"), and the next ones only after Kledo has created the previous ones. Orders already in Kledo are skipped.', 'wc-kledo' ),
 					__( 'Each transaction gets its order date, so reports of earlier months in Kledo change, and invoices reduce warehouse stock on that date. Kledo does not refuse dates inside a period you closed (locked), so do not choose dates inside one.', 'wc-kledo' ),
-					__( 'If Kledo has not finished a batch after 30 minutes, the sync pauses itself; resume it once Kledo works normally again.', 'wc-kledo' ),
+					__( 'If Kledo has not created an order after 30 minutes, the sync moves on and the plugin keeps checking that order in the background — it shows up in the Kledo Status tab. The sync only pauses itself when Kledo cannot be reached at all; resume it once the connection works again.', 'wc-kledo' ),
+					__( 'Orders sent before version 1.8.0 cannot be checked in Kledo. Their invoices are sent without waiting for the sales order, and Kledo creates them without a link to it.', 'wc-kledo' ),
 				),
 				'links' => array(
 					array( __( 'Open the Sync tab', 'wc-kledo' ), $this->tab_url( WC_Kledo_Sync_Screen::ID ) ),
@@ -383,7 +384,7 @@ class WC_Kledo_Help_Screen extends WC_Kledo_Settings_Screen {
 					__( 'Click "Save changes".', 'wc-kledo' ),
 				),
 				'notes' => array(
-					__( 'You see a message only if something failed. Results are in the Kledo Status tab.', 'wc-kledo' ),
+					__( 'If something failed, you see a message on WooCommerce pages (unless "Show Reminders" is off) and a count on the Kledo menu. Results are in the Kledo Status tab.', 'wc-kledo' ),
 				),
 				'links' => array(
 					array( __( 'Open the Sync tab', 'wc-kledo' ), $this->tab_url( WC_Kledo_Sync_Screen::ID ) ),
@@ -415,6 +416,22 @@ class WC_Kledo_Help_Screen extends WC_Kledo_Settings_Screen {
 					__( 'Data that Kledo rejected is not retried, because it would be rejected again. Fix the data, then resend.', 'wc-kledo' ),
 					__( 'Retries, checks and the Sync tab run on WordPress scheduled tasks (WP-Cron). If your host blocks them, the work also runs when an administrator opens wp-admin, but a real cron job is better — ask your hosting provider.', 'wc-kledo' ),
 					__( 'Everything the plugin does is written to WooCommerce › Status › Logs, source "wc-kledo", and important results to the order notes.', 'wc-kledo' ),
+				),
+			),
+			array(
+				'id'    => 'guide-notices',
+				'title' => __( 'Messages from the plugin', 'wc-kledo' ),
+				'intro' => __( 'The plugin shows two kinds of messages at the top of WooCommerce pages: warnings, when orders stop reaching Kledo, and reminders, which only tell you something.', 'wc-kledo' ),
+				'steps' => array(
+					__( 'Click ✕ on a message to hide it for 7 days. It comes back after that if the situation has not changed.', 'wc-kledo' ),
+					__( 'To stop the reminders — orders missing from Kledo, a nightly sync with failures — untick "Show Reminders" in the Configure tab and click "Save changes".', 'wc-kledo' ),
+				),
+				'notes' => array(
+					__( 'Messages appear on WooCommerce pages only. On other admin pages the count on the Kledo menu tells you when orders need checking.', 'wc-kledo' ),
+					__( 'Warnings about a stopped synchronisation or a refused API key cannot be turned off, because nothing reaches Kledo until they are dealt with.', 'wc-kledo' ),
+				),
+				'links' => array(
+					array( __( 'Open the Configure tab', 'wc-kledo' ), $this->tab_url( WC_Kledo_Configure_Screen::ID ) ),
 				),
 			),
 		);
@@ -481,7 +498,24 @@ class WC_Kledo_Help_Screen extends WC_Kledo_Settings_Screen {
 			array(
 				'id'       => 'faq-invoice-waiting',
 				'question' => __( 'Why is an invoice "Waiting for sales order"?', 'wc-kledo' ),
-				'answer'   => __( 'With "Link Invoice to Sales Order" on, the invoice is only sent once its sales order exists in Kledo, so the two can be linked. It is sent by itself as soon as the sales order is there.', 'wc-kledo' ),
+				'answer'   => __( 'With "Link Invoice to Sales Order" on, the invoice is only sent once its sales order exists in Kledo, so the two can be linked. It is sent by itself as soon as the sales order is there. If the sales order was sent before version 1.8.0, the invoice does not wait: it is sent right away, without a link to the sales order.', 'wc-kledo' ),
+			),
+			array(
+				'id'       => 'faq-sync-paused',
+				'question' => __( 'The sync stopped by itself and a message keeps showing. What should I do?', 'wc-kledo' ),
+				'answer'   => __( 'The sync only stops by itself when Kledo cannot be reached. Check the connection in the Configure tab, then click "Resume" in the Sync tab. If the message says an earlier version paused it, resuming is safe. "Cancel" is safe too: orders already sent stay in Kledo.', 'wc-kledo' ),
+				'links'    => array( array( __( 'Open the Sync tab', 'wc-kledo' ), $this->tab_url( WC_Kledo_Sync_Screen::ID ) ) ),
+			),
+			array(
+				'id'       => 'faq-menu-count',
+				'question' => __( 'Why is the number on the Kledo menu smaller than the Sync and Kledo Status numbers added up?', 'wc-kledo' ),
+				'answer'   => __( 'Because some orders are on both lists, and the menu counts each order only once. For example: 20 orders are not in Kledo yet (Sync tab) and 11 failed in Kledo (Kledo Status tab). If 4 of them are on both lists, the menu shows 20 + 11 − 4 = 27. An order is on both lists when it failed in Kledo within the last 30 days, because the Sync tab can send it again too. The Sync and Kledo Status tabs show this sum whenever it applies.', 'wc-kledo' ),
+			),
+			array(
+				'id'       => 'faq-hide-messages',
+				'question' => __( 'Can I turn off the plugin\'s messages?', 'wc-kledo' ),
+				'answer'   => __( 'Click ✕ to hide a message for 7 days. Messages only appear on WooCommerce pages. Reminders — orders missing from Kledo, a nightly sync with failures — can be turned off with "Show Reminders" in the Configure tab. Warnings about a stopped synchronisation or a refused API key always show, because nothing reaches Kledo until they are dealt with.', 'wc-kledo' ),
+				'links'    => array( array( __( 'Open the Configure tab', 'wc-kledo' ), $this->tab_url( WC_Kledo_Configure_Screen::ID ) ) ),
 			),
 			array(
 				'id'       => 'faq-edit-cancel',
