@@ -261,27 +261,85 @@ class WC_Kledo_Admin {
 			return '';
 		}
 
-		$count = wc_kledo_get_attention_count();
+		$counts = wc_kledo_get_attention_counts();
+		$count  = $counts['total'];
 
 		if ( $count <= 0 ) {
 			return '';
 		}
 
-		$label = sprintf(
-			/* translators: %d: number of orders */
-			_n( '%d order needs checking in Kledo', '%d orders need checking in Kledo', $count, 'wc-kledo' ),
-			$count
-		);
+		return $this->format_bubble( 'awaiting-mod update-plugins wc-kledo-menu-count count-' . min( $count, 100 ), $count, $this->explain_attention_count( $counts ) );
+	}
 
-		return $this->format_bubble( 'awaiting-mod update-plugins wc-kledo-menu-count count-' . min( $count, 100 ), $count, $label );
+	/**
+	 * Where the menu number comes from, as a sum anyone can check against the two tabs.
+	 *
+	 * The menu counts each order once, so it is less than the two tab numbers added up whenever an
+	 * order is on both lists — a transaction that failed in Kledo within the Sync tab's range can
+	 * be resent from the Sync tab too. Unexplained, the menu looks wrong next to the tabs.
+	 *
+	 * @param  array{not_sent: int, failed: int, total: int} $counts
+	 *
+	 * @return string
+	 * @since 1.8.1
+	 */
+	private function explain_attention_count( array $counts ): string {
+		$in_both = $counts['not_sent'] + $counts['failed'] - $counts['total'];
+
+		if ( $in_both <= 0 ) {
+			return sprintf(
+				/* translators: 1: total orders, 2: orders not in Kledo yet, 3: orders failed in Kledo */
+				__( 'The Kledo menu shows %1$d: %2$d order(s) not in Kledo yet (Sync tab) + %3$d order(s) failed in Kledo (Kledo Status tab).', 'wc-kledo' ),
+				$counts['total'],
+				$counts['not_sent'],
+				$counts['failed']
+			);
+		}
+
+		return sprintf(
+			/* translators: 1: total orders, 2: orders not in Kledo yet, 3: orders failed in Kledo, 4: orders on both lists */
+			__( 'The Kledo menu shows %1$d: %2$d order(s) not in Kledo yet (Sync tab) + %3$d order(s) failed in Kledo (Kledo Status tab) − %4$d order(s) that are on both lists. Each order is counted only once.', 'wc-kledo' ),
+			$counts['total'],
+			$counts['not_sent'],
+			$counts['failed'],
+			$in_both
+		);
+	}
+
+	/**
+	 * Under the Sync and Kledo Status tabs: why the two tab numbers do not add up to the menu.
+	 *
+	 * Only when they do not — an order on both lists. The tooltip on the menu says the same, but a
+	 * tooltip is found only by someone who already suspects it is there.
+	 *
+	 * @param  string $tab
+	 *
+	 * @return void
+	 * @since 1.8.1
+	 */
+	private function render_attention_count_note( string $tab ): void {
+		if ( ! in_array( $tab, array( WC_Kledo_Sync_Screen::ID, WC_Kledo_Transactions_Screen::ID ), true ) || ! $this->shows_attention_counts() ) {
+			return;
+		}
+
+		$counts = wc_kledo_get_attention_counts();
+
+		if ( $counts['not_sent'] + $counts['failed'] <= $counts['total'] ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-info inline wc-kledo-count-note"><p>%s</p></div>',
+			esc_html( $this->explain_attention_count( $counts ) )
+		);
 	}
 
 	/**
 	 * The count bubble on a settings tab, telling which tab the menu number comes from.
 	 *
-	 * The menu bubble adds up two kinds of order, each handled in its own tab: orders never sent
-	 * (Sync tab) and orders whose transaction failed in Kledo (Transactions tab). Other tabs get
-	 * nothing.
+	 * The menu bubble counts two kinds of order, each handled in its own tab: orders never sent
+	 * (Sync tab) and orders whose transaction failed in Kledo (Transactions tab). An order in both
+	 * is counted once there, so the tabs can add up to more than the menu. Other tabs get nothing.
 	 *
 	 * @param  string  $tab_id  The tab ID.
 	 *
@@ -444,6 +502,8 @@ class WC_Kledo_Admin {
 				</p>
 
 				<?php $this->render_guide_link( $current_tab ); ?>
+
+				<?php $this->render_attention_count_note( $current_tab ); ?>
 
 				<?php $screen->render(); ?>
 

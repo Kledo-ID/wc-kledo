@@ -49,6 +49,14 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 	public const SETTING_API_ENDPOINT = 'wc_kledo_api_endpoint';
 
 	/**
+	 * Whether reminder notices — orders missing from Kledo, a nightly sync with failures — show.
+	 *
+	 * @var string
+	 * @since 1.8.1
+	 */
+	public const SETTING_SHOW_REMINDERS = 'wc_kledo_show_reminders';
+
+	/**
 	 * The class constructor.
 	 *
 	 * @return void
@@ -478,6 +486,14 @@ class WC_Kledo_Configure_Screen extends WC_Kledo_Settings_Screen {
 			'api_key_status'     => array(
 				'title' => __( 'API Key Status', 'wc-kledo' ),
 				'type'  => 'wc_kledo_api_key_status',
+			),
+
+			'show_reminders'     => array(
+				'id'      => self::SETTING_SHOW_REMINDERS,
+				'title'   => __( 'Show Reminders', 'wc-kledo' ),
+				'type'    => 'checkbox',
+				'default' => 'yes',
+				'desc'    => __( 'Show a message on WooCommerce pages when orders are missing from Kledo or last night\'s automatic sync had failures. Turning this off hides only these reminders: the count on the Kledo menu, the Kledo Status tab, and the messages about a stopped synchronisation or a rejected API key stay on.', 'wc-kledo' ),
 			),
 
 			'section_end'        => array(
