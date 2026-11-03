@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kledo\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/WC-Kledo\n"
-"POT-Creation-Date: 2026-10-19T14:08:48+07:00\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wc-kledo\n"
+"POT-Creation-Date: 2026-11-03T13:29:19+07:00\n"
 "PO-Revision-Date: 2026-04-21 12:46+0700\n"
 "Last-Translator: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
 "Language-Team: Panji Setya Nur Prawira <kstar.panjinamjaelf@gmail.com>\n"
@@ -51,7 +51,7 @@ msgstr ""
 msgid "https://kledo.com"
 msgstr "https://kledo.com"
 
-#: includes/abstracts/class-wc-kledo-request.php:257
+#: includes/abstracts/class-wc-kledo-request.php:266
 msgid ""
 "Can't do API request because the api key & endpoint url has not been "
 "configured."
@@ -59,7 +59,7 @@ msgstr ""
 "Can't do API request because the api key & endpoint url has not been "
 "configured."
 
-#: includes/abstracts/class-wc-kledo-request.php:321
+#: includes/abstracts/class-wc-kledo-request.php:330
 #: includes/admin/screen/class-wc-kledo-transactions.php:1805
 msgid "There was a problem when connecting to the API."
 msgstr "There was a problem when connecting to the API."
@@ -3365,7 +3365,7 @@ msgstr ""
 #. translators: 1: on/off, 2: on/off
 #. translators: 1: present/absent, 2: present/absent
 #: includes/class-wc-kledo-diagnostics.php:481
-#: includes/class-wc-kledo-diagnostics.php:694
+#: includes/class-wc-kledo-diagnostics.php:750
 #, php-format
 msgid "Sales order: %1$s · Invoice: %2$s"
 msgstr "Sales order: %1$s · Invoice: %2$s"
@@ -3423,47 +3423,59 @@ msgid "Product \"%s\" has no SKU."
 msgstr "Product \"%s\" has no SKU."
 
 #. translators: %s: product name
-#: includes/class-wc-kledo-diagnostics.php:600
+#: includes/class-wc-kledo-diagnostics.php:604
 #, php-format
 msgid "Product \"%s\" has no regular price."
 msgstr "Product \"%s\" has no regular price."
 
 #. translators: %d: number of products
-#: includes/class-wc-kledo-diagnostics.php:615
+#: includes/class-wc-kledo-diagnostics.php:625
 #, php-format
 msgid "%d product, data looks complete."
 msgid_plural "%d products, data looks complete."
 msgstr[0] "%d product, data looks complete."
 msgstr[1] "%d products, data looks complete."
 
-#: includes/class-wc-kledo-diagnostics.php:632
+#. translators: 1: total that would be sent, 2: order total before tax
+#: includes/class-wc-kledo-diagnostics.php:668
+#, php-format
+msgid ""
+"The data that would be sent adds up to %1$s before tax, but the order comes "
+"to %2$s before tax. Kledo would record a different amount; the order may "
+"have fees or lines whose product was deleted, which are not sent."
+msgstr ""
+"The data that would be sent adds up to %1$s before tax, but the order comes "
+"to %2$s before tax. Kledo would record a different amount; the order may "
+"have fees or lines whose product was deleted, which are not sent."
+
+#: includes/class-wc-kledo-diagnostics.php:688
 msgid "Skipped: the plugin is not connected."
 msgstr "Skipped: the plugin is not connected."
 
 #. translators: %d: HTTP status code
-#: includes/class-wc-kledo-diagnostics.php:646
+#: includes/class-wc-kledo-diagnostics.php:702
 #, php-format
 msgid "Kledo did not answer the status request (HTTP %d)."
 msgstr "Kledo did not answer the status request (HTTP %d)."
 
-#: includes/class-wc-kledo-diagnostics.php:735
+#: includes/class-wc-kledo-diagnostics.php:791
 msgid "sent before version 1.8.0, cannot be checked"
 msgstr "sent before version 1.8.0, cannot be checked"
 
-#: includes/class-wc-kledo-diagnostics.php:736
+#: includes/class-wc-kledo-diagnostics.php:792
 msgid "not in Kledo"
 msgstr "not in Kledo"
 
-#: includes/class-wc-kledo-diagnostics.php:794
+#: includes/class-wc-kledo-diagnostics.php:850
 msgid "No failed sends on record."
 msgstr "No failed sends on record."
 
-#: includes/class-wc-kledo-diagnostics.php:807
+#: includes/class-wc-kledo-diagnostics.php:863
 msgid "A send is held or failed; see the details."
 msgstr "A send is held or failed; see the details."
 
 #. translators: %d: number of overdue tasks
-#: includes/class-wc-kledo-diagnostics.php:883
+#: includes/class-wc-kledo-diagnostics.php:939
 #, php-format
 msgid ""
 "%d background task(s) are more than 15 minutes late — scheduled tasks are "
@@ -3472,40 +3484,40 @@ msgstr ""
 "%d background task(s) are more than 15 minutes late — scheduled tasks are "
 "not running on this site."
 
-#: includes/class-wc-kledo-diagnostics.php:889
+#: includes/class-wc-kledo-diagnostics.php:945
 msgid "Background tasks are running on time."
 msgstr "Background tasks are running on time."
 
-#: includes/class-wc-kledo-diagnostics.php:906
+#: includes/class-wc-kledo-diagnostics.php:962
 msgid "Skipped: resending was not selected."
 msgstr "Skipped: resending was not selected."
 
-#: includes/class-wc-kledo-diagnostics.php:912
+#: includes/class-wc-kledo-diagnostics.php:968
 msgid "Skipped: Kledo could not be read, so it is not safe to resend."
 msgstr "Skipped: Kledo could not be read, so it is not safe to resend."
 
-#: includes/class-wc-kledo-diagnostics.php:916
+#: includes/class-wc-kledo-diagnostics.php:972
 msgid "Skipped: everything this order needs is already in Kledo."
 msgstr "Skipped: everything this order needs is already in Kledo."
 
-#: includes/class-wc-kledo-diagnostics.php:964
+#: includes/class-wc-kledo-diagnostics.php:1020
 msgid "Kledo did not accept the resend; see the recorded request below."
 msgstr "Kledo did not accept the resend; see the recorded request below."
 
-#: includes/class-wc-kledo-diagnostics.php:967
+#: includes/class-wc-kledo-diagnostics.php:1023
 msgid "Kledo accepted the resend. The next step checks whether it was created."
 msgstr ""
 "Kledo accepted the resend. The next step checks whether it was created."
 
-#: includes/class-wc-kledo-diagnostics.php:984
+#: includes/class-wc-kledo-diagnostics.php:1040
 msgid "Skipped: nothing was resent."
 msgstr "Skipped: nothing was resent."
 
-#: includes/class-wc-kledo-diagnostics.php:991
+#: includes/class-wc-kledo-diagnostics.php:1047
 msgid "Kledo has now created everything that was resent."
 msgstr "Kledo has now created everything that was resent."
 
-#: includes/class-wc-kledo-diagnostics.php:996
+#: includes/class-wc-kledo-diagnostics.php:1052
 msgid ""
 "Kledo accepted the resend but has not created it yet. If it still is not "
 "there in a few minutes, the problem is on Kledo's side — send this report to "
@@ -3516,42 +3528,42 @@ msgstr ""
 "Kledo."
 
 #. translators: 1: why it went missing, 2: explanation of that cause
-#: includes/class-wc-kledo-diagnostics.php:1026
+#: includes/class-wc-kledo-diagnostics.php:1082
 #, php-format
 msgid "It is in Kledo now. Why it was missing: %1$s — %2$s"
 msgstr "It is in Kledo now. Why it was missing: %1$s — %2$s"
 
-#: includes/class-wc-kledo-diagnostics.php:1080
+#: includes/class-wc-kledo-diagnostics.php:1136
 msgid "The connection to Kledo is switched off"
 msgstr "The connection to Kledo is switched off"
 
-#: includes/class-wc-kledo-diagnostics.php:1081
+#: includes/class-wc-kledo-diagnostics.php:1137
 msgid "The plugin does not send anything while \"Enable Integration\" is off."
 msgstr "The plugin does not send anything while \"Enable Integration\" is off."
 
-#: includes/class-wc-kledo-diagnostics.php:1082
+#: includes/class-wc-kledo-diagnostics.php:1138
 msgid "Switch it on in WooCommerce > Kledo > Configure, then resend the order."
 msgstr ""
 "Switch it on in WooCommerce > Kledo > Configure, then resend the order."
 
-#: includes/class-wc-kledo-diagnostics.php:1085
+#: includes/class-wc-kledo-diagnostics.php:1141
 msgid "The plugin is not connected to Kledo"
 msgstr "The plugin is not connected to Kledo"
 
-#: includes/class-wc-kledo-diagnostics.php:1086
+#: includes/class-wc-kledo-diagnostics.php:1142
 msgid "The API key or the API endpoint URL is empty, so nothing can be sent."
 msgstr "The API key or the API endpoint URL is empty, so nothing can be sent."
 
-#: includes/class-wc-kledo-diagnostics.php:1087
+#: includes/class-wc-kledo-diagnostics.php:1143
 msgid "Fill in both in WooCommerce > Kledo > Configure, then resend the order."
 msgstr ""
 "Fill in both in WooCommerce > Kledo > Configure, then resend the order."
 
-#: includes/class-wc-kledo-diagnostics.php:1090
+#: includes/class-wc-kledo-diagnostics.php:1146
 msgid "Kledo refuses the API key"
 msgstr "Kledo refuses the API key"
 
-#: includes/class-wc-kledo-diagnostics.php:1091
+#: includes/class-wc-kledo-diagnostics.php:1147
 msgid ""
 "The saved API key has expired, was revoked, or belongs to an account that no "
 "longer has access to the company."
@@ -3559,7 +3571,7 @@ msgstr ""
 "The saved API key has expired, was revoked, or belongs to an account that no "
 "longer has access to the company."
 
-#: includes/class-wc-kledo-diagnostics.php:1092
+#: includes/class-wc-kledo-diagnostics.php:1148
 msgid ""
 "Create a new API key in Kledo, save it in WooCommerce > Kledo > Configure, "
 "then resend."
@@ -3567,11 +3579,11 @@ msgstr ""
 "Create a new API key in Kledo, save it in WooCommerce > Kledo > Configure, "
 "then resend."
 
-#: includes/class-wc-kledo-diagnostics.php:1095
+#: includes/class-wc-kledo-diagnostics.php:1151
 msgid "Another plugin changes the requests to Kledo"
 msgstr "Another plugin changes the requests to Kledo"
 
-#: includes/class-wc-kledo-diagnostics.php:1096
+#: includes/class-wc-kledo-diagnostics.php:1152
 msgid ""
 "Kledo only accepts requests that identify themselves as this plugin, and "
 "another plugin or the server rewrote that identification (the User-Agent), "
@@ -3581,7 +3593,7 @@ msgstr ""
 "another plugin or the server rewrote that identification (the User-Agent), "
 "so Kledo refuses them."
 
-#: includes/class-wc-kledo-diagnostics.php:1097
+#: includes/class-wc-kledo-diagnostics.php:1153
 msgid ""
 "Send this report to Kledo; it shows the changed value. Usually a security or "
 "performance plugin that rewrites outgoing requests has to be configured to "
@@ -3591,11 +3603,11 @@ msgstr ""
 "performance plugin that rewrites outgoing requests has to be configured to "
 "leave them alone."
 
-#: includes/class-wc-kledo-diagnostics.php:1100
+#: includes/class-wc-kledo-diagnostics.php:1156
 msgid "The store cannot reach Kledo"
 msgstr "The store cannot reach Kledo"
 
-#: includes/class-wc-kledo-diagnostics.php:1101
+#: includes/class-wc-kledo-diagnostics.php:1157
 msgid ""
 "The request did not get an answer — the server may block outgoing "
 "connections, or there was a network, DNS or SSL problem."
@@ -3603,7 +3615,7 @@ msgstr ""
 "The request did not get an answer — the server may block outgoing "
 "connections, or there was a network, DNS or SSL problem."
 
-#: includes/class-wc-kledo-diagnostics.php:1102
+#: includes/class-wc-kledo-diagnostics.php:1158
 msgid ""
 "Ask your hosting provider whether outgoing connections to the Kledo API are "
 "allowed, then resend."
@@ -3611,11 +3623,11 @@ msgstr ""
 "Ask your hosting provider whether outgoing connections to the Kledo API are "
 "allowed, then resend."
 
-#: includes/class-wc-kledo-diagnostics.php:1105
+#: includes/class-wc-kledo-diagnostics.php:1161
 msgid "Creating transactions is switched off"
 msgstr "Creating transactions is switched off"
 
-#: includes/class-wc-kledo-diagnostics.php:1106
+#: includes/class-wc-kledo-diagnostics.php:1162
 msgid ""
 "Both \"Enable Create Order\" and \"Enable Create Invoice\" are off, so "
 "nothing is sent."
@@ -3623,15 +3635,15 @@ msgstr ""
 "Both \"Enable Create Order\" and \"Enable Create Invoice\" are off, so "
 "nothing is sent."
 
-#: includes/class-wc-kledo-diagnostics.php:1107
+#: includes/class-wc-kledo-diagnostics.php:1163
 msgid "Switch on what you need in the Order and Invoice tabs."
 msgstr "Switch on what you need in the Order and Invoice tabs."
 
-#: includes/class-wc-kledo-diagnostics.php:1110
+#: includes/class-wc-kledo-diagnostics.php:1166
 msgid "The order status does not send anything"
 msgstr "The order status does not send anything"
 
-#: includes/class-wc-kledo-diagnostics.php:1111
+#: includes/class-wc-kledo-diagnostics.php:1167
 msgid ""
 "Only Processing orders get a sales order and only Completed orders get an "
 "invoice. This order has another status."
@@ -3639,15 +3651,15 @@ msgstr ""
 "Only Processing orders get a sales order and only Completed orders get an "
 "invoice. This order has another status."
 
-#: includes/class-wc-kledo-diagnostics.php:1112
+#: includes/class-wc-kledo-diagnostics.php:1168
 msgid "Change the order to Processing or Completed when it is ready."
 msgstr "Change the order to Processing or Completed when it is ready."
 
-#: includes/class-wc-kledo-diagnostics.php:1115
+#: includes/class-wc-kledo-diagnostics.php:1171
 msgid "The plugin never saw this order"
 msgstr "The plugin never saw this order"
 
-#: includes/class-wc-kledo-diagnostics.php:1116
+#: includes/class-wc-kledo-diagnostics.php:1172
 msgid ""
 "The order reached Processing or Completed before the plugin was installed, "
 "or while it was inactive, so it was never sent."
@@ -3655,7 +3667,7 @@ msgstr ""
 "The order reached Processing or Completed before the plugin was installed, "
 "or while it was inactive, so it was never sent."
 
-#: includes/class-wc-kledo-diagnostics.php:1117
+#: includes/class-wc-kledo-diagnostics.php:1173
 msgid ""
 "Send it with \"Kledo: Send sales order / invoice\" in the order actions, or "
 "send many at once from the Sync tab."
@@ -3663,11 +3675,11 @@ msgstr ""
 "Send it with \"Kledo: Send sales order / invoice\" in the order actions, or "
 "send many at once from the Sync tab."
 
-#: includes/class-wc-kledo-diagnostics.php:1120
+#: includes/class-wc-kledo-diagnostics.php:1176
 msgid "Products are missing from the order"
 msgstr "Products are missing from the order"
 
-#: includes/class-wc-kledo-diagnostics.php:1121
+#: includes/class-wc-kledo-diagnostics.php:1177
 msgid ""
 "Some or all products of this order were deleted from the store, so they "
 "cannot be sent."
@@ -3675,15 +3687,15 @@ msgstr ""
 "Some or all products of this order were deleted from the store, so they "
 "cannot be sent."
 
-#: includes/class-wc-kledo-diagnostics.php:1122
+#: includes/class-wc-kledo-diagnostics.php:1178
 msgid "Restore the products or create the transaction in Kledo manually."
 msgstr "Restore the products or create the transaction in Kledo manually."
 
-#: includes/class-wc-kledo-diagnostics.php:1125
+#: includes/class-wc-kledo-diagnostics.php:1181
 msgid "Kledo rejected the data"
 msgstr "Kledo rejected the data"
 
-#: includes/class-wc-kledo-diagnostics.php:1126
+#: includes/class-wc-kledo-diagnostics.php:1182
 msgid ""
 "Kledo refused the order because something in it is not valid in Kledo — the "
 "error message in the report says what."
@@ -3691,7 +3703,7 @@ msgstr ""
 "Kledo refused the order because something in it is not valid in Kledo — the "
 "error message in the report says what."
 
-#: includes/class-wc-kledo-diagnostics.php:1127
+#: includes/class-wc-kledo-diagnostics.php:1183
 msgid ""
 "Correct what the error names (product, customer, account, warehouse), then "
 "resend."
@@ -3699,23 +3711,23 @@ msgstr ""
 "Correct what the error names (product, customer, account, warehouse), then "
 "resend."
 
-#: includes/class-wc-kledo-diagnostics.php:1130
+#: includes/class-wc-kledo-diagnostics.php:1186
 msgid "Too many requests at once"
 msgstr "Too many requests at once"
 
-#: includes/class-wc-kledo-diagnostics.php:1131
+#: includes/class-wc-kledo-diagnostics.php:1187
 msgid "Kledo asked the store to slow down."
 msgstr "Kledo asked the store to slow down."
 
-#: includes/class-wc-kledo-diagnostics.php:1132
+#: includes/class-wc-kledo-diagnostics.php:1188
 msgid "Wait a few minutes; the plugin retries automatically."
 msgstr "Wait a few minutes; the plugin retries automatically."
 
-#: includes/class-wc-kledo-diagnostics.php:1135
+#: includes/class-wc-kledo-diagnostics.php:1191
 msgid "No payment account is chosen"
 msgstr "No payment account is chosen"
 
-#: includes/class-wc-kledo-diagnostics.php:1136
+#: includes/class-wc-kledo-diagnostics.php:1192
 msgid ""
 "Invoices are created as paid, but there is no account to record the payment "
 "on."
@@ -3723,15 +3735,15 @@ msgstr ""
 "Invoices are created as paid, but there is no account to record the payment "
 "on."
 
-#: includes/class-wc-kledo-diagnostics.php:1137
+#: includes/class-wc-kledo-diagnostics.php:1193
 msgid "Choose a Payment Account in the Invoice tab, then resend."
 msgstr "Choose a Payment Account in the Invoice tab, then resend."
 
-#: includes/class-wc-kledo-diagnostics.php:1140
+#: includes/class-wc-kledo-diagnostics.php:1196
 msgid "Scheduled tasks are not running on this site"
 msgstr "Scheduled tasks are not running on this site"
 
-#: includes/class-wc-kledo-diagnostics.php:1141
+#: includes/class-wc-kledo-diagnostics.php:1197
 msgid ""
 "Retries and checks are done by WordPress scheduled tasks (WP-Cron), and they "
 "are not running, so failed sends are never retried."
@@ -3739,7 +3751,7 @@ msgstr ""
 "Retries and checks are done by WordPress scheduled tasks (WP-Cron), and they "
 "are not running, so failed sends are never retried."
 
-#: includes/class-wc-kledo-diagnostics.php:1142
+#: includes/class-wc-kledo-diagnostics.php:1198
 msgid ""
 "Ask your hosting provider to enable WP-Cron or a real cron job for "
 "WordPress. Meanwhile, resend from the Kledo Status tab."
@@ -3747,11 +3759,11 @@ msgstr ""
 "Ask your hosting provider to enable WP-Cron or a real cron job for "
 "WordPress. Meanwhile, resend from the Kledo Status tab."
 
-#: includes/class-wc-kledo-diagnostics.php:1145
+#: includes/class-wc-kledo-diagnostics.php:1201
 msgid "Kledo accepted the order but could not create it"
 msgstr "Kledo accepted the order but could not create it"
 
-#: includes/class-wc-kledo-diagnostics.php:1146
+#: includes/class-wc-kledo-diagnostics.php:1202
 msgid ""
 "The store sent it correctly, but creating it failed inside Kledo. The reason "
 "is only recorded on Kledo's side."
@@ -3759,7 +3771,7 @@ msgstr ""
 "The store sent it correctly, but creating it failed inside Kledo. The reason "
 "is only recorded on Kledo's side."
 
-#: includes/class-wc-kledo-diagnostics.php:1147
+#: includes/class-wc-kledo-diagnostics.php:1203
 msgid ""
 "Send this report to Kledo; it contains what the Kledo team needs to find the "
 "reason."
@@ -3767,15 +3779,15 @@ msgstr ""
 "Send this report to Kledo; it contains what the Kledo team needs to find the "
 "reason."
 
-#: includes/class-wc-kledo-diagnostics.php:1150
+#: includes/class-wc-kledo-diagnostics.php:1206
 msgid "Sending failed"
 msgstr "Sending failed"
 
-#: includes/class-wc-kledo-diagnostics.php:1151
+#: includes/class-wc-kledo-diagnostics.php:1207
 msgid "The request to Kledo failed; the error message in the report says how."
 msgstr "The request to Kledo failed; the error message in the report says how."
 
-#: includes/class-wc-kledo-diagnostics.php:1152
+#: includes/class-wc-kledo-diagnostics.php:1208
 msgid ""
 "Resend from the Kledo Status tab. If it keeps failing, send this report to "
 "Kledo."
@@ -3783,11 +3795,11 @@ msgstr ""
 "Resend from the Kledo Status tab. If it keeps failing, send this report to "
 "Kledo."
 
-#: includes/class-wc-kledo-diagnostics.php:1155
+#: includes/class-wc-kledo-diagnostics.php:1211
 msgid "The invoice is waiting for its sales order"
 msgstr "The invoice is waiting for its sales order"
 
-#: includes/class-wc-kledo-diagnostics.php:1156
+#: includes/class-wc-kledo-diagnostics.php:1212
 msgid ""
 "The invoice is held until the sales order exists in Kledo, so the two can be "
 "linked. It is sent automatically."
@@ -3795,7 +3807,7 @@ msgstr ""
 "The invoice is held until the sales order exists in Kledo, so the two can be "
 "linked. It is sent automatically."
 
-#: includes/class-wc-kledo-diagnostics.php:1157
+#: includes/class-wc-kledo-diagnostics.php:1213
 msgid ""
 "Nothing to do unless it is still waiting after an hour; then check the sales "
 "order."
@@ -3803,15 +3815,15 @@ msgstr ""
 "Nothing to do unless it is still waiting after an hour; then check the sales "
 "order."
 
-#: includes/class-wc-kledo-diagnostics.php:1160
+#: includes/class-wc-kledo-diagnostics.php:1216
 msgid "Kledo is still creating it"
 msgstr "Kledo is still creating it"
 
-#: includes/class-wc-kledo-diagnostics.php:1161
+#: includes/class-wc-kledo-diagnostics.php:1217
 msgid "Kledo accepted the order and has not finished creating it yet."
 msgstr "Kledo accepted the order and has not finished creating it yet."
 
-#: includes/class-wc-kledo-diagnostics.php:1162
+#: includes/class-wc-kledo-diagnostics.php:1218
 msgid ""
 "Check again in a few minutes. If it is still not there after an hour, send "
 "this report to Kledo."
@@ -3819,24 +3831,24 @@ msgstr ""
 "Check again in a few minutes. If it is still not there after an hour, send "
 "this report to Kledo."
 
-#: includes/class-wc-kledo-diagnostics.php:1165
+#: includes/class-wc-kledo-diagnostics.php:1221
 msgid "Fixed by resending"
 msgstr "Fixed by resending"
 
-#: includes/class-wc-kledo-diagnostics.php:1166
+#: includes/class-wc-kledo-diagnostics.php:1222
 msgid "The order was missing in Kledo and is there now after the resend."
 msgstr "The order was missing in Kledo and is there now after the resend."
 
-#: includes/class-wc-kledo-diagnostics.php:1167
+#: includes/class-wc-kledo-diagnostics.php:1223
 msgid "Nothing more to do. If this keeps happening, send this report to Kledo."
 msgstr ""
 "Nothing more to do. If this keeps happening, send this report to Kledo."
 
-#: includes/class-wc-kledo-diagnostics.php:1170
+#: includes/class-wc-kledo-diagnostics.php:1226
 msgid "Sent before version 1.8.0"
 msgstr "Sent before version 1.8.0"
 
-#: includes/class-wc-kledo-diagnostics.php:1171
+#: includes/class-wc-kledo-diagnostics.php:1227
 msgid ""
 "Kledo accepted it when it was sent, but transactions sent before version "
 "1.8.0 cannot be checked from the store."
@@ -3844,7 +3856,7 @@ msgstr ""
 "Kledo accepted it when it was sent, but transactions sent before version "
 "1.8.0 cannot be checked from the store."
 
-#: includes/class-wc-kledo-diagnostics.php:1172
+#: includes/class-wc-kledo-diagnostics.php:1228
 msgid ""
 "Search Kledo for the order number. If it is not there, resend it from the "
 "order page."
@@ -3852,15 +3864,15 @@ msgstr ""
 "Search Kledo for the order number. If it is not there, resend it from the "
 "order page."
 
-#: includes/class-wc-kledo-diagnostics.php:1175
+#: includes/class-wc-kledo-diagnostics.php:1231
 msgid "Everything is already in Kledo"
 msgstr "Everything is already in Kledo"
 
-#: includes/class-wc-kledo-diagnostics.php:1176
+#: includes/class-wc-kledo-diagnostics.php:1232
 msgid "Kledo holds everything this order should have."
 msgstr "Kledo holds everything this order should have."
 
-#: includes/class-wc-kledo-diagnostics.php:1177
+#: includes/class-wc-kledo-diagnostics.php:1233
 msgid ""
 "If you do not see it in Kledo, search for the reference numbers shown in "
 "step 6."
@@ -3868,19 +3880,19 @@ msgstr ""
 "If you do not see it in Kledo, search for the reference numbers shown in "
 "step 6."
 
-#: includes/class-wc-kledo-diagnostics.php:1180
+#: includes/class-wc-kledo-diagnostics.php:1236
 msgid "No cause could be found from the store"
 msgstr "No cause could be found from the store"
 
-#: includes/class-wc-kledo-diagnostics.php:1181
+#: includes/class-wc-kledo-diagnostics.php:1237
 msgid "Every check on the store side passed."
 msgstr "Every check on the store side passed."
 
-#: includes/class-wc-kledo-diagnostics.php:1182
+#: includes/class-wc-kledo-diagnostics.php:1238
 msgid "Send this report to Kledo for investigation."
 msgstr "Send this report to Kledo for investigation."
 
-#: includes/class-wc-kledo-diagnostics.php:1208
+#: includes/class-wc-kledo-diagnostics.php:1264
 msgid ""
 "Log files are not available on this store (WooCommerce may be logging to the "
 "database)."
