@@ -595,10 +595,20 @@ class WC_Kledo_Diagnostics {
 				$warnings[] = sprintf( __( 'Product "%s" has no SKU.', 'wc-kledo' ), $item['name'] );
 			}
 
-			if ( '' === (string) $item['regular_price'] || 0.0 === (float) $item['regular_price'] ) {
+			// A regular price of 0 is fine when the order line still has a price, e.g. a product
+			// priced only through its add-ons. An empty one is always reported: Kledo rejects it.
+			$has_line_price = isset( $item['price'] ) && 0.0 !== (float) $item['price'];
+
+			if ( '' === (string) $item['regular_price'] || ( 0.0 === (float) $item['regular_price'] && ! $has_line_price ) ) {
 				/* translators: %s: product name */
 				$warnings[] = sprintf( __( 'Product "%s" has no regular price.', 'wc-kledo' ), $item['name'] );
 			}
+		}
+
+		$total_warning = $this->get_total_mismatch_warning( $order, $details[ $enabled[0] ?? 'order' ] ?? array() );
+
+		if ( null !== $total_warning ) {
+			$warnings[] = $total_warning;
 		}
 
 		$details['warnings'] = $warnings;
@@ -613,6 +623,52 @@ class WC_Kledo_Diagnostics {
 
 		/* translators: %d: number of products */
 		return $this->result( 'ok', sprintf( _n( '%d product, data looks complete.', '%d products, data looks complete.', count( $items ), 'wc-kledo' ), count( $items ) ), $details, array() );
+	}
+
+	/**
+	 * Compare what the body adds up to with the order's own total, both before tax.
+	 *
+	 * Kledo adds its own tax, so tax is left out on both sides. A difference means Kledo would
+	 * record another amount than the order: lines whose product was deleted, fees, which are not
+	 * sent, or a body without `price` from an older build.
+	 *
+	 * @param  \WC_Order $order
+	 * @param  array     $body  The body that would be sent.
+	 *
+	 * @return string|null The warning, or null when the amounts match or cannot be compared.
+	 * @since 1.8.2
+	 */
+	private function get_total_mismatch_warning( WC_Order $order, array $body ): ?string {
+		if ( empty( $body['items'] ) ) {
+			return null;
+		}
+
+		$sent_total = 0.0;
+
+		foreach ( $body['items'] as $item ) {
+			if ( ! isset( $item['price'] ) ) {
+				return null;
+			}
+
+			$sent_total += (float) $item['price'] * (float) $item['qty'];
+		}
+
+		$sent_total += (float) ( $body['shipping_cost'] ?? 0 ) - (float) ( $body['additional_discount_amount'] ?? 0 );
+		$order_total = (float) $order->get_total() - (float) $order->get_total_tax();
+
+		// One unit of the smallest coin, so the unrounded line prices do not raise a false warning.
+		if ( abs( $sent_total - $order_total ) < pow( 10, -wc_get_price_decimals() ) ) {
+			return null;
+		}
+
+		$price_args = array( 'currency' => $order->get_currency() );
+
+		return sprintf(
+			/* translators: 1: total that would be sent, 2: order total before tax */
+			__( 'The data that would be sent adds up to %1$s before tax, but the order comes to %2$s before tax. Kledo would record a different amount; the order may have fees or lines whose product was deleted, which are not sent.', 'wc-kledo' ),
+			html_entity_decode( wp_strip_all_tags( wc_price( $sent_total, $price_args ) ) ),
+			html_entity_decode( wp_strip_all_tags( wc_price( $order_total, $price_args ) ) )
+		);
 	}
 
 	/**
