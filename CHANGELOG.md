@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.8.2 (belum dirilis)
+## 1.8.2 (2026-11-03)
 
 ### Perbaikan
 
