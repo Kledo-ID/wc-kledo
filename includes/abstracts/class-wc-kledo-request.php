@@ -211,11 +211,19 @@ abstract class WC_Kledo_Request {
 	/**
 	 * Get the product items from order.
 	 *
+	 * `regular_price` and `sale_price` are the product's catalog prices; Kledo uses them for the
+	 * product it creates. `price` is what the customer paid per unit on the order line, before
+	 * coupons and without tax, so it includes product add-ons, dynamic pricing, and a price that
+	 * changed after the order was placed. Kledo uses `price` for the transaction line when it is
+	 * sent. It is not rounded to the currency's decimals: a line of 100,000 for 3 units would
+	 * otherwise add up to 99,999. Seven decimals match the precision Kledo stores.
+	 *
 	 * @param  \WC_Order $order
 	 *
 	 * @return array
 	 * @throws \Exception
 	 * @since 1.0.0
+	 * @since 1.8.2 Sends `price`, the order line's unit price.
 	 *
 	 * @noinspection PhpPossiblePolymorphicInvocationInspection
 	 */
@@ -236,6 +244,7 @@ abstract class WC_Kledo_Request {
 				'qty'           => $item->get_quantity(),
 				'regular_price' => $product->get_regular_price(),
 				'sale_price'    => $product->get_sale_price(),
+				'price'         => wc_format_decimal( $order->get_item_subtotal( $item, false, false ), 7, true ),
 				'photo'         => wp_get_attachment_url( $product->get_image_id() ) ?: null,
 				'category_name' => 'WooCommerce',
 			);
