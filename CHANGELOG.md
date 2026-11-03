@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.8.2 (belum dirilis)
+
+### Perbaikan
+
+- Harga produk di pesanan penjualan dan tagihan Kledo sekarang sama dengan harga di pesanan WooCommerce. Sebelumnya yang dikirim adalah harga katalog produk, jadi tambahan dari add-on produk (misalnya "Print DTF +Rp18.000"), harga dinamis, atau harga yang diubah setelah pesanan dibuat tidak ikut, dan total di Kledo lebih kecil dari total pesanan. Butuh Kledo yang sudah mendukung harga baris pesanan; sebelum itu Kledo tetap memakai harga katalog seperti sebelumnya.
+- Untuk toko yang memasukkan harga produk sudah termasuk pajak, harga yang dikirim sekarang tanpa pajak, sehingga pajak tidak lagi terhitung dua kali di Kledo. Total transaksi Kledo di toko seperti ini bisa berubah dibanding versi sebelumnya. Sama seperti poin di atas, ini baru berlaku setelah Kledo mendukung harga baris pesanan.
+
+### Peningkatan
+
+- Tab Diagnosa memberi peringatan kalau jumlah data yang akan dikirim berbeda dengan total pesanan (sebelum pajak), misalnya karena ada biaya tambahan (fee) atau baris yang produknya sudah dihapus — dua hal yang tidak ikut terkirim ke Kledo.
+- Tab Diagnosa tidak lagi memperingatkan "tidak punya harga reguler" untuk produk berharga 0 yang harganya berasal dari add-on.
+
 ## 1.8.1 (2026-10-19)
 
 ### Perbaikan

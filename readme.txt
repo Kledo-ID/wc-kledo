@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag: 1.8.1
+Stable tag: 1.8.2
 Requires PHP: 7.4
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -139,6 +139,12 @@ The command palette integration needs WordPress 6.9 or later — earlier version
 
 == Changelog ==
 
+= 1.8.2 =
+* fix: sales orders and invoices in Kledo now carry the price paid on the order line instead of the product's catalog price, so product add-ons, dynamic pricing, and prices changed after the order was placed are no longer lost. Needs a Kledo version that reads the order line price; until then Kledo keeps using the catalog price
+* fix: stores that enter prices including tax now send prices without tax, so Kledo no longer adds the tax twice. Kledo totals for such stores can change compared with earlier versions. Like the fix above, this takes effect once Kledo reads the order line price
+* feat: the Diagnostics tab warns when the data that would be sent adds up to another amount than the order total before tax, for example because of fees or lines whose product was deleted, which are not sent
+* feat: the Diagnostics tab no longer warns about a missing regular price for a product priced at 0 whose price comes from its add-ons
+
 = 1.8.1 =
 * fix: one order Kledo is slow with no longer stops the whole sync. After 30 minutes the sync leaves that order to the background check, which keeps following it, and moves on to the next orders. It only pauses itself when Kledo cannot be reached at all
 * fix: an invoice whose sales order was sent before 1.8.0 is no longer held for days waiting for it. Kledo cannot find sales orders sent before 1.8.0, so the invoice is now sent right away, without a link to the sales order — as 1.7.x did — and the order note says so
@@ -240,6 +246,9 @@ Upgrading from 1.5.0 goes straight to this release. Versions 1.6.0 through 1.7.3
 * Launched the Kledo plugin!
 
 == Upgrade Notice ==
+
+= 1.8.2 =
+Sends the price paid on each order line, so product add-ons and other price changes reach Kledo and its totals match the order. Stores that enter prices including tax may see different Kledo totals: tax is no longer counted twice.
 
 = 1.8.1 =
 Stops one slow order from pausing the whole sync, sends invoices of orders from before 1.8.0 without waiting, and makes the plugin's messages quieter, with a "Show Reminders" setting. A sync paused by 1.8.0 is safe to resume.
