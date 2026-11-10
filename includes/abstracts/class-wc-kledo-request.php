@@ -218,12 +218,17 @@ abstract class WC_Kledo_Request {
 	 * sent. It is not rounded to the currency's decimals: a line of 100,000 for 3 units would
 	 * otherwise add up to 99,999. Seven decimals match the precision Kledo stores.
 	 *
+	 * `photo` is the product's full-size image URL, which Kledo downloads when it creates the
+	 * product. It is null, and so left out of the request body, when the product has no image or
+	 * the image fails the checks in WC_Kledo_Product_Photo; the line is sent either way.
+	 *
 	 * @param  \WC_Order $order
 	 *
 	 * @return array
 	 * @throws \Exception
 	 * @since 1.0.0
 	 * @since 1.8.2 Sends `price`, the order line's unit price.
+	 * @since 1.8.3 Sends `photo` only when it passes WC_Kledo_Product_Photo's checks.
 	 *
 	 * @noinspection PhpPossiblePolymorphicInvocationInspection
 	 */
@@ -245,7 +250,7 @@ abstract class WC_Kledo_Request {
 				'regular_price' => $product->get_regular_price(),
 				'sale_price'    => $product->get_sale_price(),
 				'price'         => wc_format_decimal( $order->get_item_subtotal( $item, false, false ), 7, true ),
-				'photo'         => wp_get_attachment_url( $product->get_image_id() ) ?: null,
+				'photo'         => WC_Kledo_Product_Photo::get_url( $product ),
 				'category_name' => 'WooCommerce',
 			);
 		}
