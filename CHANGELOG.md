@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.3 (belum dirilis)
+
+### Peningkatan
+
+- Foto produk hanya dikirim ke Kledo kalau berupa gambar JPEG, PNG, GIF, atau WebP dengan alamat http/https yang valid. Foto lain, misalnya SVG atau link yang rusak, tidak dikirim, tetapi pesanan penjualan dan tagihan tetap terkirim seperti biasa. Alasan foto tidak dikirim dicatat di log WooCommerce (sumber `wc-kledo`) tanpa menyertakan alamat fotonya.
+- Filter baru `wc_kledo_product_photo_url` untuk toko yang menyajikan gambar lewat CDN dengan cara khusus.
+- Kesimpulan di tab Diagnosa sekarang menampilkan alasan dari Kledo kalau pesanan penjualan atau tagihan gagal dibuat di Kledo, lengkap dengan jumlah percobaan dan waktu gagal terakhir, beserta saran perbaikannya. Sebelumnya kesimpulan hanya menyarankan untuk mengecek di sisi Kledo. Alasan ini muncul kalau Kledo menyertakannya di respons status transaksi.
+
 ## 1.8.2 (2026-11-03)
 
 ### Perbaikan
