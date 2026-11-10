@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.8.3 (belum dirilis)
+## 1.8.3 (2026-11-10)
 
 ### Peningkatan
 
