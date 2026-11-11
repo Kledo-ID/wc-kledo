@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag: 1.8.2
+Stable tag: 1.8.3
 Requires PHP: 7.4
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -139,6 +139,11 @@ The command palette integration needs WordPress 6.9 or later — earlier version
 
 == Changelog ==
 
+= 1.8.3 =
+* feat: a product photo is only sent to Kledo when it is a JPEG, PNG, GIF or WebP image with a valid http or https address. Any other photo, such as an SVG or a broken link, is left out, and the sales order or invoice is still sent. The reason is written to the WooCommerce log (source `wc-kledo`), without the photo address
+* feat: new `wc_kledo_product_photo_url` filter for stores that serve images through a CDN in an unusual way
+* feat: when a sales order or invoice failed to be created inside Kledo, the Diagnostics conclusion now gives Kledo's own reason, with how many times it was tried and when it last failed, and what to do about it, instead of only pointing to Kledo's side. The reason shows once Kledo includes it in the transaction status response
+
 = 1.8.2 =
 * fix: sales orders and invoices in Kledo now carry the price paid on the order line instead of the product's catalog price, so product add-ons, dynamic pricing, and prices changed after the order was placed are no longer lost. Needs a Kledo version that reads the order line price; until then Kledo keeps using the catalog price
 * fix: stores that enter prices including tax now send prices without tax, so Kledo no longer adds the tax twice. Kledo totals for such stores can change compared with earlier versions. Like the fix above, this takes effect once Kledo reads the order line price
@@ -246,6 +251,9 @@ Upgrading from 1.5.0 goes straight to this release. Versions 1.6.0 through 1.7.3
 * Launched the Kledo plugin!
 
 == Upgrade Notice ==
+
+= 1.8.3 =
+Only sends product photos Kledo can download (JPEG, PNG, GIF or WebP over http or https), so an unusual photo no longer gets in the way of an order, and shows Kledo's own failure reason in the Diagnostics tab.
 
 = 1.8.2 =
 Sends the price paid on each order line, so product add-ons and other price changes reach Kledo and its totals match the order. Stores that enter prices including tax may see different Kledo totals: tax is no longer counted twice.

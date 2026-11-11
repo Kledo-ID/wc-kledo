@@ -211,7 +211,10 @@ class WC_Kledo_Diagnostics {
 			$causes = array_merge( $causes, $step['causes'] );
 		}
 
-		$report['conclusion'] = $this->conclude( array_values( array_unique( $causes ) ) );
+		$report['conclusion'] = $this->conclude(
+			array_values( array_unique( $causes ) ),
+			$this->get_kledo_failures( $report['steps']['kledo']['details'] ?? array() )
+		);
 
 		$this->save( $report );
 
@@ -1065,15 +1068,17 @@ class WC_Kledo_Diagnostics {
 	 * Pick the conclusion: the most serious cause found.
 	 *
 	 * @param  string[] $causes
+	 * @param  array    $failures  Kledo's failure records, from `get_kledo_failures()`.
 	 *
 	 * @return array{cause: string, title: string, explanation: string, fix: string}
 	 * @since 1.8.0
+	 * @since 1.8.3 Add `failures` parameter.
 	 */
-	private function conclude( array $causes ): array {
+	private function conclude( array $causes, array $failures = array() ): array {
 		// A resend that worked is the headline, but what made the order go missing in the first
 		// place still matters — otherwise the next order goes missing the same way.
 		if ( in_array( 'fixed_by_resend', $causes, true ) ) {
-			$original = $this->conclude( array_values( array_diff( $causes, array( 'fixed_by_resend', 'in_kledo' ) ) ) );
+			$original = $this->conclude( array_values( array_diff( $causes, array( 'fixed_by_resend', 'in_kledo' ) ) ), $failures );
 			$fixed    = $this->describe_cause( 'fixed_by_resend' );
 
 			if ( 'unknown' !== $original['cause'] ) {
@@ -1115,7 +1120,7 @@ class WC_Kledo_Diagnostics {
 
 		foreach ( $priority as $cause ) {
 			if ( in_array( $cause, $causes, true ) ) {
-				return array_merge( array( 'cause' => $cause ), $this->describe_cause( $cause ) );
+				return array_merge( array( 'cause' => $cause ), $this->describe_cause( $cause, $failures ) );
 			}
 		}
 
@@ -1123,14 +1128,97 @@ class WC_Kledo_Diagnostics {
 	}
 
 	/**
+	 * The failure records Kledo returned in step 6, kept only when they carry a reason.
+	 *
+	 * Kledo fills `order_failure` / `invoice_failure` while that transaction is absent and its
+	 * background job failed for good: `{reason, attempts, failed_at, timezone}`. The value comes
+	 * from outside, so each field is checked and the reason is reduced to plain text.
+	 *
+	 * @param  array $details  Details of the `kledo` step.
+	 *
+	 * @return array<string, array{reason: string, attempts: int, failed_at: string, timezone: string}>
+	 *               Keyed by transaction type, sales order first.
+	 * @since 1.8.3
+	 */
+	private function get_kledo_failures( array $details ): array {
+		$failures = array();
+
+		foreach ( array( 'order', 'invoice' ) as $type ) {
+			$failure = $details[ $type . '_failure' ] ?? null;
+
+			if ( ! is_array( $failure ) || ! isset( $failure['reason'] ) || ! is_string( $failure['reason'] ) ) {
+				continue;
+			}
+
+			$reason = sanitize_text_field( $failure['reason'] );
+
+			if ( '' === $reason ) {
+				continue;
+			}
+
+			$failures[ $type ] = array(
+				'reason'    => $reason,
+				'attempts'  => isset( $failure['attempts'] ) && is_numeric( $failure['attempts'] ) ? (int) $failure['attempts'] : 0,
+				'failed_at' => isset( $failure['failed_at'] ) && is_string( $failure['failed_at'] ) ? $failure['failed_at'] : '',
+				'timezone'  => isset( $failure['timezone'] ) && is_string( $failure['timezone'] ) ? $failure['timezone'] : '',
+			);
+		}
+
+		return $failures;
+	}
+
+	/**
+	 * Kledo's failure records in one sentence per transaction, for the conclusion.
+	 *
+	 * @param  array $failures  From `get_kledo_failures()`.
+	 *
+	 * @return string Something like `Invoice: "<reason>" (failed 3 times, last on 3 November 2026 20:39).`
+	 * @since 1.8.3
+	 */
+	private function describe_kledo_failures( array $failures ): string {
+		$sentences = array();
+
+		foreach ( $failures as $type => $failure ) {
+			$when = '' !== $failure['failed_at']
+				? wc_kledo_format_kledo_datetime( $failure['failed_at'], $failure['timezone'] )
+				: '';
+
+			if ( $failure['attempts'] > 0 && '' !== $when ) {
+				/* translators: 1: number of attempts, 2: date and time of the last attempt */
+				$history = sprintf( _n( 'failed %1$d time, last on %2$s', 'failed %1$d times, last on %2$s', $failure['attempts'], 'wc-kledo' ), $failure['attempts'], $when );
+			} elseif ( $failure['attempts'] > 0 ) {
+				/* translators: %d: number of attempts */
+				$history = sprintf( _n( 'failed %d time', 'failed %d times', $failure['attempts'], 'wc-kledo' ), $failure['attempts'] );
+			} elseif ( '' !== $when ) {
+				/* translators: %s: date and time of the last attempt */
+				$history = sprintf( __( 'last failed on %s', 'wc-kledo' ), $when );
+			} else {
+				$history = '';
+			}
+
+			$sentences[] = '' !== $history
+				/* translators: 1: transaction type, 2: reason Kledo gave, 3: how often and when it failed */
+				? sprintf( __( '%1$s: "%2$s" (%3$s).', 'wc-kledo' ), WC_Kledo_Status_Badge::type_label( $type ), $failure['reason'], $history )
+				/* translators: 1: transaction type, 2: reason Kledo gave */
+				: sprintf( __( '%1$s: "%2$s".', 'wc-kledo' ), WC_Kledo_Status_Badge::type_label( $type ), $failure['reason'] );
+		}
+
+		return implode( ' ', $sentences );
+	}
+
+	/**
 	 * Plain words for each cause: what it means and what to do.
 	 *
 	 * @param  string $cause
+	 * @param  array  $failures  Kledo's failure records, from `get_kledo_failures()`. Used by
+	 *                           `failed_in_kledo` to give Kledo's own reason instead of a pointer
+	 *                           to Kledo's side.
 	 *
 	 * @return array{title: string, explanation: string, fix: string}
 	 * @since 1.8.0
+	 * @since 1.8.3 Add `failures` parameter.
 	 */
-	private function describe_cause( string $cause ): array {
+	private function describe_cause( string $cause, array $failures = array() ): array {
 		$causes = array(
 			'api_disabled'            => array(
 				__( 'The connection to Kledo is switched off', 'wc-kledo' ),
@@ -1240,6 +1328,15 @@ class WC_Kledo_Diagnostics {
 		);
 
 		$entry = $causes[ $cause ] ?? $causes['unknown'];
+
+		if ( 'failed_in_kledo' === $cause && ! empty( $failures ) ) {
+			$entry[1] = sprintf(
+				/* translators: %s: Kledo's reason for each transaction it could not create */
+				__( 'The store sent it, but creating it failed inside Kledo. Kledo gave this reason: %s', 'wc-kledo' ),
+				$this->describe_kledo_failures( $failures )
+			);
+			$entry[2] = __( 'Correct what the reason describes, then resend from the Kledo Status tab. If it is not something the store can change, send this report to Kledo.', 'wc-kledo' );
+		}
 
 		return array(
 			'title'       => $entry[0],
