@@ -2,25 +2,22 @@
 # This file is distributed under the same license as the Kledo plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Kledo 1.8.3\n"
+"Project-Id-Version: Kledo 1.9.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wc-kledo\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-10T10:24:10+07:00\n"
+"POT-Creation-Date: 2026-11-26T09:19:22+07:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wc-kledo\n"
 
-#. Plugin Name of the plugin
-#. Author of the plugin
-#: kledo.php
-#: includes/admin/class-wc-kledo-admin-order-column.php:90
-#: includes/admin/class-wc-kledo-admin.php:240
-#: includes/admin/class-wc-kledo-admin.php:241
-msgid "Kledo"
+#. translators: %d: job number
+#: includes/admin/screen/class-wc-kledo-sync.php:886
+#, php-format
+msgid "Kledo: synchronisation #%d was paused by an earlier version of the plugin while it waited for an order. It is safe to resume it now: an order Kledo is slow with no longer stops the others."
 msgstr ""
 
 #. Plugin URI of the plugin
@@ -67,6 +64,7 @@ msgstr ""
 #: includes/admin/screen/class-wc-kledo-diagnostics.php:535
 #: includes/admin/screen/class-wc-kledo-diagnostics.php:576
 #: includes/admin/screen/class-wc-kledo-diagnostics.php:620
+#: includes/admin/screen/class-wc-kledo-product-sync.php:275
 #: includes/admin/screen/class-wc-kledo-sync.php:707
 #: includes/admin/screen/class-wc-kledo-transactions.php:219
 #: includes/admin/screen/class-wc-kledo-transactions.php:308
@@ -138,6 +136,12 @@ msgstr ""
 #: includes/admin/class-wc-kledo-admin-order-bulk-actions.php:349
 #, php-format
 msgid "%d never sent and not in Kledo."
+msgstr ""
+
+#: includes/admin/class-wc-kledo-admin-order-column.php:90
+#: includes/admin/class-wc-kledo-admin.php:241
+#: includes/admin/class-wc-kledo-admin.php:242
+msgid "Kledo"
 msgstr ""
 
 #: includes/admin/class-wc-kledo-admin-order-column.php:174
@@ -234,7 +238,7 @@ msgstr ""
 msgid "Re-sending may create a duplicate invoice in Kledo. Continue?"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin-order-sync.php:129
+#: includes/admin/class-wc-kledo-admin-order-sync.php:130
 msgid "Manual actions match plugin rules: sales order when the order is Processing (same lifecycle as automatic sync on Processing); invoice only when the order is Completed. Re-send appears only after a successful sync."
 msgstr ""
 
@@ -403,34 +407,34 @@ msgstr ""
 msgid "Kledo: failed to push %1$s (HTTP %2$d)."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:209
+#: includes/admin/class-wc-kledo-admin.php:210
 msgid "You do not have permission to save these settings."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:218
+#: includes/admin/class-wc-kledo-admin.php:219
 msgid "Your settings have been saved."
 msgstr ""
 
 #. translators: %s: error message.
-#: includes/admin/class-wc-kledo-admin.php:224
+#: includes/admin/class-wc-kledo-admin.php:225
 #, php-format
 msgid "Your settings could not be saved. %s"
 msgstr ""
 
 #. translators: 1: total orders, 2: orders not in Kledo yet, 3: orders failed in Kledo
-#: includes/admin/class-wc-kledo-admin.php:292
+#: includes/admin/class-wc-kledo-admin.php:293
 #, php-format
 msgid "The Kledo menu shows %1$d: %2$d order(s) not in Kledo yet (Sync tab) + %3$d order(s) failed in Kledo (Kledo Status tab)."
 msgstr ""
 
 #. translators: 1: total orders, 2: orders not in Kledo yet, 3: orders failed in Kledo, 4: orders on both lists
-#: includes/admin/class-wc-kledo-admin.php:301
+#: includes/admin/class-wc-kledo-admin.php:302
 #, php-format
 msgid "The Kledo menu shows %1$d: %2$d order(s) not in Kledo yet (Sync tab) + %3$d order(s) failed in Kledo (Kledo Status tab) − %4$d order(s) that are on both lists. Each order is counted only once."
 msgstr ""
 
 #. translators: %d: number of orders
-#: includes/admin/class-wc-kledo-admin.php:352
+#: includes/admin/class-wc-kledo-admin.php:353
 #, php-format
 msgid "%d order not sent to Kledo yet"
 msgid_plural "%d orders not sent to Kledo yet"
@@ -438,156 +442,156 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of orders
-#: includes/admin/class-wc-kledo-admin.php:354
+#: includes/admin/class-wc-kledo-admin.php:355
 #, php-format
 msgid "%d order failed in Kledo"
 msgid_plural "%d orders failed in Kledo"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/class-wc-kledo-admin.php:431
+#: includes/admin/class-wc-kledo-admin.php:432
 msgid "Settings"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:541
+#: includes/admin/class-wc-kledo-admin.php:542
 msgid "Guide for this tab"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:655
+#: includes/admin/class-wc-kledo-admin.php:656
 msgid "Kledo: Configure"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:656
+#: includes/admin/class-wc-kledo-admin.php:657
 msgid "Kledo: Invoice settings"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:657
+#: includes/admin/class-wc-kledo-admin.php:658
 msgid "Kledo: Order settings"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:658
+#: includes/admin/class-wc-kledo-admin.php:659
 msgid "Kledo: Kledo Status"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:659
+#: includes/admin/class-wc-kledo-admin.php:660
 msgid "Kledo: Sync"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:660
+#: includes/admin/class-wc-kledo-admin.php:661
 msgid "Kledo: Diagnostics"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:661
+#: includes/admin/class-wc-kledo-admin.php:662
 msgid "Kledo: Guide & FAQ"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:662
+#: includes/admin/class-wc-kledo-admin.php:663
 msgid "Kledo: Support"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:705
+#: includes/admin/class-wc-kledo-admin.php:706
 msgid "Select Account"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:706
+#: includes/admin/class-wc-kledo-admin.php:707
 msgid "Select Warehouse"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:708
+#: includes/admin/class-wc-kledo-admin.php:709
 msgid "The results could not be loaded."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:709
+#: includes/admin/class-wc-kledo-admin.php:710
 msgid "Loading more results..."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:710
+#: includes/admin/class-wc-kledo-admin.php:711
 msgid "No results found"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:711
+#: includes/admin/class-wc-kledo-admin.php:712
 msgid "Loading..."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:712
+#: includes/admin/class-wc-kledo-admin.php:713
 msgid "Search"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:746
-#: includes/admin/class-wc-kledo-admin.php:782
+#: includes/admin/class-wc-kledo-admin.php:747
+#: includes/admin/class-wc-kledo-admin.php:783
 msgid "Checking…"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:747
+#: includes/admin/class-wc-kledo-admin.php:748
 msgid "Resending…"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:748
-#: includes/admin/class-wc-kledo-admin.php:786
+#: includes/admin/class-wc-kledo-admin.php:749
+#: includes/admin/class-wc-kledo-admin.php:787
 msgid "Could not reach the server. Try again."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:749
+#: includes/admin/class-wc-kledo-admin.php:750
 msgid "Updated."
 msgstr ""
 
 #. translators: 1: attempt number, 2: number of attempts
-#: includes/admin/class-wc-kledo-admin.php:784
+#: includes/admin/class-wc-kledo-admin.php:785
 #, php-format
 msgid "Waiting 20 seconds, then asking Kledo (%1$d of %2$d)…"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:785
+#: includes/admin/class-wc-kledo-admin.php:786
 msgid "Details"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:787
+#: includes/admin/class-wc-kledo-admin.php:788
 #: includes/admin/screen/class-wc-kledo-diagnostics.php:208
 #: includes/class-wc-kledo-diagnostics.php:305
 msgid "Likely cause"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:788
+#: includes/admin/class-wc-kledo-admin.php:789
 msgid "What to do:"
 msgstr ""
 
 #. translators: %s: report code
-#: includes/admin/class-wc-kledo-admin.php:790
+#: includes/admin/class-wc-kledo-admin.php:791
 #, php-format
 msgid "Report code: %s — mention it when you contact Kledo."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:791
+#: includes/admin/class-wc-kledo-admin.php:792
 msgid "Download report"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:792
+#: includes/admin/class-wc-kledo-admin.php:793
 msgid "Download for developers (JSON)"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:793
+#: includes/admin/class-wc-kledo-admin.php:794
 msgid "Choose an order or type its number…"
 msgstr ""
 
 #. translators: %s: what the user typed
-#: includes/admin/class-wc-kledo-admin.php:795
+#: includes/admin/class-wc-kledo-admin.php:796
 #, php-format
 msgid "Use order number %s"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:796
+#: includes/admin/class-wc-kledo-admin.php:797
 msgid "Choose an order first."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:797
+#: includes/admin/class-wc-kledo-admin.php:798
 msgid "Searching…"
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:798
+#: includes/admin/class-wc-kledo-admin.php:799
 msgid "No order found. Type the order number to use it anyway."
 msgstr ""
 
-#: includes/admin/class-wc-kledo-admin.php:799
+#: includes/admin/class-wc-kledo-admin.php:800
 msgid "The list could not be loaded. Type the order number instead."
 msgstr ""
 
@@ -597,7 +601,7 @@ msgstr ""
 msgid "Configure"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-configure.php:130
+#: includes/admin/screen/class-wc-kledo-configure.php:131
 msgid "The saved key is hidden. Leave this as it is to keep it, or paste a different key over it to replace it."
 msgstr ""
 
@@ -630,11 +634,11 @@ msgid "Not checked yet. Reload this page in a moment."
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-configure.php:271
-msgid "State"
+msgid "Active"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-configure.php:271
-msgid "Active"
+msgid "State"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-configure.php:277
@@ -912,27 +916,27 @@ msgid "The plugin creates transactions in Kledo from your WooCommerce orders, by
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:221
-msgid "Order status in WooCommerce"
-msgstr ""
-
-#: includes/admin/screen/class-wc-kledo-help.php:221
 msgid "Created in Kledo"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-help.php:223
-msgid "Processing"
+#: includes/admin/screen/class-wc-kledo-help.php:221
+msgid "Order status in WooCommerce"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:223
 msgid "A sales order (if \"Enable Create Order\" is on)"
 msgstr ""
 
-#: includes/admin/screen/class-wc-kledo-help.php:224
-msgid "Completed"
+#: includes/admin/screen/class-wc-kledo-help.php:223
+msgid "Processing"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:224
 msgid "An invoice (if \"Enable Create Invoice\" is on), linked to the sales order"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-help.php:224
+msgid "Completed"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:225
@@ -1079,12 +1083,12 @@ msgid "Kledo closes the sales order as soon as everything on it is invoiced."
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:283
-#: includes/admin/screen/class-wc-kledo-invoice.php:267
-msgid "Create Sales Order First When an Order Skips Processing"
+msgid "An order changed straight to Completed still gets its sales order first, then its invoice. Turn off to send only the invoice for such orders."
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:283
-msgid "An order changed straight to Completed still gets its sales order first, then its invoice. Turn off to send only the invoice for such orders."
+#: includes/admin/screen/class-wc-kledo-invoice.php:267
+msgid "Create Sales Order First When an Order Skips Processing"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:287
@@ -1105,11 +1109,12 @@ msgid "The Kledo column in the WooCommerce order list shows two lines per order 
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:298
-msgid "Status"
+msgid "Meaning"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:298
-msgid "Meaning"
+#: includes/admin/screen/class-wc-kledo-product-sync.php:192
+msgid "Status"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-help.php:298
@@ -1619,6 +1624,96 @@ msgstr ""
 msgid "Order Prefix"
 msgstr ""
 
+#: includes/admin/screen/class-wc-kledo-product-sync.php:56
+#: includes/admin/screen/class-wc-kledo-product-sync.php:57
+#: includes/admin/screen/class-wc-kledo-product-sync.php:115
+#: includes/admin/screen/class-wc-kledo-product-sync.php:134
+#: includes/admin/screen/class-wc-kledo-product-sync.php:187
+msgid "Product Sync"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:58
+msgid "Let Kledo read this store's products and keep stock in step. Connecting only creates the link; syncing is started from Kledo."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:117
+msgid "Connect this store to Kledo on the Configure tab first. Product sync uses that same connection."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:136
+msgid "What happens when you connect:"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:138
+msgid "This plugin creates a WooCommerce API key with read and write permission, named \"Kledo product sync\"."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:139
+msgid "The key is sent to Kledo, which immediately tries it against this store."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:140
+msgid "If the test fails, nothing is saved and the key is removed again. You will see why here."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:146
+msgid "Store address"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:150
+msgid "Taken from WordPress. Kledo must be able to reach this address over HTTPS from the internet."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:165
+msgid "Connect Product Sync"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:193
+msgid "Connected"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:196
+msgid "Connection id"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:199
+msgid "Quote this number when asking Kledo support about product sync."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:203
+msgid "Registered address"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:208
+msgid "This store's address has changed since it was connected."
+msgstr ""
+
+#. translators: %s: current store URL
+#: includes/admin/screen/class-wc-kledo-product-sync.php:212
+#, php-format
+msgid "It is now %s. Disconnect and connect again so Kledo uses the new address."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:222
+msgid "API key"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:225
+msgid "Listed in WooCommerce > Settings > Advanced > REST API as \"Kledo product sync\"."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:240
+msgid "Disconnect product sync? Kledo will stop reading products and stock from this store, and the API key it uses will be deleted."
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:241
+msgid "Disconnect Product Sync"
+msgstr ""
+
+#: includes/admin/screen/class-wc-kledo-product-sync.php:284
+msgid "Product sync disconnected."
+msgstr ""
+
 #: includes/admin/screen/class-wc-kledo-support.php:27
 #: includes/admin/screen/class-wc-kledo-support.php:28
 msgid "Support"
@@ -1837,11 +1932,11 @@ msgid "Resume"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-sync.php:519
-msgid "Stop this synchronisation? Orders already sent stay in Kledo."
+msgid "Cancel"
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-sync.php:519
-msgid "Cancel"
+msgid "Stop this synchronisation? Orders already sent stay in Kledo."
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-sync.php:553
@@ -1964,12 +2059,6 @@ msgstr ""
 #: includes/admin/screen/class-wc-kledo-sync.php:878
 #, php-format
 msgid "Kledo: synchronisation #%d was paused because Kledo could not be reached for 30 minutes. Check the connection in the Configure tab, then resume it."
-msgstr ""
-
-#. translators: %d: job number
-#: includes/admin/screen/class-wc-kledo-sync.php:886
-#, php-format
-msgid "Kledo: synchronisation #%d was paused by an earlier version of the plugin while it waited for an order. It is safe to resume it now: an order Kledo is slow with no longer stops the others."
 msgstr ""
 
 #: includes/admin/screen/class-wc-kledo-transactions.php:182
@@ -2170,6 +2259,14 @@ msgstr ""
 msgid "Moved to: %s"
 msgstr ""
 
+#. translators: %d: number of attempts
+#: includes/admin/screen/class-wc-kledo-transactions.php:1072
+#, php-format
+msgid "%d attempt"
+msgid_plural "%d attempts"
+msgstr[0] ""
+msgstr[1] ""
+
 #. translators: %s: date and time
 #: includes/admin/screen/class-wc-kledo-transactions.php:1077
 #, php-format
@@ -2287,18 +2384,15 @@ msgstr ""
 msgid "Kledo: manually resent %s to Kledo from the Kledo Status tab."
 msgstr ""
 
-#: includes/class-wc-kledo-ajax.php:31
-#: includes/class-wc-kledo-ajax.php:89
+#: includes/class-wc-kledo-ajax.php:31 includes/class-wc-kledo-ajax.php:89
 msgid "Unauthorized"
 msgstr ""
 
-#: includes/class-wc-kledo-ajax.php:42
-#: includes/class-wc-kledo-ajax.php:97
+#: includes/class-wc-kledo-ajax.php:42 includes/class-wc-kledo-ajax.php:97
 msgid "Request failed."
 msgstr ""
 
-#: includes/class-wc-kledo-ajax.php:52
-#: includes/class-wc-kledo-ajax.php:106
+#: includes/class-wc-kledo-ajax.php:52 includes/class-wc-kledo-ajax.php:106
 msgid "Invalid response from Kledo."
 msgstr ""
 
@@ -2363,8 +2457,7 @@ msgstr ""
 msgid "This key does not renew itself. Once it expires, orders and invoices will stop being sent to Kledo automatically and every sync will keep failing until a current key is saved. Paste a current one in %s before then."
 msgstr ""
 
-#. translators: 1: number of days, 2: expiry date sentence, 3: what to do about it
-#: includes/class-wc-kledo-connection-status.php:579
+#: includes/class-wc-kledo-connection-status.php:580
 #, php-format
 msgid "Kledo: this store's API key expires in %1$d day. %2$s %3$s"
 msgid_plural "Kledo: this store's API key expires in %1$d days. %2$s %3$s"
@@ -2480,12 +2573,12 @@ msgstr ""
 
 #: includes/class-wc-kledo-diagnostics.php:485
 #: includes/class-wc-kledo-diagnostics.php:486
-msgid "on"
+msgid "off"
 msgstr ""
 
 #: includes/class-wc-kledo-diagnostics.php:485
 #: includes/class-wc-kledo-diagnostics.php:486
-msgid "off"
+msgid "on"
 msgstr ""
 
 #. translators: 1: order status, 2: date
@@ -2948,6 +3041,26 @@ msgstr ""
 msgid "Kledo: sales order %s has been closed in Kledo (fully invoiced)."
 msgstr ""
 
+#: includes/class-wc-kledo-product-connect.php:102
+msgid "You do not have permission to connect product sync."
+msgstr ""
+
+#: includes/class-wc-kledo-product-connect.php:111
+msgid "Connect this store to Kledo first, on the Configure tab."
+msgstr ""
+
+#: includes/class-wc-kledo-product-connect.php:120
+msgid "Could not create a WooCommerce API key for Kledo. Please try again."
+msgstr ""
+
+#: includes/class-wc-kledo-product-connect.php:136
+msgid "Could not reach Kledo. Please try again shortly."
+msgstr ""
+
+#: includes/class-wc-kledo-product-connect.php:171
+msgid "Product sync is connected."
+msgstr ""
+
 #: includes/class-wc-kledo-status-badge.php:37
 msgid "The sales order was read back from Kledo and exists there."
 msgstr ""
@@ -3008,8 +3121,7 @@ msgstr ""
 msgid "Fix the data named in the error (product, customer, account), then resend."
 msgstr ""
 
-#: includes/class-wc-kledo-status-badge.php:94
-#: includes/helpers.php:1443
+#: includes/class-wc-kledo-status-badge.php:94 includes/helpers.php:1443
 msgid "Kledo accepted the request, but the transaction never appeared in Kledo."
 msgstr ""
 
@@ -3196,8 +3308,7 @@ msgstr ""
 msgid "API Key and API Endpoint URL"
 msgstr ""
 
-#. translators: 1,2: <strong> tags, 3: the setting names that are still empty, 4: anchor to the Configure screen.
-#: includes/class-wc-kledo.php:704
+#: includes/class-wc-kledo.php:705
 #, php-format
 msgid "%1$sWooCommerce Kledo is not connected yet.%2$s No order or invoice will be sent to Kledo until the %3$s is saved in %4$s."
 msgstr ""
@@ -3224,4 +3335,17 @@ msgstr ""
 #: includes/helpers.php:1581
 #, php-format
 msgid "(in %s)"
+msgstr ""
+
+#: includes/requests/class-wc-kledo-request-product-connect.php:86
+#: includes/requests/class-wc-kledo-request-product-connect.php:90
+msgid "Kledo returned an unreadable response. Please try again."
+msgstr ""
+
+#: includes/requests/class-wc-kledo-request-product-connect.php:99
+msgid "Kledo could not connect this store. Please try again."
+msgstr ""
+
+#: includes/requests/class-wc-kledo-request-product-connect.php:113
+msgid "Kledo did not return a connection id. Please try again."
 msgstr ""
