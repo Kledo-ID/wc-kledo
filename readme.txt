@@ -3,7 +3,7 @@ Contributors: kledo
 Tags: Kledo, WooCommerce, Accounting
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag: 1.8.3
+Stable tag: 1.9.0
 Requires PHP: 7.4
 Text Domain: wc-kledo
 License: GPLv2 or later
@@ -139,6 +139,12 @@ The command palette integration needs WordPress 6.9 or later — earlier version
 
 == Changelog ==
 
+= 1.9.0 =
+* feat: new Product Sync tab that connects the store to Kledo's product sync with one button. The plugin creates a WooCommerce API key with read and write permission (named "Kledo product sync") and hands it to Kledo, which tests it against the store right away. If the test fails, nothing is saved, the key is removed again, and Kledo's reason is shown on the tab
+* feat: the store address is taken from WordPress instead of being typed. Once connected, the tab shows the connection id for Kledo support and warns when the store address has changed since connecting
+* feat: Disconnect Product Sync removes the connection and deletes the API key Kledo uses. Connecting again always revokes the previous key, so Kledo only holds the newest one
+* feat: the tab is available once the store is connected to Kledo on the Configure tab. Connecting only creates the link; pulling the catalogue and syncing stock are started from Kledo
+
 = 1.8.3 =
 * feat: a product photo is only sent to Kledo when it is a JPEG, PNG, GIF or WebP image with a valid http or https address. Any other photo, such as an SVG or a broken link, is left out, and the sales order or invoice is still sent. The reason is written to the WooCommerce log (source `wc-kledo`), without the photo address
 * feat: new `wc_kledo_product_photo_url` filter for stores that serve images through a CDN in an unusual way
@@ -251,6 +257,9 @@ Upgrading from 1.5.0 goes straight to this release. Versions 1.6.0 through 1.7.3
 * Launched the Kledo plugin!
 
 == Upgrade Notice ==
+
+= 1.9.0 =
+Adds a Product Sync tab that connects the store to Kledo's product sync with one button, so Kledo can read products and keep stock in step.
 
 = 1.8.3 =
 Only sends product photos Kledo can download (JPEG, PNG, GIF or WebP over http or https), so an unusual photo no longer gets in the way of an order, and shows Kledo's own failure reason in the Diagnostics tab.

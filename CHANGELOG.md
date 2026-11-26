@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.9.0 (belum dirilis)
+
+### Fitur baru
+
+- Tab baru **Product Sync** di halaman pengaturan plugin untuk menghubungkan toko ke fitur sinkronisasi produk Kledo, sehingga Kledo bisa membaca produk toko dan menyelaraskan stok. Cukup satu tombol: plugin membuat API key WooCommerce (baca dan tulis, bernama "Kledo product sync") lalu mengirimkannya ke Kledo, yang langsung mengujinya ke toko. Kalau uji gagal, tidak ada yang disimpan, key dihapus lagi, dan alasan dari Kledo ditampilkan di tab ini.
+- Alamat toko diambil otomatis dari WordPress, bukan diketik. Setelah terhubung, tab ini menampilkan nomor koneksi (untuk ditanyakan ke support Kledo) dan memberi peringatan kalau alamat toko berubah sejak terhubung.
+- Tombol **Disconnect Product Sync** memutus koneksi dan menghapus API key yang dipakai Kledo. Menghubungkan ulang selalu mencabut key lama, jadi Kledo hanya memegang key terbaru.
+- Tab ini aktif setelah toko terhubung ke Kledo di tab Configure. Menghubungkan hanya membuat tautan; penarikan katalog dan sinkronisasi stok dijalankan dari Kledo.
+
 ## 1.8.3 (2026-11-10)
 
 ### Peningkatan

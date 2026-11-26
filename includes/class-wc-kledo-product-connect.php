@@ -218,6 +218,7 @@ class WC_Kledo_Product_Connect {
 		$consumer_key    = 'ck_' . wc_rand_hash();
 		$consumer_secret = 'cs_' . wc_rand_hash();
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- WooCommerce has no API to create a REST key; this mirrors WC_Auth::create_keys().
 		$inserted = $wpdb->insert(
 			$wpdb->prefix . 'woocommerce_api_keys',
 			array(
@@ -260,6 +261,7 @@ class WC_Kledo_Product_Connect {
 			return;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-off write to WooCommerce's own key table; nothing to cache.
 		$wpdb->delete( $wpdb->prefix . 'woocommerce_api_keys', array( 'key_id' => $key_id ), array( '%d' ) );
 	}
 }
