@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.9.0 (belum dirilis)
+## 1.9.0 (2026-11-26)
 
 ### Fitur baru
 
