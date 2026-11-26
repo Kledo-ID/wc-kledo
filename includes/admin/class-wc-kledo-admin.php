@@ -44,6 +44,7 @@ class WC_Kledo_Admin {
 			WC_Kledo_Order_Screen::ID        => new WC_Kledo_Order_Screen(),
 			WC_Kledo_Transactions_Screen::ID => new WC_Kledo_Transactions_Screen(),
 			WC_Kledo_Sync_Screen::ID         => new WC_Kledo_Sync_Screen(),
+			WC_Kledo_Product_Sync_Screen::ID => new WC_Kledo_Product_Sync_Screen(),
 			WC_Kledo_Diagnostics_Screen::ID  => new WC_Kledo_Diagnostics_Screen(),
 			WC_Kledo_Help_Screen::ID         => new WC_Kledo_Help_Screen(),
 			WC_Kledo_Support_Screen::ID      => new WC_Kledo_Support_Screen(),
